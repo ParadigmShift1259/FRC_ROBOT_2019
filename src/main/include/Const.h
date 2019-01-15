@@ -91,6 +91,8 @@
 
 // Compressor
 #define PCM_COMPRESSOR_SOLENOID 0
+#define PCM_WAITTIME 50
+
 
 
 // Gyro

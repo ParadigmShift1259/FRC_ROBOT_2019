@@ -7,6 +7,7 @@
 #include "OperatorInputs.h"
 #include "Drivetrain.h"
 #include "Gyro.h"
+#include "Pneumatic.h"
 
 
 using namespace frc;
@@ -30,6 +31,8 @@ protected:
 	OperatorInputs *m_operatorinputs;
 	DriveTrain *m_drivetrain;
 	DualGyro *m_gyro;	
+	Pneumatic *m_pneumatic;
+	DriverStation *m_driverstation;
 };
 
 

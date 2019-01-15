@@ -22,6 +22,7 @@ void Robot::RobotInit()
 	m_operatorinputs = new OperatorInputs();
 	m_drivetrain = new DriveTrain(m_operatorinputs);
 	m_gyro = new DualGyro(CAN_GYRO_1, CAN_GYRO_2);
+	m_pneumatic = new Pneumatic(m_driverstation, m_operatorinputs);
 }
 
 
@@ -72,6 +73,7 @@ void Robot::TeleopInit()
 
 	m_drivetrain->Init(DriveTrain::DriveMode::kDiscrete);
 	m_gyro->Init();
+	m_pneumatic->Init();
 }
 
 
@@ -79,6 +81,7 @@ void Robot::TeleopPeriodic()
 {
 	m_drivetrain->Loop();
 	m_gyro->Loop();
+	m_pneumatic->Loop();
 }
 
 
@@ -86,6 +89,7 @@ void Robot::DisabledInit()
 {
 	m_drivetrain->Stop();
 	m_gyro->Stop();
+	m_pneumatic->Stop();
 }
 
 
