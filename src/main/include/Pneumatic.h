@@ -37,7 +37,6 @@ protected:
     Stage m_stage;
     double m_waittime;
     Timer m_timer;
-	
 };
 
 
