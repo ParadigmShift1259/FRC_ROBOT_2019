@@ -20,7 +20,7 @@ using namespace frc;
 class Pneumatic
 {
 public:
-	enum Stage {kClose, kOpen};
+	enum Stage {kClose, kCapture, kOpen};
     
     Pneumatic(DriverStation *ds, OperatorInputs *inputs);
     ~Pneumatic();
@@ -34,6 +34,12 @@ protected:
     Compressor *m_compressor;
     Solenoid *m_solenoid1;
     Solenoid *m_solenoid2;
+    Solenoid *m_solenoid3;
+    Solenoid *m_solenoid4;
+    Spark *m_spark1;
+    Spark *m_spark2;
+    Spark *m_spark3;
+    Spark *m_spark4;
     Stage m_stage;
     double m_waittime;
     Timer m_timer;

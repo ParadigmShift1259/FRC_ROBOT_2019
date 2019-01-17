@@ -54,8 +54,8 @@
 // Drivetrain
 #define DT_DEFAULT_DIRECTION -1.0
 // Inverts
-#define INVERT_LEFT  1.0
-#define INVERT_RIGHT -1.0			// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
+#define INVERT_LEFT  -1.0
+#define INVERT_RIGHT 1.0			// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
 // Talons ports
 #define CAN_LEFT_PORT_1 3
 #define CAN_LEFT_PORT_2 4
@@ -90,14 +90,16 @@
 
 
 // PNEUMATIC
-#define PCM_MODULE -1
+#define PCM_MODULE 0
 #define PCM_PNEUMATIC_WAIT .05
 #define PCM_PNEUMATIC_SOLENOID1 0
 #define PCM_PNEUMATIC_SOLENOID2 1
+#define PCM_PNEUMATIC_SOLENOID3 2
+#define PCM_PNEUMATIC_SOLENOID4 3
 
 
 // Gyro
-#define CAN_GYRO_1 0
+#define CAN_GYRO_1 -1
 #define CAN_GYRO_2 -1
 
 
