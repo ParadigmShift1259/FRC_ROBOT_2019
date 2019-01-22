@@ -179,6 +179,10 @@ void DriveTrain::Init(DriveMode mode)
 		m_lefttalon1->ConfigSelectedFeedbackSensor(ENC_LEFT_1, 0, 0);
 		m_lefttalon1->SetSensorPhase(false);
 		m_lefttalon1->SetNeutralMode(NeutralMode::Brake);
+		// configure talon current limiting
+		m_lefttalon1->ConfigPeakCurrentLimit(0);
+		m_lefttalon1->ConfigContinuousCurrentLimit(25);
+		m_lefttalon1->EnableCurrentLimit(true);
 	}
 
 	if (m_righttalon1 != nullptr)
@@ -186,30 +190,50 @@ void DriveTrain::Init(DriveMode mode)
 		m_righttalon1->ConfigSelectedFeedbackSensor(ENC_RIGHT_1, 0, 0);
 		m_righttalon1->SetSensorPhase(false);
 		m_righttalon1->SetNeutralMode(NeutralMode::Brake);
+		// configure talon current limiting
+		m_righttalon1->ConfigPeakCurrentLimit(0);
+		m_righttalon1->ConfigContinuousCurrentLimit(25);
+		m_righttalon1->EnableCurrentLimit(true);
 	}
 
 	if (m_lefttalon2 != nullptr)
 	{
 		//m_lefttalon2->ConfigSelectedFeedbackSensor(ENC_LEFT_2, 0, 0);
 		//m_lefttalon2->SetSensorPhase(false);
-		//m_lefttalon2->SetNeutralMode(NeutralMode::Brake);
+		m_lefttalon2->SetNeutralMode(NeutralMode::Brake);
+		// configure talon current limiting
+		m_lefttalon2->ConfigPeakCurrentLimit(0);
+		m_lefttalon2->ConfigContinuousCurrentLimit(25);
+		m_lefttalon2->EnableCurrentLimit(true);
 	}
 
 	if (m_righttalon2 != nullptr)
 	{
 		//m_righttalon2->ConfigSelectedFeedbackSensor(ENC_RIGHT_2, 0, 0);
 		//m_righttalon2->SetSensorPhase(false);
-		//m_righttalon2->SetNeutralMode(NeutralMode::Brake);
-	}
+		m_righttalon2->SetNeutralMode(NeutralMode::Brake);
+		// configure talon current limiting
+		m_righttalon2->ConfigPeakCurrentLimit(0);
+		m_righttalon2->ConfigContinuousCurrentLimit(25);
+		m_righttalon2->EnableCurrentLimit(true);
+}
 
 	if (m_lefttalon3 != nullptr)
 	{
 		m_lefttalon3->SetNeutralMode(NeutralMode::Brake);
+		// configure talon current limiting
+		m_lefttalon3->ConfigPeakCurrentLimit(0);
+		m_lefttalon3->ConfigContinuousCurrentLimit(25);
+		m_lefttalon3->EnableCurrentLimit(true);
 	}
 
 	if (m_righttalon3 != nullptr)
 	{
 		m_righttalon3->SetNeutralMode(NeutralMode::Brake);
+		// configure talon current limiting
+		m_righttalon3->ConfigPeakCurrentLimit(0);
+		m_righttalon3->ConfigContinuousCurrentLimit(25);
+		m_righttalon3->EnableCurrentLimit(true);
 	}
 
 	m_leftpow = 0;

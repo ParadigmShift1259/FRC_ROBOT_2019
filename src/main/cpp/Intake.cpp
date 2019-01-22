@@ -100,7 +100,7 @@ void Intake::Loop()
 	/// check A Button to record state of button toggle (used in kBox)
 	bool xboxabuttontoggle = m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL);
 
-	bool xboxybuttontoggle = m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0);
+	bool xboxybuttontoggle = m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) * INP_DUAL;
 
 	switch (m_stage)
 	{
