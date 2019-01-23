@@ -18,6 +18,24 @@
 AutoMode automode = kAutoStraight;
 
 
+void Robot::VisionThread()
+{
+	cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture();
+	camera.SetResolution(320, 240);
+	cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
+	cs::CvSource outputStreamStd = CameraServer::GetInstance()->PutVideo("Gray", 320, 240);
+	cv::Mat source;
+	cv::Mat output;
+	while (true) 
+	{
+		cvSink.GrabFrame(source);
+		//cvtColor(source, output, cv::COLOR_BGR2GRAY);
+		outputStreamStd.PutFrame(source);
+		Wait(0.02);
+	}
+}
+
+
 void Robot::RobotInit()
 {
 	m_chooser.AddDefault(kszAutoDefault, kszAutoDefault);
@@ -33,6 +51,9 @@ void Robot::RobotInit()
 	m_chooser.AddObject(kszAutoTestMode, kszAutoTestMode);
 	frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 
+	thread visionThread(VisionThread);
+	visionThread.detach();
+	
 	m_driverstation = &DriverStation::GetInstance();
 	m_compressor = nullptr;
 	if (PCM_COMPRESSOR_SOLENOID != -1)
