@@ -9,6 +9,9 @@
 #include "Gyro.h"
 #include "Pneumatic.h"
 
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/core.hpp>
+
 
 using namespace frc;
 
@@ -16,6 +19,7 @@ using namespace frc;
 class Robot : public TimedRobot
 {
 public:
+	static void VisionThread();
 	virtual void RobotInit();
 	virtual void RobotPeriodic();
 	virtual void AutonomousInit();
