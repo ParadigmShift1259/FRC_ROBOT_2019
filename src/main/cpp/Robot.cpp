@@ -13,6 +13,8 @@
 #include <SmartDashboard/SendableChooser.h>
 #include <SmartDashboard/SmartDashboard.h>
 #include "Robot.h"
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/core.hpp>
 
 
 AutoMode automode = kAutoStraight;
@@ -38,6 +40,9 @@ void Robot::VisionThread()
 
 void Robot::RobotInit()
 {
+//	thread visionThread(VisionThread);
+//	visionThread.detach();
+	
 	m_chooser.AddDefault(kszAutoDefault, kszAutoDefault);
 	m_chooser.AddObject(kszAutoCenterSwitch1, kszAutoCenterSwitch1);
 	m_chooser.AddObject(kszAutoCenterSwitch3, kszAutoCenterSwitch3);
@@ -51,9 +56,6 @@ void Robot::RobotInit()
 	m_chooser.AddObject(kszAutoTestMode, kszAutoTestMode);
 	frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 
-	thread visionThread(VisionThread);
-	visionThread.detach();
-	
 	m_driverstation = &DriverStation::GetInstance();
 	m_compressor = nullptr;
 	if (PCM_COMPRESSOR_SOLENOID != -1)
