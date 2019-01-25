@@ -109,35 +109,9 @@
 
 
 // Intake
-#define CAN_INTAKE_LEFTMOTOR 4		// 4
-#define CAN_INTAKE_RIGHTMOTOR 5		// 5
-#define PCM_INTAKE_MODULE 0			// 0
-#define PCM_INTAKE_SOLENOID 1		// 1
-#define DIO_INTAKE_CUBESENSOR 0		// 0
-#define INT_INGESTSPEED 0.5
-#define INT_EJECTHIGH -0.5
-#define INT_EJECTMED -0.375
-#define INT_EJECTLOW -0.25
-#define INT_EJECTSWITCH -0.325
-#define INT_EJECTSCALE -0.5
-
-
-// Climber
-#define CAN_CLIMBER_MOTOR 7			// 7
-
-
-// Autonomous
-enum AutoMode {
-	kAutoDefault,
-	kAutoCenterSwitchLeft1, kAutoCenterSwitchRight1,
-	kAutoCenterSwitchLeft3, kAutoCenterSwitchRight3,
-	kAutoLeftScaleLeft2, kAutoLeftScaleLeft1, kAutoLeftScaleRight1,
-	kAutoRightScaleLeft1, kAutoRightScaleRight2, kAutoRightScaleRight1,
-	kAutoStraight,
-	kAutoTest
-};
-
-extern AutoMode automode;
-
+#define CAN_INTAKE_MOTOR 4		// Will change in 2019
+#define PCM_INTAKE_MODULE 0			// 0325
+#define PCM_INTAKE_SOLENOID1 1	// Will change in 2019
+#define PCM_INTAKE_SOLENOID2 2	// Will change in 2019
 
 #endif /* SRC_CONST_H_ */

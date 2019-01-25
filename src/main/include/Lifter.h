@@ -34,13 +34,11 @@ public:
 	bool MoveBottom();
 	bool AutoRaise();
 	bool AutoRaiseSwitch();
-	bool AutoDeploy();
 
 protected:
 	DriverStation *m_ds;
 	OperatorInputs *m_inputs;
 	WPI_TalonSRX *m_motor;
-	Solenoid *m_solenoid;
 	Stage m_stage;
 	int m_position;
 	double m_raisespeed;
