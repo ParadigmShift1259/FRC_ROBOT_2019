@@ -42,6 +42,7 @@ protected:
     Spark *m_spark4;
     Stage m_stage;
     double m_waittime;
+    double m_vacuumpow;
     Timer m_timer;
 };
 

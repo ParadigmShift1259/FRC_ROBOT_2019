@@ -28,6 +28,7 @@ Pneumatic::Pneumatic(DriverStation *ds, OperatorInputs *inputs)
     m_spark4 = nullptr;
     m_stage = kOpen;
     m_waittime = PCM_PNEUMATIC_WAIT;
+    m_vacuumpow = PCM_PNEUMATIC_POWER;
 
     if ((PCM_MODULE != -1) && (PCM_PNEUMATIC_SOLENOID1 != -1) && (PCM_PNEUMATIC_SOLENOID2 != -1))
     {
@@ -89,6 +90,7 @@ void Pneumatic::Init()
     m_spark4->Set(0);
     m_stage = kOpen;
     m_waittime = PCM_PNEUMATIC_WAIT;
+    m_vacuumpow = PCM_PNEUMATIC_POWER;
     m_timer.Start();
     m_timer.Reset();
 }
@@ -100,6 +102,26 @@ void Pneumatic::Loop()
         return;
     if (m_spark1 == nullptr || m_spark2 == nullptr || m_spark3 == nullptr || m_spark4 == nullptr)
         return;
+
+    if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    {
+        m_waittime += 0.05;
+    }
+    else
+    if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && (m_waittime > 0.05))
+    {
+        m_waittime -= 0.05;
+    }
+
+    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    {
+        m_vacuumpow += 0.025;
+    }
+    else
+    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && (m_vacuumpow > 0.025))
+    {
+        m_vacuumpow -= 0.025;
+    }
 
     switch (m_stage)
     {
@@ -127,10 +149,10 @@ void Pneumatic::Loop()
         m_solenoid2->Set(false);
         m_solenoid3->Set(false);
         m_solenoid4->Set(false);
-        m_spark1->Set(0.3);
-        m_spark2->Set(0.3);
-        m_spark3->Set(0.3);
-        m_spark4->Set(0.3);
+        m_spark1->Set(m_vacuumpow);
+        m_spark2->Set(m_vacuumpow);
+        m_spark3->Set(m_vacuumpow);
+        m_spark4->Set(m_vacuumpow);
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
         {
             m_solenoid1 -> Set(true);
@@ -139,16 +161,6 @@ void Pneumatic::Loop()
             m_solenoid4 -> Set(true);
             m_timer.Reset();
             m_stage = kClose;
-        }
-        else
-        if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-        {
-            m_waittime += .05;
-        }
-        else
-        if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && (m_waittime > PCM_PNEUMATIC_WAIT))
-        {
-            m_waittime -= .05;
         }
         break;
 
@@ -172,6 +184,7 @@ void Pneumatic::Loop()
 
 	SmartDashboard::PutNumber("PN_Stage", m_stage);
 	SmartDashboard::PutNumber("PN_Waittime", m_waittime);
+	SmartDashboard::PutNumber("PN_VacuumPow", m_vacuumpow);
 }
 
 
