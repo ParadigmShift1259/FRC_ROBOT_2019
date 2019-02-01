@@ -8,11 +8,10 @@
 
 #include <iostream>
 #include <string>
-#include <LiveWindow/LiveWindow.h>
-#include <SmartDashboard/SendableChooser.h>
-#include <SmartDashboard/SmartDashboard.h>
+#include <frc/LiveWindow/LiveWindow.h>
+#include <frc/SmartDashboard/SendableChooser.h>
+#include <frc/SmartDashboard/SmartDashboard.h>
 #include "Robot.h"
-
 
 
 void Robot::RobotInit()
@@ -116,4 +115,7 @@ void Robot::DisabledPeriodic()
 }
 
 
-START_ROBOT_CLASS(Robot)
+int main()
+{
+	return frc::StartRobot<Robot>();
+}
