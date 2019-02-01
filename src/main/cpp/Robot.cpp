@@ -57,7 +57,6 @@ void Robot::AutonomousInit()
 		m_compressor->Stop();
 	m_drivetrain->Init(DriveTrain::DriveMode::kFollower);
 	m_gyro->Init();
-	m_drivepid->Init(0.0, 0.0, 0.0, DrivePID::Feedback::kGyro, true);
 	m_lifter->Init();
 	m_intake->Init();
 }
@@ -92,7 +91,6 @@ void Robot::TeleopInit()
 		m_compressor->Start();
 	m_drivetrain->Init(DriveTrain::DriveMode::kFollower);
 	m_gyro->Init();
-	m_drivepid->Init(0.0, 0.0, 0.0, DrivePID::Feedback::kGyro, true);
 	m_lifter->Init();
 	m_intake->Init();
 }
@@ -125,6 +123,7 @@ void Robot::DisabledInit()
 void Robot::DisabledPeriodic()
 {
 	m_gyro->Loop();
+	m_drivepid->Loop();
 }
 
 
