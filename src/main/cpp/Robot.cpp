@@ -68,7 +68,8 @@ void Robot::AutonomousPeriodic()
 	m_gyro->Loop();
 	m_drivepid->Loop();
 	m_lifter->Loop();
-	m_intake->Loop();
+	m_intake->CargoLoop();
+	m_intake->HatchLoop();
 }
 
 
@@ -102,7 +103,8 @@ void Robot::TeleopPeriodic()
 	m_gyro->Loop();
 	m_drivepid->Loop();
 	m_lifter->Loop();
-	m_intake->Loop();
+	m_intake->CargoLoop();
+	m_intake->HatchLoop();
 }
 
 

@@ -273,7 +273,7 @@ void Intake::CargoLoop()
         }
         else
         {
-            m_motor->Set(1);
+            m_motor->Set(1.0);
         }
         break;
     
