@@ -114,3 +114,17 @@ void DualGyro::Dashboard()
 	if (GetHeading(heading))
 		SmartDashboard::PutNumber("GyroFused", heading);
 }
+
+
+void DualGyro::ZeroHeading()
+{
+    if (m_pigeon1 != nullptr)
+    {
+		m_pigeon1->SetFusedHeading(0, 0);
+    }
+
+    if (m_pigeon2 != nullptr)
+    {
+		m_pigeon2->SetFusedHeading(0, 0);
+    }
+}

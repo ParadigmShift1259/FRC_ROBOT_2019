@@ -6,6 +6,8 @@
 #include "Const.h"
 #include "OperatorInputs.h"
 #include "Drivetrain.h"
+#include "Gyro.h"
+#include "DrivePID.h"
 #include "Lifter.h"
 #include "Intake.h"
 
@@ -28,10 +30,12 @@ public:
 	virtual void DisabledPeriodic();
 
 protected:
+	DriverStation *m_driverstation;
+	Compressor *m_compressor;
 	OperatorInputs *m_operatorinputs;
 	DriveTrain *m_drivetrain;
-	Compressor *m_compressor;
-	DriverStation *m_driverstation;
+	DualGyro *m_gyro;
+	DrivePID *m_drivepid;
 	Lifter *m_lifter;
 	Intake *m_intake;
 };

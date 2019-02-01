@@ -93,6 +93,11 @@
 #define PCM_COMPRESSOR_SOLENOID 0
 
 
+// Gyro
+#define CAN_GYRO1 0
+#define CAN_GYRO2 -1
+
+
 // Lifter
 #define CAN_LIFTER_MOTOR 6			// 6
 #define PCM_LIFTER_MODULE 0			// 0
