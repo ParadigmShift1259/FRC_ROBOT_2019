@@ -8,7 +8,6 @@
 
 #include <iostream>
 #include <string>
-#include <IterativeRobot.h>
 #include <LiveWindow/LiveWindow.h>
 #include <SmartDashboard/SendableChooser.h>
 #include <SmartDashboard/SmartDashboard.h>
@@ -63,7 +62,9 @@ void Robot::AutonomousInit()
 
 void Robot::AutonomousPeriodic()
 {
+	m_drivetrain->Loop();
 	m_lifter->Loop();
+	m_intake->Loop();
 }
 
 
@@ -92,17 +93,9 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-
-	 /*
-		m_lifter->TestLoop();
-		m_intake->TestLoop();
-		m_climber->TestLoop();
-		m_drivepid->Loop();
-	 */
-	
+	m_drivetrain->Loop();
 	m_lifter->Loop();
 	m_intake->Loop();
-	
 }
 
 
@@ -118,6 +111,9 @@ void Robot::DisabledInit()
 }
 
 
-void Robot::DisabledPeriodic() {}
+void Robot::DisabledPeriodic()
+{
+}
+
 
 START_ROBOT_CLASS(Robot)

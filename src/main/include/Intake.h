@@ -24,7 +24,7 @@ using namespace nt;
 class Intake
 {
 public:
-	enum Stage {kTemporary};
+	enum Stage {kClose, kCapture, kOpen};
 
 	Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter);
 	virtual ~Intake();
@@ -40,9 +40,14 @@ protected:
 	WPI_TalonSRX *m_motor;
 	Solenoid *m_solenoid1;
 	Solenoid *m_solenoid2;
+    Solenoid *m_solenoid3;
+    Solenoid *m_solenoid4;
+    Spark *m_spark1;
+    Spark *m_spark2;
 	Stage m_stage;
 	Timer m_timer;
-
+	double m_waittime;
+    DigitalInput *m_cargosensor;
 };
 
 

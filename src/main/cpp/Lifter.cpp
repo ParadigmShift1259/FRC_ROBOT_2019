@@ -5,6 +5,7 @@
  *      Author: Yreffoeg
  */
 
+
 #include "Lifter.h"
 #include "Const.h"
 
@@ -198,21 +199,6 @@ bool Lifter::IsBottom()
 }
 
 
-bool Lifter::MoveSmidgeUp()
-{
-	if (m_motor->GetSelectedSensorPosition(0) < LIF_LIFSMIDGE)
-	{
-		m_motor->Set(m_raisespeed);		/// raise lifter - positive
-		return false;
-	}
-	else
-	{
-		m_motor->Set(0);
-		return true;
-	}
-}
-
-
 bool Lifter::MoveBottom()
 {
 	if (m_position > m_liftermin)		/// lower lifter - negative
@@ -262,4 +248,3 @@ bool Lifter::AutoRaiseSwitch()
 		return true;
 	}
 }
-

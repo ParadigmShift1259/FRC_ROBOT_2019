@@ -34,8 +34,6 @@ protected:
 	DriverStation *m_driverstation;
 	Lifter *m_lifter;
 	Intake *m_intake;
-
-private:
 };
 
 

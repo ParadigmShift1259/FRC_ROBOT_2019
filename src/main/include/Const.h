@@ -113,5 +113,11 @@
 #define PCM_INTAKE_MODULE 0			// 0325
 #define PCM_INTAKE_SOLENOID1 1	// Will change in 2019
 #define PCM_INTAKE_SOLENOID2 2	// Will change in 2019
+#define PCM_INTAKE_SOLENOID3 3
+#define PCM_INTAKE_SOLENOID4 4
+#define PCM_PNEUMATIC_WAIT 0.05
+#define SPARK1 0
+#define SPARK2 1
+#define DIO_INTAKE_CARGOSENSOR 0
 
 #endif /* SRC_CONST_H_ */
