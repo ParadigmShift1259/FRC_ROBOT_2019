@@ -26,6 +26,7 @@ public:
 	void Stop();
     bool GetHeading(double &heading);
     void Dashboard();
+    void ZeroHeading();
 
 protected:
     PigeonIMU *m_pigeon1;

@@ -23,6 +23,8 @@ void Robot::RobotInit()
 
 	m_operatorinputs = new OperatorInputs();
 	m_drivetrain = new DriveTrain(m_operatorinputs);
+	m_gyro = new DualGyro(CAN_GYRO1, CAN_GYRO2);
+	m_drivepid = new DrivePID(m_drivetrain, m_gyro, m_operatorinputs);
 	m_lifter = new Lifter(m_driverstation, m_operatorinputs);
 	m_intake = new Intake(m_driverstation, m_operatorinputs, m_lifter);
 }
@@ -54,6 +56,7 @@ void Robot::AutonomousInit()
 	if (m_compressor != nullptr)
 		m_compressor->Stop();
 	m_drivetrain->Init(DriveTrain::DriveMode::kFollower);
+	m_gyro->Init();
 	m_lifter->Init();
 	m_intake->Init();
 }
@@ -62,6 +65,8 @@ void Robot::AutonomousInit()
 void Robot::AutonomousPeriodic()
 {
 	m_drivetrain->Loop();
+	m_gyro->Loop();
+	m_drivepid->Loop();
 	m_lifter->Loop();
 	m_intake->Loop();
 }
@@ -85,6 +90,7 @@ void Robot::TeleopInit()
 	if (m_compressor != nullptr)
 		m_compressor->Start();
 	m_drivetrain->Init(DriveTrain::DriveMode::kFollower);
+	m_gyro->Init();
 	m_lifter->Init();
 	m_intake->Init();
 }
@@ -93,6 +99,8 @@ void Robot::TeleopInit()
 void Robot::TeleopPeriodic()
 {
 	m_drivetrain->Loop();
+	m_gyro->Loop();
+	m_drivepid->Loop();
 	m_lifter->Loop();
 	m_intake->Loop();
 }
@@ -105,6 +113,8 @@ void Robot::DisabledInit()
 	if (m_compressor != nullptr)
 		m_compressor->Stop();
 	m_drivetrain->Stop();
+	m_gyro->Stop();
+	m_drivepid->Stop();
 	m_lifter->Stop();
 	m_intake->Stop();
 }
@@ -112,6 +122,8 @@ void Robot::DisabledInit()
 
 void Robot::DisabledPeriodic()
 {
+	m_gyro->Loop();
+	m_drivepid->Loop();
 }
 
 
