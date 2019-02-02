@@ -7,6 +7,7 @@
 
 #include "GyroDrive.h"
 #include "Const.h"
+#include <cmath>
 
 
 using namespace std;
@@ -125,8 +126,8 @@ bool GyroDrive::DriveStraight(double targetdistance, double autopower, bool rese
 		SmartDashboard::PutNumber("MiniDistance", m_distance);
 		m_drivepid->Init(m_pidstraight[0], m_pidstraight[1], m_pidstraight[2], DrivePID::Feedback::kGyro, reset);
 		m_drivepid->EnablePID();
-		if (reset)
-			m_drivepid->SetAbsoluteAngle(0);
+		//if (reset)		redundant remove after testing
+		//	m_drivepid->SetAbsoluteAngle(0);
 		m_timer.Reset();
 		m_drivestate = kDrive;
 		break;
@@ -167,6 +168,38 @@ bool GyroDrive::DriveAngle(double angle, bool reset)
 		m_drivepid->EnablePID();
 		m_drivepid->SetRelativeAngle(angle);
 		m_drivestate = kDrive;
+		break;
+
+	case kDrive:
+		m_drivepid->Drive(0, false);
+		if (m_drivepid->IsOnTarget(3))
+		{
+			m_drivepid->DisablePID();
+			m_drivestate = kInit;
+			return true;
+		}
+		break;
+	}
+	return false;
+}
+
+
+bool GyroDrive::DriveHeading(double heading)
+{
+	double gyroheading;
+
+	switch (m_drivestate)
+	{
+	case kInit:
+		if (m_gyro->GetHeading(gyroheading))
+		{
+			if (fabs(gyroheading) >= 360.0)
+				heading += 360.0 * trunc(gyroheading / 360.0);
+			m_drivepid->Init(m_pidangle[0], m_pidangle[1], m_pidangle[2], DrivePID::Feedback::kGyro, false);
+			m_drivepid->EnablePID();
+			m_drivepid->SetAbsoluteAngle(heading);
+			m_drivestate = kDrive;
+		}
 		break;
 
 	case kDrive:

@@ -36,6 +36,7 @@ public:
     void SetAnglePID(double P = -1, double I = -1, double D = -1);
     bool DriveStraight(double targetdistance, double autopower, bool reset = true);
     bool DriveAngle(double angle, bool reset = true);
+    bool DriveHeading(double heading);
 
 protected:
     OperatorInputs *m_inputs;

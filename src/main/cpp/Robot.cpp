@@ -89,6 +89,7 @@ void Robot::TeleopInit()
 	if (m_compressor != nullptr)
 		m_compressor->Start();
 	m_gyrodrive->Init();
+	m_autonomous->Init();
 //	m_lifter->Init();
 //	m_intake->Init();
 }
@@ -97,6 +98,7 @@ void Robot::TeleopInit()
 void Robot::TeleopPeriodic()
 {
 	m_gyrodrive->Loop();
+	m_autonomous->Loop();
 //	m_lifter->Loop();
 //	m_intake->CargoLoop();
 //	m_intake->HatchLoop();

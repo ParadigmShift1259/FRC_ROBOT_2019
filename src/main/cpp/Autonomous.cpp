@@ -38,6 +38,19 @@ void Autonomous::Loop()
     switch (m_stage)
     {
     case 0:
+        if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+            m_stage++;
+        break;
+    case 1:
+        if (m_gyrodrive->DriveAngle(90, false))
+            m_stage = 0;
+        break;
+    }
+
+    /*
+    switch (m_stage)
+    {
+    case 0:
         if (m_gyrodrive->DriveStraight(48, 0.5))
             m_stage++;
         break;
@@ -53,6 +66,7 @@ void Autonomous::Loop()
         m_gyrodrive->Drive(0, 0);
         break;
     }
+    */
 }
 
 
