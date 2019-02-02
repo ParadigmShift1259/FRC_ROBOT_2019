@@ -5,9 +5,7 @@
 #include <frc\WPILib.h>
 #include "Const.h"
 #include "OperatorInputs.h"
-#include "Drivetrain.h"
-#include "Gyro.h"
-#include "DrivePID.h"
+#include "GyroDrive.h"
 #include "Lifter.h"
 #include "Intake.h"
 
@@ -33,9 +31,7 @@ protected:
 	DriverStation *m_driverstation;
 	Compressor *m_compressor;
 	OperatorInputs *m_operatorinputs;
-	DriveTrain *m_drivetrain;
-	DualGyro *m_gyro;
-	DrivePID *m_drivepid;
+	GyroDrive *m_gyrodrive;
 	Lifter *m_lifter;
 	Intake *m_intake;
 };
