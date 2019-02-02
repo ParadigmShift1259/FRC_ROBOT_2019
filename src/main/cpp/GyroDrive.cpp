@@ -123,7 +123,7 @@ bool GyroDrive::DriveStraight(double targetdistance, double autopower, bool rese
 		// accelerates during this case for a duration specified by ACCEL_TIME, feeds into kMaintain
 		m_drivetrain->ResetDeltaDistance();
 		m_distance = m_drivetrain->GetMaxDeltaDistance();
-		SmartDashboard::PutNumber("MiniDistance", m_distance);
+		SmartDashboard::PutNumber("DriveStraight", m_distance);
 		m_drivepid->Init(m_pidstraight[0], m_pidstraight[1], m_pidstraight[2], DrivePID::Feedback::kGyro, reset);
 		m_drivepid->EnablePID();
 		//if (reset)		redundant remove after testing
@@ -136,7 +136,7 @@ bool GyroDrive::DriveStraight(double targetdistance, double autopower, bool rese
 		m_distance = 0;
 		if (m_timer.Get() > 0.1)
 			m_distance = m_drivetrain->GetMaxDeltaDistance();
-		SmartDashboard::PutNumber("MiniDistance", m_distance);
+		SmartDashboard::PutNumber("DriveStraight", m_distance);
 		modifier = (targetdistance > 0) ? 1 : -1;
 		m_distance *= modifier;
 		targetdistance *= modifier;
@@ -195,6 +195,7 @@ bool GyroDrive::DriveHeading(double heading)
 		{
 			if (fabs(gyroheading) >= 360.0)
 				heading += 360.0 * trunc(gyroheading / 360.0);
+			SmartDashboard::PutNumber("DriveHeading", heading);
 			m_drivepid->Init(m_pidangle[0], m_pidangle[1], m_pidangle[2], DrivePID::Feedback::kGyro, false);
 			m_drivepid->EnablePID();
 			m_drivepid->SetAbsoluteAngle(heading);

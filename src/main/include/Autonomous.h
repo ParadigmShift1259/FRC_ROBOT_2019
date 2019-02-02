@@ -33,6 +33,7 @@ protected:
     GyroDrive *m_gyrodrive;
 
     int m_stage;
+	double m_heading;
 };
 
 
