@@ -31,8 +31,11 @@ public:
 	void Loop();
 	void Stop();
     void Disabled();
+	void Drive(double x, double y, bool ramp = false);
     void SetStraightPID(double P = -1, double I = -1, double D = -1);
+    void SetAnglePID(double P = -1, double I = -1, double D = -1);
     bool DriveStraight(double targetdistance, double autopower, bool reset = true);
+    bool DriveAngle(double angle, bool reset = true);
 
 protected:
     OperatorInputs *m_inputs;
@@ -43,6 +46,7 @@ protected:
     Timer m_timer;
     DriveState m_drivestate;
     double m_pidstraight[3];
+    double m_pidangle[3];
     double m_distance;
 };
 

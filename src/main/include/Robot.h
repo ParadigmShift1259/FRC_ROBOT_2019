@@ -6,6 +6,7 @@
 #include "Const.h"
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
+#include "Autonomous.h"
 #include "Lifter.h"
 #include "Intake.h"
 
@@ -32,9 +33,9 @@ protected:
 	Compressor *m_compressor;
 	OperatorInputs *m_operatorinputs;
 	GyroDrive *m_gyrodrive;
+	Autonomous *m_autonomous;
 	Lifter *m_lifter;
 	Intake *m_intake;
-	bool m_done;
 };
 
 

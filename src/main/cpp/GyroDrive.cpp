@@ -23,6 +23,9 @@ GyroDrive::GyroDrive(OperatorInputs *inputs)
     m_pidstraight[0] = 0.0;
     m_pidstraight[1] = 0.0;
     m_pidstraight[2] = 0.0;
+    m_pidangle[0] = 0.0;
+    m_pidangle[1] = 0.0;
+    m_pidangle[2] = 0.0;
     m_distance = 0;
 }
 
@@ -50,6 +53,9 @@ void GyroDrive::Init()
     m_pidstraight[0] = 0.0;
     m_pidstraight[1] = 0.0;
     m_pidstraight[2] = 0.0;
+    m_pidangle[0] = 0.0;
+    m_pidangle[1] = 0.0;
+    m_pidangle[2] = 0.0;
     m_distance = 0;
 }
 
@@ -78,6 +84,12 @@ void GyroDrive::Disabled()
 }
 
 
+void GyroDrive::Drive(double x, double y, bool ramp)
+{
+    m_drivetrain->Drive(x, y, ramp);
+}
+
+
 void GyroDrive::SetStraightPID(double P, double I, double D)
 {
     if (P != -1)
@@ -86,6 +98,17 @@ void GyroDrive::SetStraightPID(double P, double I, double D)
         m_pidstraight[1] = I;
     if (D != -1)
         m_pidstraight[2] = D;
+}
+
+
+void GyroDrive::SetAnglePID(double P, double I, double D)
+{
+    if (P != -1)
+        m_pidangle[0] = P;
+    if (I != -1)
+        m_pidangle[1] = I;
+    if (D != -1)
+        m_pidangle[2] = D;
 }
 
 
@@ -128,6 +151,31 @@ bool GyroDrive::DriveStraight(double targetdistance, double autopower, bool rese
 		else
 		{
 			m_drivepid->Drive(-1 * autopower, true);
+		}
+		break;
+	}
+	return false;
+}
+
+
+bool GyroDrive::DriveAngle(double angle, bool reset)
+{
+	switch (m_drivestate)
+	{
+	case kInit:
+		m_drivepid->Init(m_pidangle[0], m_pidangle[1], m_pidangle[2], DrivePID::Feedback::kGyro, reset);
+		m_drivepid->EnablePID();
+		m_drivepid->SetRelativeAngle(angle);
+		m_drivestate = kDrive;
+		break;
+
+	case kDrive:
+		m_drivepid->Drive(0, false);
+		if (m_drivepid->IsOnTarget(3))
+		{
+			m_drivepid->DisablePID();
+			m_drivestate = kInit;
+			return true;
 		}
 		break;
 	}
