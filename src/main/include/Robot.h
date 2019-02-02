@@ -34,6 +34,7 @@ protected:
 	GyroDrive *m_gyrodrive;
 	Lifter *m_lifter;
 	Intake *m_intake;
+	bool m_done;
 };
 
 

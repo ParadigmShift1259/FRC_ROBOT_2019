@@ -25,6 +25,7 @@ void Robot::RobotInit()
 	m_gyrodrive = new GyroDrive(m_operatorinputs);
 	m_lifter = new Lifter(m_driverstation, m_operatorinputs);
 	m_intake = new Intake(m_driverstation, m_operatorinputs, m_lifter);
+	m_done = false;
 }
 
 
@@ -54,17 +55,20 @@ void Robot::AutonomousInit()
 	if (m_compressor != nullptr)
 		m_compressor->Stop();
 	m_gyrodrive->Init();
-	m_lifter->Init();
-	m_intake->Init();
+	m_gyrodrive->SetStraightPID(0.04, 0.0012, 0.07);
+//	m_lifter->Init();
+//	m_intake->Init();
 }
 
 
 void Robot::AutonomousPeriodic()
 {
 	m_gyrodrive->Loop();
-	m_lifter->Loop();
-	m_intake->CargoLoop();
-	m_intake->HatchLoop();
+	if (!m_done)
+		m_done = m_gyrodrive->DriveStraight(48, 0.5);
+//	m_lifter->Loop();
+//	m_intake->CargoLoop();
+//	m_intake->HatchLoop();
 }
 
 
@@ -86,17 +90,17 @@ void Robot::TeleopInit()
 	if (m_compressor != nullptr)
 		m_compressor->Start();
 	m_gyrodrive->Init();
-	m_lifter->Init();
-	m_intake->Init();
+//	m_lifter->Init();
+//	m_intake->Init();
 }
 
 
 void Robot::TeleopPeriodic()
 {
 	m_gyrodrive->Loop();
-	m_lifter->Loop();
-	m_intake->CargoLoop();
-	m_intake->HatchLoop();
+//	m_lifter->Loop();
+//	m_intake->CargoLoop();
+//	m_intake->HatchLoop();
 }
 
 
@@ -107,8 +111,8 @@ void Robot::DisabledInit()
 	if (m_compressor != nullptr)
 		m_compressor->Stop();
 	m_gyrodrive->Stop();
-	m_lifter->Stop();
-	m_intake->Stop();
+//	m_lifter->Stop();
+//	m_intake->Stop();
 }
 
 

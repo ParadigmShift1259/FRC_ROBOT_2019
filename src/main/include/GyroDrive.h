@@ -23,18 +23,27 @@ using namespace frc;
 class GyroDrive
 {
 public:
+    enum DriveState { kInit, kDrive };
+
 	GyroDrive(OperatorInputs *inputs);
 	~GyroDrive();
 	void Init();
 	void Loop();
 	void Stop();
     void Disabled();
+    void SetStraightPID(double P = -1, double I = -1, double D = -1);
+    bool DriveStraight(double targetdistance, double autopower, bool reset = true);
 
 protected:
     OperatorInputs *m_inputs;
     DriveTrain *m_drivetrain;
     DrivePID *m_drivepid;
     DualGyro *m_gyro;
+
+    Timer m_timer;
+    DriveState m_drivestate;
+    double m_pidstraight[3];
+    double m_distance;
 };
 
 
