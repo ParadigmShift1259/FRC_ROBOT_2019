@@ -36,6 +36,7 @@ protected:
     Solenoid *m_solenoid2;
     Solenoid *m_solenoid3;
     Solenoid *m_solenoid4;
+    Solenoid *m_solenoidarm;
     Spark *m_spark1;
     Spark *m_spark2;
     Spark *m_spark3;

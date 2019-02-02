@@ -22,6 +22,7 @@ Pneumatic::Pneumatic(DriverStation *ds, OperatorInputs *inputs)
     m_solenoid2 = nullptr;
     m_solenoid3 = nullptr;
     m_solenoid4 = nullptr;
+    m_solenoidarm = nullptr;
     m_spark1 = nullptr;
     m_spark2 = nullptr;
     m_spark3 = nullptr;
@@ -37,6 +38,7 @@ Pneumatic::Pneumatic(DriverStation *ds, OperatorInputs *inputs)
         m_solenoid2 = new Solenoid(PCM_MODULE, PCM_PNEUMATIC_SOLENOID2);
         m_solenoid3 = new Solenoid(PCM_MODULE, PCM_PNEUMATIC_SOLENOID3);
         m_solenoid4 = new Solenoid(PCM_MODULE, PCM_PNEUMATIC_SOLENOID4);
+        m_solenoidarm = new Solenoid(PCM_MODULE, PCM_PNEUMATIC_SOLENOIDARM);
     }
 
     m_spark1 = new Spark(0);
@@ -56,6 +58,8 @@ Pneumatic::~Pneumatic()
         delete m_solenoid3;
     if (m_solenoid4 != nullptr)
         delete m_solenoid4;
+    if (m_solenoidarm != nullptr)
+        delete m_solenoidarm;
     if (m_compressor != nullptr)
         delete m_compressor;
     if (m_spark1 != nullptr)
@@ -72,7 +76,7 @@ Pneumatic::~Pneumatic()
 
 void Pneumatic::Init()
 {
-    if ((m_solenoid1 == nullptr) || (m_solenoid2 == nullptr) || (m_solenoid3 == nullptr) || (m_solenoid4 == nullptr))
+    if ((m_solenoid1 == nullptr) || (m_solenoid2 == nullptr) || (m_solenoid3 == nullptr) || (m_solenoid4 == nullptr) || m_solenoidarm == nullptr)
         return;
     if (m_spark1 == nullptr || m_spark2 == nullptr || m_spark3 == nullptr || m_spark4 == nullptr)
         return;
@@ -84,6 +88,7 @@ void Pneumatic::Init()
     m_solenoid2 -> Set(false);
     m_solenoid3 -> Set(false);
     m_solenoid4 -> Set(false);
+    m_solenoidarm -> Set(false);
     m_spark1->Set(0);
     m_spark2->Set(0);
     m_spark3->Set(0);
@@ -98,31 +103,37 @@ void Pneumatic::Init()
 
 void Pneumatic::Loop()
 {
-    if ((m_solenoid1 == nullptr) || (m_solenoid2 == nullptr) || (m_solenoid3 == nullptr) || (m_solenoid4 == nullptr))
+    if ((m_solenoid1 == nullptr) || (m_solenoid2 == nullptr) || (m_solenoid3 == nullptr) || (m_solenoid4 == nullptr) || m_solenoidarm == nullptr)
         return;
     if (m_spark1 == nullptr || m_spark2 == nullptr || m_spark3 == nullptr || m_spark4 == nullptr)
         return;
 
-    if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
         m_waittime += 0.05;
     }
     else
-    if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && (m_waittime > 0.05))
+    if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && (m_waittime > 0.05))
     {
         m_waittime -= 0.05;
     }
 
-    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
         m_vacuumpow += 0.025;
     }
     else
-    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && (m_vacuumpow > 0.025))
+    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && (m_vacuumpow > 0.025))
     {
         m_vacuumpow -= 0.025;
     }
 
+    if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        m_solenoidarm->Set(true);
+    
+    if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        m_solenoidarm->Set(false);
+    
     switch (m_stage)
     {
     case kOpen:
@@ -136,7 +147,7 @@ void Pneumatic::Loop()
         m_spark2->Set(0);
         m_spark3->Set(0);
         m_spark4->Set(0);
-        if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+        if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_stage = kCapture;
         }
@@ -153,7 +164,7 @@ void Pneumatic::Loop()
         m_spark2->Set(m_vacuumpow);
         m_spark3->Set(m_vacuumpow);
         m_spark4->Set(m_vacuumpow);
-        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_solenoid1 -> Set(true);
             m_solenoid2 -> Set(true);
@@ -182,6 +193,7 @@ void Pneumatic::Loop()
         break;
     }
 
+
 	SmartDashboard::PutNumber("PN_Stage", m_stage);
 	SmartDashboard::PutNumber("PN_Waittime", m_waittime);
 	SmartDashboard::PutNumber("PN_VacuumPow", m_vacuumpow);
@@ -190,7 +202,7 @@ void Pneumatic::Loop()
 
 void Pneumatic::Stop()
 {
-    if ((m_solenoid1 == nullptr) || (m_solenoid2 == nullptr) || (m_solenoid3 == nullptr) || (m_solenoid4 == nullptr))
+    if ((m_solenoid1 == nullptr) || (m_solenoid2 == nullptr) || (m_solenoid3 == nullptr) || (m_solenoid4 == nullptr) || m_solenoidarm == nullptr)
         return;
     if (m_spark1 == nullptr || m_spark2 == nullptr || m_spark3 == nullptr || m_spark4 == nullptr)
         return;
@@ -199,6 +211,7 @@ void Pneumatic::Stop()
     m_solenoid2->Set(false);
     m_solenoid3->Set(false);
     m_solenoid4->Set(false);
+    m_solenoidarm->Set(false);
     m_spark1->Set(0);
     m_spark2->Set(0);
     m_spark3->Set(0);

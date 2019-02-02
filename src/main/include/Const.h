@@ -11,10 +11,10 @@
 
 //OperatorInputs
 //	Controllers
-#define INP_DUAL 0
+#define INP_DUAL 1
 #define INP_JOYSTICK -1
 #define INP_XBOX_1 0
-#define INP_XBOX_2 -1		// Production 1
+#define INP_XBOX_2 1		// Production 1
 //	Set to 1.0 or -1.0
 #define INVERT_Y_AXIS 1.0
 #define INVERT_X_AXIS -1.0
@@ -72,8 +72,8 @@
 #define RAMPING_RATE_PERIOD 0.10
 #define RAMPING_RATE_MIN 0.6
 #define RAMPING_RATE_MAX 4.0
-#define X_SCALING 1.0
-#define Y_SCALING 1.0
+#define X_SCALING 0.5
+#define Y_SCALING 0.5
 #define LEFT_MOTOR_SCALING 1
 #define RIGHT_MOTOR_SCALING 1
 #define LOWSPEED_MODIFIER_X 0.75
@@ -97,6 +97,7 @@
 #define PCM_PNEUMATIC_SOLENOID2 1
 #define PCM_PNEUMATIC_SOLENOID3 2
 #define PCM_PNEUMATIC_SOLENOID4 3
+#define PCM_PNEUMATIC_SOLENOIDARM 4
 
 
 // Gyro
