@@ -57,14 +57,16 @@
 #define INVERT_LEFT -1.0
 #define INVERT_RIGHT 1.0			// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
 // Talons ports
-#define CAN_LEFT_PORT_1 2			// 2
-#define CAN_LEFT_PORT_2 0			// 0
+#define CAN_LEFT_PORT_1 0
+#define CAN_LEFT_PORT_2 2
 #define CAN_LEFT_PORT_3 -1
-#define CAN_RIGHT_PORT_1 1			// 1
-#define CAN_RIGHT_PORT_2 3			// 3
+#define CAN_RIGHT_PORT_1 1
+#define CAN_RIGHT_PORT_2 3
 #define CAN_RIGHT_PORT_3 -1
+// Talon parameters
+#define MOTOR_CURRENT_LIMIT 20
 // Shifter
-#define PCM_SHIFT_PORT_LOW 0		// 0
+#define PCM_SHIFT_PORT_LOW 0
 #define PCM_SHIFT_MODULE 0
 #define CHILD_PROOF_SPEED 0.75
 #define FLIP_HIGH_GEAR true
@@ -79,14 +81,14 @@
 #define LOWSPEED_MODIFIER_X 0.75
 #define LOWSPEED_MODIFIER_Y 0.25
 // Encoders
-#define ENC_LEFT_1 FeedbackDevice::QuadEncoder
-//#define ENC_LEFT_2 FeedbackDevice::None
-#define ENC_RIGHT_1	FeedbackDevice::QuadEncoder
-//#define ENC_RIGHT_2	FeedbackDevice::None
-#define CODES_PER_REV 4416.0
-#define CODES_PER_INCH 234.979
+#define ENC_PRESENT_1 true
+#define ENC_TYPE_1 FeedbackDevice::QuadEncoder
+#define ENC_PRESENT_2 false
+#define ENC_TYPE_2 FeedbackDevice::QuadEncoder
+#define CODES_PER_REV 5400.0
+#define CODES_PER_INCH 286.479
 #define WHEEL_DIAMETER 6.0
-#define WHEEL_TRACK 22.50
+#define WHEEL_TRACK 23.50
 
 
 // Compressor
