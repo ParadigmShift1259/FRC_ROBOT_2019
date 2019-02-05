@@ -36,6 +36,24 @@ protected:
 	Autonomous *m_autonomous;
 	Lifter *m_lifter;
 	Intake *m_intake;
+
+private:
+	frc::LiveWindow& m_lw = *LiveWindow::GetInstance();
+	frc::SendableChooser<std::string> m_directionchooser;
+	const std::string kszNothing = "NO DIRECTION";
+	const std::string kszCargoLoading = "Loading";
+	const std::string kszCargoShip = "Cargo Ship";
+	const std::string kszRocketClose = "Rocket Close";
+	const std::string kszRocketMedium = "Rocket Medium";
+	const std::string kszRocketFar = "Rocket Far";
+	std::string m_directionSelected;
+
+	frc::SendableChooser<std::string> m_sidechooser;
+	const std::string kszLeft = "LEFT";
+	const std::string kszRight = "RIGHT";
+	std::string m_sideSelected;
+
+	void ReadChooser();
 };
 
 

@@ -14,8 +14,24 @@
 #include "Robot.h"
 
 
+Direction direction = kNothing;
+Side side = kRight;
+
+
 void Robot::RobotInit()
 {
+	m_directionchooser.AddDefault(kszNothing, kszNothing);
+	m_directionchooser.AddObject(kszCargoLoading, kszCargoLoading);
+	m_directionchooser.AddObject(kszCargoShip, kszCargoShip);
+	m_directionchooser.AddObject(kszRocketClose, kszRocketClose);
+	m_directionchooser.AddObject(kszRocketMedium, kszRocketMedium);
+	m_directionchooser.AddObject(kszRocketFar, kszRocketFar);
+	frc::SmartDashboard::PutData("Directions", &m_directionchooser);
+
+	m_sidechooser.AddDefault(kszLeft, kszLeft);
+	m_sidechooser.AddDefault(kszRight, kszRight);
+	frc::SmartDashboard::PutData("Side", &m_sidechooser);
+
 	m_driverstation = &DriverStation::GetInstance();
 	m_compressor = nullptr;
 	if (PCM_COMPRESSOR_SOLENOID != -1)
@@ -65,6 +81,7 @@ void Robot::AutonomousPeriodic()
 {
 	m_gyrodrive->Loop();
 	m_autonomous->Loop();
+	ReadChooser();
 //	m_lifter->Loop();
 //	m_intake->CargoLoop();
 //	m_intake->HatchLoop();
@@ -99,6 +116,7 @@ void Robot::TeleopPeriodic()
 {
 	m_gyrodrive->Loop();
 	m_autonomous->Loop();
+	ReadChooser();
 //	m_lifter->Loop();
 //	m_intake->CargoLoop();
 //	m_intake->HatchLoop();
@@ -121,6 +139,35 @@ void Robot::DisabledInit()
 void Robot::DisabledPeriodic()
 {
 	m_gyrodrive->Disabled();
+}
+
+
+void Robot::ReadChooser()
+{
+	m_directionSelected = m_directionchooser.GetSelected();
+
+	if (m_directionSelected == kszNothing)
+		direction = kNothing;
+	if (m_directionSelected == kszCargoLoading)
+		direction = kCargoLoading;
+	if (m_directionSelected == kszCargoShip)
+		direction = kCargoShip;
+	if (m_directionSelected == kszRocketClose)
+		direction = kRocketClose;
+	if (m_directionSelected == kszRocketMedium)
+		direction = kRocketMedium;
+	if (m_directionSelected == kszRocketFar)
+		direction = kRocketFar;
+
+	m_sideSelected = m_sidechooser.GetSelected();
+
+	if (m_sideSelected == kszLeft)
+		side = kLeft;
+	if (m_sideSelected == kszRight)
+		side = kRight;
+
+	SmartDashboard::PutNumber("Direction", direction);
+	SmartDashboard::PutNumber("Side", side);
 }
 
 

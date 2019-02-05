@@ -57,12 +57,12 @@
 #define INVERT_LEFT -1.0
 #define INVERT_RIGHT 1.0			// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
 // Talons ports
-#define CAN_LEFT_PORT_1 0
-#define CAN_LEFT_PORT_2 2
-#define CAN_LEFT_PORT_3 -1
-#define CAN_RIGHT_PORT_1 1
-#define CAN_RIGHT_PORT_2 3
-#define CAN_RIGHT_PORT_3 -1
+#define CAN_LEFT_PORT_1 2   // 0
+#define CAN_LEFT_PORT_2 0   // 2
+#define CAN_LEFT_PORT_3 -1  // -1
+#define CAN_RIGHT_PORT_1 1  // 1
+#define CAN_RIGHT_PORT_2 3  // 3
+#define CAN_RIGHT_PORT_3 -1 // -1
 // Talon parameters
 #define MOTOR_CURRENT_LIMIT 20
 // Shifter
@@ -128,5 +128,13 @@
 #define SPARK1 0
 #define SPARK2 1
 #define DIO_INTAKE_CARGOSENSOR 0
+
+
+// Autonomous
+enum Direction {kNothing, kCargoLoading, kCargoShip, kRocketClose, kRocketMedium, kRocketFar};
+extern Direction direction;
+
+enum Side {kLeft, kRight};
+extern Side side;
 
 #endif /* SRC_CONST_H_ */

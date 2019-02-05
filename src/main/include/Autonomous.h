@@ -34,6 +34,7 @@ protected:
 
     int m_stage;
 	double m_heading;
+	int m_side;
 };
 
 

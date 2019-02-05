@@ -18,6 +18,7 @@ Autonomous::Autonomous(OperatorInputs *inputs, GyroDrive *gyrodrive)
     m_gyrodrive = gyrodrive;
     m_stage = 0;
     m_heading = 0.0;
+    m_side = 1;
 }
 
 
@@ -32,6 +33,7 @@ void Autonomous::Init()
     m_gyrodrive->SetAnglePID(0.013, 0.0002, 0.045);
     m_stage = 0;
     m_heading = 0.0;
+    m_side = 1;
 }
 
 
@@ -105,6 +107,37 @@ void Autonomous::Loop()
         break;
     }
     */
+
+    if (side == kLeft)
+        m_side = -1;
+    if (side == kRight)
+        m_side = 1;
+
+   switch (direction)
+   {
+    case kNothing:
+        break;
+    case kCargoLoading:
+        if (m_gyrodrive->DriveHeading(180))
+            direction = kNothing;
+        break;
+    case kCargoShip:
+        if (m_gyrodrive->DriveHeading(90 * m_side))
+            direction = kNothing;
+        break;
+    case kRocketClose:
+        if (m_gyrodrive->DriveHeading(-30 * m_side))
+            direction = kNothing;
+        break;
+    case kRocketMedium:
+        if (m_gyrodrive->DriveHeading(-90 * m_side))
+            direction = kNothing;
+        break;
+    case kRocketFar:
+        if (m_gyrodrive->DriveHeading(-150 * m_side))
+            direction = kNothing;
+        break;
+   }
 }
 
 

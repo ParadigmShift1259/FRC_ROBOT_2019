@@ -78,7 +78,7 @@ void DualGyro::Loop()
     if (m_pigeon2 != nullptr)
     {
         m_pigeon2->GetAccumGyro(m_gyroval2);    
-        m_heading2 = m_pigeon1->GetFusedHeading();
+        m_heading2 = m_pigeon2->GetFusedHeading();
         m_gyrovalid2 = true;
     }
     Dashboard();
