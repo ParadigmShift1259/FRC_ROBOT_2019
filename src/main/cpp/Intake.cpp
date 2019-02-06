@@ -9,546 +9,375 @@
 #include "Const.h"
 
 
-Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DrivePID *drivepid)
+Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter)
 {
-	m_leftmotor = nullptr;
-	m_rightmotor = nullptr;
-	m_solenoid = nullptr;
-
+	m_motor = nullptr;
+	m_solenoidvac1 = nullptr;
+	m_solenoidvac2 = nullptr;
+	m_solenoidhatch1 = nullptr;
+	m_solenoidhatch2 = nullptr;
+	m_solenoidarm1 = nullptr;
+	m_solenoidarm2 = nullptr;
+    m_spark1 = nullptr;
+    m_spark2 = nullptr;
 	m_ds = ds;
 	m_inputs = inputs;
 	m_lifter = lifter;
-	m_drivepid = drivepid;
+	m_waittime = PCM_PNEUMATIC_WAIT;
 
-	if ((CAN_INTAKE_LEFTMOTOR != -1) && (CAN_INTAKE_RIGHTMOTOR != -1))
+	if (CAN_INTAKE_MOTOR != -1)
 	{
-		m_leftmotor = new WPI_TalonSRX(CAN_INTAKE_LEFTMOTOR);
-		m_leftmotor->Set(ControlMode::PercentOutput, 0);
-		m_leftmotor->SetNeutralMode(NeutralMode::Brake);
-
-		m_rightmotor = new WPI_TalonSRX(CAN_INTAKE_RIGHTMOTOR);
-		m_rightmotor->Set(ControlMode::PercentOutput, 0);
-		m_rightmotor->SetNeutralMode(NeutralMode::Brake);
+		m_motor = new WPI_TalonSRX(CAN_INTAKE_MOTOR);
+		m_motor->Set(ControlMode::PercentOutput, 0);
+		m_motor->SetNeutralMode(NeutralMode::Brake);
 	}
 
-	if (PCM_INTAKE_SOLENOID != -1)
-		m_solenoid = new Solenoid(PCM_INTAKE_MODULE, PCM_INTAKE_SOLENOID);
-
-	m_cubesensor = new DigitalInput(DIO_INTAKE_CUBESENSOR);
-
-	m_stage = kIngest;
-	m_ingestspeed = INT_INGESTSPEED;
-	m_ejectspeed = INT_EJECTHIGH;
-	m_allowingest = false;
-	m_autoingest = false;
-	m_visioning = kIdle;
-
-	m_nettable = NetworkTableInstance::GetDefault().GetTable("OpenCV");
-	m_counter = 0;
-	m_visionvalid = false;
-	m_auto = false;
-	m_finishingest = false;
+	if (PCM_INTAKE_SOLENOIDVAC1 != -1)
+		m_solenoidvac1 = new Solenoid(PCM_INTAKE_MODULE, PCM_INTAKE_SOLENOIDVAC1);
+	if (PCM_INTAKE_SOLENOIDVAC2 != -1)
+		m_solenoidvac2 = new Solenoid(PCM_INTAKE_MODULE, PCM_INTAKE_SOLENOIDVAC2);
+	if (PCM_INTAKE_SOLENOIDHATCH1 != -1)
+		m_solenoidhatch1 = new Solenoid(PCM_INTAKE_MODULE, PCM_INTAKE_SOLENOIDHATCH1);
+	if (PCM_INTAKE_SOLENOIDHATCH2 != -1)
+		m_solenoidhatch2 = new Solenoid(PCM_INTAKE_MODULE, PCM_INTAKE_SOLENOIDHATCH2);
+    if (PCM_INTAKE_SOLENOIDARM1 != -1)
+		m_solenoidarm1 = new Solenoid(PCM_INTAKE_MODULE, PCM_INTAKE_SOLENOIDARM1);
+	if (PCM_INTAKE_SOLENOIDARM2 != -1)
+		m_solenoidarm2 = new Solenoid(PCM_INTAKE_MODULE, PCM_INTAKE_SOLENOIDARM2);
+	
+	if (SPARK1 != -1)
+		m_spark1 = new Spark(SPARK1);
+	if (SPARK2 != -1)
+    	m_spark2 = new Spark(SPARK2);
+	
+	m_cargosensor = new DigitalInput(DIO_INTAKE_CARGOSENSOR);
+    m_onfloor = false;
+	m_mode = kModeAny;
+    m_hatchstage = kHatchIdle;
+    m_cargostage = kCargoIdle;
 }
 
 
 Intake::~Intake()
 {
-	if (m_leftmotor != nullptr)
-		delete m_leftmotor;
-	if (m_rightmotor != nullptr)
-		delete m_rightmotor;
-	if (m_solenoid != nullptr)
-		delete m_solenoid;
+	if (m_motor != nullptr)
+		delete m_motor;
+	if (m_solenoidvac1 != nullptr)
+        delete m_solenoidvac1;
+    if (m_solenoidvac2 != nullptr)
+        delete m_solenoidvac2;
+	if (m_solenoidhatch1 != nullptr)
+        delete m_solenoidhatch1;
+    if (m_solenoidhatch2 != nullptr)
+        delete m_solenoidhatch2;
+	if (m_solenoidarm1 != nullptr)
+        delete m_solenoidarm1;
+    if (m_solenoidarm2 != nullptr)
+        delete m_solenoidarm2;
+    if (m_spark1 != nullptr)
+        delete m_spark1;
+    if (m_spark2 != nullptr)
+        delete m_spark2;
 }
+
 
 
 void Intake::Init()
 {
-	if ((m_leftmotor == nullptr) || (m_rightmotor == nullptr) || (m_solenoid == nullptr))
+	if (m_motor == nullptr)
 		return;
-
+    if ((m_solenoidvac1 == nullptr) || (m_solenoidvac2 == nullptr))
+        return;
+    if ((m_solenoidhatch1 == nullptr) || (m_solenoidhatch2 == nullptr))
+        return;
+    if ((m_solenoidarm1 == nullptr) || (m_solenoidarm2 == nullptr))
+        return;
+    if (m_spark1 == nullptr || m_spark2 == nullptr)
+        return;
+	
 	DriverStation::ReportError("IntakeInit");
 
-	m_leftmotor->StopMotor();
-	m_rightmotor->StopMotor();
-	m_solenoid->Set(false);
-	if (DriverStation::GetInstance().IsAutonomous())
-	{
-		m_stage = kIngest;
-		m_auto = true;
-	}
-	if (!m_auto || (m_stage == kIngestWait))
-		m_stage = kBox;
-	m_timer.Reset();
-	m_timer.Start();
-	m_allowingest = false;
-	m_autoingest = false;
-	m_finishingest = false;
-	m_counter = 0;
-	m_visiontimer.Reset();
-	m_visiontimer.Start();
-	m_visionvalid = false;
-	m_auto = false;
+	m_motor->StopMotor();
+	m_solenoidvac1->Set(false);
+	m_solenoidvac2->Set(false);
+	m_solenoidhatch1->Set(false);
+	m_solenoidhatch2->Set(false);
+	m_solenoidarm1->Set(false);
+	m_solenoidarm2->Set(false);
+    m_spark1->Set(0);
+    m_spark2->Set(0);
 }
 
 
-void Intake::Loop()
+void Intake::HatchLoop()
 {
-	if ((m_leftmotor == nullptr) || (m_rightmotor == nullptr) || (m_solenoid == nullptr))
+    if ((m_solenoidvac1 == nullptr) || (m_solenoidvac2 == nullptr))
+        return;
+    if ((m_solenoidhatch1 == nullptr) || (m_solenoidhatch2 == nullptr))
+        return;
+    if (m_spark1 == nullptr || m_spark2 == nullptr)
+        return;
+    
+    if (m_mode == kModeCargo)
+    {
+        m_spark1->Set(0);
+        m_spark2->Set(0);
+        return;
+    }
+
+    switch (m_hatchstage)
+    {
+    case kHatchIdle:
+    	DriverStation::ReportError("kHatchIdle");
+
+		m_motor->StopMotor();
+        m_solenoidvac1->Set(false);
+        m_solenoidvac2->Set(false);
+        m_solenoidhatch1->Set(false);
+        m_solenoidhatch2->Set(false);
+        m_spark1->Set(0);
+        m_spark2->Set(0);
+        if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+        {
+            m_hatchstage = kHatchCapture;
+        }
+        break;
+
+    case kHatchCapture:
+    	DriverStation::ReportError("kHatchCapture");
+        m_mode = kModeCargo;
+
+		m_motor->StopMotor();
+        m_solenoidvac1->Set(false);
+        m_solenoidvac2->Set(false);
+        m_spark1->Set(0.3);
+        m_spark2->Set(0.3);
+
+        if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+            m_onfloor = true;
+
+        if (m_onfloor)
+        {
+            m_solenoidhatch1->Set(true);
+            m_solenoidhatch2->Set(true);
+        }
+        else
+        {
+            m_solenoidhatch1->Set(false);
+            m_solenoidhatch2->Set(false);
+        }
+
+        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+        {
+            m_solenoidvac1->Set(true);
+            m_solenoidvac2->Set(true);
+            m_timer.Reset();
+            m_hatchstage = kHatchRelease;
+        }
+        else
+        if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+        {
+            m_waittime += .05;
+        }
+        else
+        if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && (m_waittime > PCM_PNEUMATIC_WAIT))
+        {
+            m_waittime -= .05;
+        }
+        break;
+
+    case kHatchRelease:
+    	DriverStation::ReportError("kHatchRelease");
+
+        m_spark1->Set(0);
+        m_spark2->Set(0);
+        m_solenoidhatch1->Set(false);
+        m_solenoidhatch2->Set(false);
+
+        if (m_timer.Get() > m_waittime)
+        {
+			m_motor->StopMotor();
+            m_solenoidvac1->Set(false);
+            m_solenoidvac2->Set(false);
+            m_solenoidhatch1->Set(false);
+            m_solenoidhatch2->Set(false);
+            m_onfloor = false;
+            m_hatchstage = kHatchIdle;
+            m_mode = kModeAny;
+        }
+        break;
+    }
+
+	SmartDashboard::PutNumber("IN1_motor", m_motor->GetSelectedSensorVelocity(0));
+	SmartDashboard::PutNumber("IN2_solenoidvac1", m_solenoidvac1->Get());
+	SmartDashboard::PutNumber("IN3_solenoidvac2", m_solenoidvac2->Get());
+	SmartDashboard::PutNumber("IN4_solenoidhatch1", m_solenoidhatch1->Get());
+	SmartDashboard::PutNumber("IN5_solenoidhatch2", m_solenoidhatch2->Get());
+	SmartDashboard::PutNumber("IN6_solenoidarm1", m_solenoidarm1->Get());
+	SmartDashboard::PutNumber("IN7_solenoidarm2", m_solenoidarm2->Get());
+	SmartDashboard::PutNumber("IN8_mode", m_mode);
+	SmartDashboard::PutNumber("IN9_waittime", m_waittime);
+	SmartDashboard::PutNumber("IN10_cargosensor", m_cargosensor->Get());
+}
+
+
+void Intake::CargoLoop()
+{
+	if (m_motor == nullptr)
 		return;
+    if ((m_solenoidarm1 == nullptr) || (m_solenoidarm2 == nullptr))
+        return;
 
-	/// check A Button to record state of button toggle (used in kBox)
-	bool xboxabuttontoggle = m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL);
+    if (m_mode == kModeHatch)
+    {
+        m_motor->Set(0);
+        return;
+    }
 
-	bool xboxybuttontoggle = m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) * INP_DUAL;
+    switch (m_cargostage)
+    {
+    case kCargoIdle:
+    	DriverStation::ReportError("kCargoIdle");
 
-	switch (m_stage)
-	{
-	case kBottom:
-		m_leftmotor->StopMotor();				/// motors are off by default
-		m_rightmotor->StopMotor();
-		if (m_lifter->IsBottom())				/// check for lifter to be on the bottom
-		{
-			m_solenoid->Set(true);					/// open intake arms
-			m_stage = kIngest;						/// lifter is at bottom, go to ingest stage
-		}
-		break;
+		m_motor->StopMotor();
+        m_solenoidarm1->Set(false);
+        m_solenoidarm2->Set(false);
+        if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+        {
+            m_cargostage = kCargoIngest;
+        }
+        break;
 
-	case kIngest:
-		if (xboxabuttontoggle)
-			m_autoingest = true;
-		if (xboxybuttontoggle)
-		{
-			m_leftmotor->StopMotor();				/// motors are off by default
-			m_rightmotor->StopMotor();
+    case kCargoIngest:
+    	DriverStation::ReportError("kCargoIngest");
+        m_mode = kModeCargo;
+
+		m_motor->Set(1.0);
+        m_solenoidarm1->Set(true);
+        m_solenoidarm2->Set(true);
+
+        if (m_cargosensor->Get() /*or manual check?*/)
+        {
 			m_timer.Reset();
-			m_stage = kFix;
-		}
-		else
-		if (m_cubesensor->Get() || m_inputs->xBoxBackButton() || m_inputs->xBoxBackButton(OperatorInputs::kToggle, 1))
-		{
-			m_solenoid->Set(false);					/// we have cube, close intake arms
-			m_timer.Reset();
-			m_leftmotor->Set(m_ingestspeed);		/// turn on motors to ingest cube
-			m_rightmotor->Set(m_ingestspeed * -1.0);
-			m_allowingest = false;
-			m_autoingest = false;
+            m_cargostage = kCargoBall;
+        }
+        break;
 
-			m_visioning = kIdle;
-			m_stage = kIngestWait;					/// wait for box to ingest
-		}
-		else
-		if (m_autoingest /*m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold)*/)
-		{
-			m_solenoid->Set(true);					/// open intake arms
-			m_leftmotor->Set(m_ingestspeed);		/// turn on motors if button pressed
-			m_rightmotor->Set(m_ingestspeed * -1.0);
-		}
-		else
-		{
-			m_solenoid->Set(true);					/// open intake arms
-			m_leftmotor->StopMotor();				/// stop motors if button not pressed
-			m_rightmotor->StopMotor();
-		}
-		break;
+    case kCargoIngestWait:
+    	DriverStation::ReportError("kCargoIngestWait");
 
-	case kIngestWait:
-		if (m_timer.Get() > 0.2)		/// wait for 200ms
-		{
-			m_leftmotor->StopMotor();				/// ingestion is complete stop motors
-			m_rightmotor->StopMotor();
-			if (m_lifter->MoveSmidgeUp())
-				m_stage = kBox;							/// we have the box
-		}
-		else
-		{
-			m_leftmotor->Set(m_ingestspeed);		/// run the motors to ensure we have the box
-			m_rightmotor->Set(m_ingestspeed * -1.0);
-		}
-		break;
+        if (m_timer.Get() > 1.0)        // Magic # used for ingest
+        {
+            m_motor->StopMotor();
+            m_cargostage = kCargoBall;
+        }
+        else
+        {
+            m_motor->Set(1.0);
+        }
+        break;
+    
+    case kCargoBall:
+    	DriverStation::ReportError("kCargoBall");
 
-	case kBox:
-		if (xboxabuttontoggle)					/// allow ingest motor only when A button released and pressed again
-			m_allowingest = true;
-		if (m_allowingest && m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-		{
-			m_leftmotor->Set(m_ingestspeed);		/// turn on motors if button pressed
-			m_rightmotor->Set(m_ingestspeed * -1.0);
-		}
-		else
-		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-		{
-			m_ejectspeed = INT_EJECTLOW;			/// eject the box low speed mode
-			m_leftmotor->Set(m_ejectspeed);
-			m_rightmotor->Set(m_ejectspeed * -1.0);
-			m_timer.Reset();
-			m_stage = kEject;
-		}
-		else
-		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-		{
-			m_ejectspeed = INT_EJECTMED;			/// eject the box low speed mode
-			m_leftmotor->Set(m_ejectspeed);
-			m_rightmotor->Set(m_ejectspeed * -1.0);
-			m_timer.Reset();
-			m_stage = kEject;
-		}
-		else
-		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-		{
-			m_ejectspeed = INT_EJECTHIGH;
-			m_leftmotor->Set(m_ejectspeed);			/// eject the box
-			m_rightmotor->Set(m_ejectspeed * -1.0);
-			m_timer.Reset();
-			m_stage = kEject;
-		}
-		else
-		if (xboxybuttontoggle)
-		{
-			m_leftmotor->StopMotor();				/// motors are off by default
-			m_rightmotor->StopMotor();
-			m_timer.Reset();
-			m_stage = kFix;
-		}
-		else
-		{
-			m_leftmotor->StopMotor();				/// stop motors until button is pressed
-			m_rightmotor->StopMotor();
-		}
-		break;
+		m_motor->StopMotor();
+        if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+        {
+            m_motor->Set(1.0);
+        }
+        if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+        {
+            m_motor->Set(-1.0);
+            m_timer.Reset();
+            m_cargostage = kCargoEject;
+        }
+        break;
+    
+    case kCargoEject:
+        if (m_timer.Get() > 1.5)    // Magic # for eject
+        {
+            m_motor->StopMotor();
+            m_cargostage = kCargoIdle;
+            m_mode = kModeAny;
+        }
+        else
+        {
+            m_motor->Set(-1.0);
+        }
+        break;
 
-	case kFix:
-		if (m_timer.HasPeriodPassed(0.5))
-		{
-			m_leftmotor->StopMotor();
-			m_rightmotor->StopMotor();
-			m_solenoid->Set(true);					/// open arms
-			if (m_lifter->MoveBottom())
-				m_stage = kIngest;
-		}
-		else
-		{
-			m_lifter->MoveBottom();
-			m_leftmotor->Set(m_ingestspeed);
-			m_rightmotor->Set(m_ingestspeed);
-		}
-		break;
+    };
 
-	case kEject:
-		if (m_timer.HasPeriodPassed(0.5))
-		{
-			m_solenoid->Set(true);					/// open arms
-			m_leftmotor->StopMotor();
-			m_rightmotor->StopMotor();
-			m_ejectspeed = INT_EJECTHIGH;
-			m_stage = kIngest;						/// go back to beginning (reset loop)
-		}
-		else
-		{
-			m_leftmotor->Set(m_ejectspeed);			/// ensure the box is ejected
-			m_rightmotor->Set(m_ejectspeed * -1.0);
-		}
-		break;
-	};
-
-	SmartDashboard::PutNumber("IN1_leftmotor", m_leftmotor->GetSelectedSensorVelocity(0));
-	SmartDashboard::PutNumber("IN2_rightmotor", m_rightmotor->GetSelectedSensorVelocity(0));
-	SmartDashboard::PutNumber("IN3_solenoid", m_solenoid->Get());
-	SmartDashboard::PutNumber("IN4_cubesensor", m_cubesensor->Get());
-	SmartDashboard::PutNumber("IN5_stage", m_stage);
-}
-
-
-void Intake::VisionLoop()
-{
-	int counter = m_nettable->GetNumber("visioncounter", 0);
-	double angle = m_nettable->GetNumber("XOffAngle", 0) * -1;
-	double distance = m_nettable->GetNumber("Forward_Distance_Inch", 0);
-
-	double scale = distance / (96 * 2) + 0.25;
-	if (counter > m_counter)
-	{
-		m_counter = counter;
-		if (distance > 0.0)
-		{
-			m_visiontimer.Reset();
-			m_visionvalid = true;
-		}
-	}
-	else
-	if (m_visiontimer.Get() > 0.5)
-	{
-		m_visionvalid = false;
-	}
-
-	switch (m_visioning)
-	{
-	case kIdle:
-		if (m_visionvalid && m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-		{
-			m_drivepid->Init(m_pid[0], m_pid[1], m_pid[2], DrivePID::Feedback::kGyro);
-			m_drivepid->EnablePID();
-			m_autoingest = true;
-			m_visioning = kVision;
-		}
-		else
-			m_drivepid->DisablePID();
-		m_counter = 0;
-		break;
-
-	case kVision:
-		if (!m_visionvalid || m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-		{
-			m_drivepid->DisablePID();
-			m_autoingest = false;
-			m_visioning = kIdle;
-		}
-		else
-		if (m_lifter->IsBottom())
-		{
-			//double x = m_inputs->xBoxLeftX(0 * INP_DUAL) * 90;
-			//m_drivepid->SetAbsoluteAngle(x);
-
-			double y = /*m_inputs->xBoxLeftY(0 * INP_DUAL) * */-1*(scale > 1 ? 1 : scale);
-
-			m_drivepid->Drive(y, true);
-			m_drivepid->ResetGyro();
-			m_drivepid->SetAbsoluteAngle(angle);
-		}
-		else
-			m_lifter->MoveBottom();
-		break;
-	}
-	SmartDashboard::PutNumber("IN999_scale", scale);
-	SmartDashboard::PutNumber("IN6_visioncounter", counter);
-	SmartDashboard::PutNumber("IN7_visionangle", angle);
-	SmartDashboard::PutNumber("IN8_distance", distance);
-}
-
-
-void Intake::AutoLoop()
-{
-
-	switch (m_stage)
-	{
-	case kBottom:
-	case kIngest:
-		if (m_cubesensor->Get() || m_finishingest)
-		{
-			m_solenoid->Set(false);					/// we have cube, close intake arms
-			m_timer.Reset();
-			m_leftmotor->Set(m_ingestspeed);		/// turn on motors to ingest cube
-			m_rightmotor->Set(m_ingestspeed * -1.0);
-			m_allowingest = false;
-			m_autoingest = false;
-			m_visioning = kIdle;
-			m_stage = kIngestWait;					/// wait for box to ingest
-		}
-		else
-		if (m_autoingest)
-		{
-			m_solenoid->Set(true);					/// open intake arms
-			m_leftmotor->Set(m_ingestspeed);		/// turn on motors if button pressed
-			m_rightmotor->Set(m_ingestspeed * -1.0);
-		}
-		break;
-
-	case kIngestWait:
-		if (m_timer.Get() > 0.2)		/// wait for 200ms
-		{
-			m_leftmotor->StopMotor();				/// ingestion is complete stop motors
-			m_rightmotor->StopMotor();
-			if (m_lifter->MoveSmidgeUp())
-				m_stage = kIngestWait;				/// we have the box
-		}
-		else
-		{
-			m_leftmotor->Set(m_ingestspeed);		/// run the motors to ensure we have the box
-			m_rightmotor->Set(m_ingestspeed * -1.0);
-		}
-		break;
-
-	case kBox:
-	case kFix:
-		if ((automode == kAutoCenterSwitchLeft1) || (automode ==  kAutoCenterSwitchRight1) ||
-			(automode == kAutoCenterSwitchLeft3) || (automode == kAutoCenterSwitchRight3))
-			m_ejectspeed = INT_EJECTSWITCH;
-		else
-			m_ejectspeed = INT_EJECTSCALE;
-		m_leftmotor->Set(m_ejectspeed);
-		m_rightmotor->Set(m_ejectspeed * -1.0);
-		m_timer.Reset();
-		m_stage = kEject;
-		break;
-
-	case kEject:
-		if (m_timer.HasPeriodPassed(0.5))
-		{
-			m_solenoid->Set(true);					/// open arms
-			m_leftmotor->StopMotor();
-			m_rightmotor->StopMotor();
-			m_stage = kIngest;						/// go back to beginning (reset loop)
-			m_finishingest = false;
-			m_ejectspeed = INT_EJECTHIGH;
-		}
-		else
-		{
-			m_leftmotor->Set(m_ejectspeed);			/// ensure the box is ejected
-			m_rightmotor->Set(m_ejectspeed * -1.0);
-		}
-		break;
-	};
+	SmartDashboard::PutNumber("IN1_motor", m_motor->GetSelectedSensorVelocity(0));
+	SmartDashboard::PutNumber("IN3_solenoidvac1", m_solenoidvac1->Get());
+	SmartDashboard::PutNumber("IN4_solenoidvac2", m_solenoidvac2->Get());
+	SmartDashboard::PutNumber("IN3_solenoidhatch1", m_solenoidhatch1->Get());
+	SmartDashboard::PutNumber("IN4_solenoidhatch2", m_solenoidhatch2->Get());
+	SmartDashboard::PutNumber("IN3_solenoidarm1", m_solenoidarm1->Get());
+	SmartDashboard::PutNumber("IN4_solenoidarm2", m_solenoidarm2->Get());
+	SmartDashboard::PutNumber("IN7_mode", m_mode);
+	SmartDashboard::PutNumber("IN8_waittime", m_waittime);
+	SmartDashboard::PutNumber("IN9_cargosensor", m_cargosensor->Get());
 }
 
 
 void Intake::TestLoop()
 {
-	if ((m_leftmotor == nullptr) || (m_rightmotor == nullptr) || (m_solenoid == nullptr))
+	if (m_motor == nullptr)
 		return;
-
-	if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))		/// ingest cube - positive
-	{
-		m_leftmotor->Set(m_ingestspeed);
-		m_rightmotor->Set(m_ingestspeed * -1.0);
-	}
-	else
-	if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))		/// eject cube - negative
-	{
-		m_leftmotor->Set(m_ejectspeed);
-		m_rightmotor->Set(m_ejectspeed * -1.0);
-	}
-	else
-	{
-		m_leftmotor->StopMotor();
-		m_rightmotor->StopMotor();
-	}
-
-	if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))		/// open intake - deploy - true
-		m_solenoid->Set(true);
-	else
-	if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))		/// close intake - retract - false (default)
-		m_solenoid->Set(false);
-
-	SmartDashboard::PutNumber("IN1_leftmotor", m_leftmotor->GetSelectedSensorVelocity(0));
-	SmartDashboard::PutNumber("IN2_rightmotor", m_rightmotor->GetSelectedSensorVelocity(0));
-	SmartDashboard::PutNumber("IN3_solenoid", m_solenoid->Get());
-	SmartDashboard::PutNumber("IN4_cubesensor", m_cubesensor->Get());
-	SmartDashboard::PutNumber("IN5_stage", m_stage);
+    if ((m_solenoidvac1 == nullptr) || (m_solenoidvac2 == nullptr))
+        return;
+    if ((m_solenoidhatch1 == nullptr) || (m_solenoidhatch2 == nullptr))
+        return;
+    if ((m_solenoidarm1 == nullptr) || (m_solenoidarm2 == nullptr))
+        return;
+    if (m_spark1 == nullptr || m_spark2 == nullptr)
+        return;
+	
+	m_motor->StopMotor();
+	m_solenoidvac1->Set(false);
+	m_solenoidvac2->Set(false);
+	m_solenoidhatch1->Set(false);
+	m_solenoidhatch2->Set(false);
+	m_solenoidarm1->Set(false);
+	m_solenoidarm2->Set(false);
+	m_spark1->Set(0);
+	m_spark2->Set(0);
+	
+	SmartDashboard::PutNumber("IN1_motor", m_motor->GetSelectedSensorVelocity(0));
+	SmartDashboard::PutNumber("IN2_solenoidvac1", m_solenoidvac1->Get());
+	SmartDashboard::PutNumber("IN3_solenoidvac2", m_solenoidvac2->Get());
+	SmartDashboard::PutNumber("IN4_solenoidhatch1", m_solenoidhatch1->Get());
+	SmartDashboard::PutNumber("IN5_solenoidhatch2", m_solenoidhatch2->Get());
+	SmartDashboard::PutNumber("IN6_solenoidarm1", m_solenoidarm1->Get());
+	SmartDashboard::PutNumber("IN7_solenoidarm2", m_solenoidarm2->Get());
+	SmartDashboard::PutNumber("IN8_mode", m_mode);
+	SmartDashboard::PutNumber("IN9_waittime", m_waittime);
+	SmartDashboard::PutNumber("IN10_cargosensor", m_cargosensor->Get());
 }
 
 
 void Intake::Stop()
 {
-	if ((m_leftmotor == nullptr) || (m_rightmotor == nullptr) || (m_solenoid == nullptr))
+	if (m_motor == nullptr)
 		return;
+    if ((m_solenoidvac1 == nullptr) || (m_solenoidvac2 == nullptr))
+        return;
+    if ((m_solenoidhatch1 == nullptr) || (m_solenoidhatch2 == nullptr))
+        return;
+    if ((m_solenoidarm1 == nullptr) || (m_solenoidarm2 == nullptr))
+        return;
+    if (m_spark1 == nullptr || m_spark2 == nullptr)
+        return;
 
-	m_leftmotor->StopMotor();
-	m_rightmotor->StopMotor();
+	m_motor->StopMotor();
+	m_solenoidvac1->Set(false);
+	m_solenoidvac2->Set(false);
+	m_solenoidhatch1->Set(false);
+	m_solenoidhatch2->Set(false);
+	m_solenoidarm1->Set(false);
+	m_solenoidarm2->Set(false);
+	m_spark1->Set(0);
+	m_spark2->Set(0);
 	m_timer.Stop();
-	m_visiontimer.Stop();
-	m_visionvalid = false;
-}
-
-
-void Intake::ResetPosition()
-{
-	if ((m_leftmotor == nullptr) || (m_rightmotor == nullptr) || (m_solenoid == nullptr))
-		return;
-
-	m_leftmotor->SetSelectedSensorPosition(0, 0, 0);
-	m_rightmotor->SetSelectedSensorPosition(0, 0, 0);
-}
-
-
-void Intake::AutoEject()
-{
-	m_stage = kBox;
-}
-
-
-void Intake::AutoIngest()
-{
-	m_stage = kIngest;
-	m_autoingest = true;
-}
-
-
-bool Intake::IsVisioning()
-{
-	if (m_visioning == kIdle)
-		return false;
-	return true;
-}
-
-
-void Intake::AutoVision()
-{
-	int counter = m_nettable->GetNumber("visioncounter", 0);
-	double angle = m_nettable->GetNumber("XOffAngle", 0) * -1;
-	double distance = m_nettable->GetNumber("Forward_Distance_Inch", 0);
-
-	double scale = distance / (96 * 2) + 0.25;
-	if (counter > m_counter)
-	{
-		m_counter = counter;
-		if (distance > 0.0)
-		{
-			m_visiontimer.Reset();
-			m_visionvalid = true;
-		}
-	}
-	else
-	if (m_visiontimer.Get() > 0.5)
-	{
-		m_visionvalid = false;
-	}
-
-	switch (m_visioning)
-	{
-	case kIdle:
-		if (m_visionvalid && m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-		{
-			m_drivepid->Init(m_pid[0], m_pid[1], m_pid[2], DrivePID::Feedback::kGyro);
-			m_drivepid->EnablePID();
-			m_autoingest = true;
-			m_visioning = kVision;
-		}
-		else
-			m_drivepid->DisablePID();
-		m_counter = 0;
-		break;
-
-	case kVision:
-		if (!m_visionvalid || m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-		{
-			m_drivepid->DisablePID();
-			m_autoingest = false;
-			m_visioning = kIdle;
-		}
-		else
-		if (m_lifter->IsBottom())
-		{
-			//double x = m_inputs->xBoxLeftX(0 * INP_DUAL) * 90;
-			//m_drivepid->SetAbsoluteAngle(x);
-
-			double y = /*m_inputs->xBoxLeftY(0 * INP_DUAL) * */-1*(scale > 1 ? 1 : scale);
-
-			m_drivepid->Drive(y, true);
-			m_drivepid->ResetGyro();
-			m_drivepid->SetAbsoluteAngle(angle);
-		}
-		else
-			m_lifter->MoveBottom();
-		break;
-	}
-	SmartDashboard::PutNumber("IN999_scale", scale);
-	SmartDashboard::PutNumber("IN6_visioncounter", counter);
-	SmartDashboard::PutNumber("IN7_visionangle", angle);
-	SmartDashboard::PutNumber("IN8_distance", distance);
-}
-
-
-void Intake::FinishAutoIngest()
-{
-	m_finishingest = true;
 }

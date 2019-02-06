@@ -8,15 +8,15 @@
 
 #include <iostream>
 #include <string>
-#include <IterativeRobot.h>
-#include <LiveWindow/LiveWindow.h>
-#include <SmartDashboard/SendableChooser.h>
-#include <SmartDashboard/SmartDashboard.h>
+#include <frc/LiveWindow/LiveWindow.h>
+#include <frc/SmartDashboard/SendableChooser.h>
+#include <frc/SmartDashboard/SmartDashboard.h>
 #include "Robot.h"
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
 
 
+<<<<<<< HEAD
 AutoMode automode = kAutoStraight;
 
 
@@ -56,21 +56,20 @@ void Robot::RobotInit()
 	m_chooser.AddObject(kszAutoTestMode, kszAutoTestMode);
 	frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 
+=======
+void Robot::RobotInit()
+{
+>>>>>>> c07b734475960ac1ee09eb43745eec6d26161ac4
 	m_driverstation = &DriverStation::GetInstance();
 	m_compressor = nullptr;
 	if (PCM_COMPRESSOR_SOLENOID != -1)
 		m_compressor = new Compressor(PCM_COMPRESSOR_SOLENOID);
 
 	m_operatorinputs = new OperatorInputs();
-	m_drivetrain = new DriveTrain(m_operatorinputs);
-	m_drivepid = new DrivePID(m_drivetrain, m_operatorinputs);
+	m_gyrodrive = new GyroDrive(m_operatorinputs);
+	m_autonomous = new Autonomous(m_operatorinputs, m_gyrodrive);
 	m_lifter = new Lifter(m_driverstation, m_operatorinputs);
-	m_intake = new Intake(m_driverstation, m_operatorinputs, m_lifter, m_drivepid);
-	m_climber = new Climber(m_operatorinputs);
-	m_autonomous = new Autonomous(m_operatorinputs, m_drivetrain, m_drivepid, m_intake, m_lifter);
-	SmartDashboard::PutNumber("P", 0.01);
-	SmartDashboard::PutNumber("I", 0.0012);
-	SmartDashboard::PutNumber("D", 0.07);
+	m_intake = new Intake(m_driverstation, m_operatorinputs, m_lifter);
 }
 
 
@@ -99,22 +98,20 @@ void Robot::AutonomousInit()
 
 	if (m_compressor != nullptr)
 		m_compressor->Stop();
-	ReadChooser();
-	m_drivetrain->Init(DriveTrain::DriveMode::kFollower);
-	m_lifter->Init();
-	m_intake->Init();
-	m_climber->Init();
+	m_gyrodrive->Init();
 	m_autonomous->Init();
+//	m_lifter->Init();
+//	m_intake->Init();
 }
 
 
 void Robot::AutonomousPeriodic()
 {
-	m_lifter->Loop();
-	m_intake->AutoLoop();
-	m_climber->Loop();
+	m_gyrodrive->Loop();
 	m_autonomous->Loop();
-	m_drivepid->Loop();
+//	m_lifter->Loop();
+//	m_intake->CargoLoop();
+//	m_intake->HatchLoop();
 }
 
 
@@ -131,39 +128,24 @@ void Robot::TestPeriodic()
 
 void Robot::TeleopInit()
 {
-	if (automode == kAutoTest)
-		DriverStation::ReportError("TeleopInit Test Mode");
-	else
-		DriverStation::ReportError("TeleopInit");
+	DriverStation::ReportError("TeleopInit");
 
 	if (m_compressor != nullptr)
 		m_compressor->Start();
-	m_drivetrain->Init(DriveTrain::DriveMode::kFollower);
-	m_lifter->Init();
-	m_intake->Init();
-	m_climber->Init();
+	m_gyrodrive->Init();
+	m_autonomous->Init();
+//	m_lifter->Init();
+//	m_intake->Init();
 }
 
 
 void Robot::TeleopPeriodic()
 {
-	if (automode == kAutoTest)
-	{
-		m_lifter->TestLoop();
-		m_intake->TestLoop();
-		m_climber->TestLoop();
-		m_drivepid->Loop();
-	}
-	else
-	{
-		m_lifter->Loop();
-		m_intake->Loop();
-		m_intake->VisionLoop();
-		if (!m_intake->IsVisioning())
-			m_drivetrain->Loop();
-		m_climber->Loop();
-		m_drivepid->Loop();
-	}
+	m_gyrodrive->Loop();
+	m_autonomous->Loop();
+//	m_lifter->Loop();
+//	m_intake->CargoLoop();
+//	m_intake->HatchLoop();
 }
 
 
@@ -173,114 +155,20 @@ void Robot::DisabledInit()
 
 	if (m_compressor != nullptr)
 		m_compressor->Stop();
-	m_drivetrain->Stop();
-	m_lifter->Stop();
-	m_intake->Stop();
-	m_climber->Stop();
+	m_gyrodrive->Stop();
 	m_autonomous->Stop();
-	m_drivepid->Stop();
+//	m_lifter->Stop();
+//	m_intake->Stop();
 }
 
 
 void Robot::DisabledPeriodic()
 {
-	ReadChooser();
-	m_drivepid->Loop();
-	m_intake->VisionLoop();
+	m_gyrodrive->Disabled();
 }
 
 
-void Robot::ReadChooser()
+int main()
 {
-	m_autoSelected = m_chooser.GetSelected();
-	string gamedata = DriverStation::GetInstance().GetGameSpecificMessage();
-	if (gamedata.length() < 2)
-		gamedata = "   ";
-
-	automode = kAutoDefault;
-	if (m_autoSelected == kszAutoCenterSwitch1)
-	{
-		if (gamedata[0] == 'L')
-			automode = kAutoCenterSwitchLeft1;
-		else
-		if (gamedata[0] == 'R')
-			automode = kAutoCenterSwitchRight1;
-	}
-	else
-	if (m_autoSelected == kszAutoCenterSwitch3)
-	{
-		if (gamedata[0] == 'L')
-			automode = kAutoCenterSwitchLeft3;
-		else
-		if (gamedata[0] == 'R')
-			automode = kAutoCenterSwitchRight3;
-	}
-	else
-	if (m_autoSelected == kszAutoLeftScale2X)
-	{
-		if (gamedata [1] == 'L')
-			automode = kAutoLeftScaleLeft2;
-		else
-		if (gamedata [1] == 'R')
-			automode = kAutoLeftScaleRight1;
-			//automode = kAutoStraight;
-	}
-	else
-	if (m_autoSelected == kszAutoRightScale2X)
-	{
-		if (gamedata [1] == 'L')
-			automode = kAutoRightScaleLeft1;
-			//automode = kAutoStraight;
-		else
-		if (gamedata [1] == 'R')
-			automode = kAutoRightScaleRight2;
-	}
-	else
-	if (m_autoSelected == kszAutoLeftScale1P)
-	{
-		if (gamedata [1] == 'L')
-			//automode = kAutoLeftScaleLeft1;
-			automode = kAutoLeftScaleLeft2;
-		else
-		if (gamedata [1] == 'R')
-			//automode = kAutoLeftScaleRight1;
-			automode = kAutoStraight;
-	}
-	else
-	if (m_autoSelected == kszAutoRightScale1P)
-	{
-		if (gamedata [1] == 'L')
-			//automode = kAutoRightScaleLeft1;
-			automode = kAutoStraight;
-		else
-		if (gamedata [1] == 'R')
-			//automode = kAutoRightScaleRight1;
-			automode = kAutoRightScaleRight2;
-	}
-	else
-	if (m_autoSelected == kszAutoLeftSwitch)
-	{
-		if (gamedata[0] == 'L')
-			automode = kAutoStraight;
-		else
-		if (gamedata[0] == 'R')
-			automode = kAutoStraight;
-	}
-	else
-	if (m_autoSelected == kszAutoRightSwitch)
-	{
-		if (gamedata[0] == 'L')
-			automode = kAutoStraight;
-		else
-		if (gamedata[0] == 'R')
-			automode = kAutoStraight;
-	}
-	else
-	if (m_autoSelected == kszAutoTestMode)
-		automode = kAutoTest;
-
-	SmartDashboard::PutNumber("AU1_automode", automode);
+	return frc::StartRobot<Robot>();
 }
-
-
-START_ROBOT_CLASS(Robot)

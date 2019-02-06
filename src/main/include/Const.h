@@ -52,19 +52,21 @@
 
 
 // Drivetrain
-#define DT_DEFAULT_DIRECTION 1.0
+#define DT_DEFAULT_DIRECTION -1.0
 // Inverts
 #define INVERT_LEFT -1.0
 #define INVERT_RIGHT 1.0			// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
 // Talons ports
-#define CAN_LEFT_PORT_1 2			// 2
-#define CAN_LEFT_PORT_2 0			// 0
+#define CAN_LEFT_PORT_1 0
+#define CAN_LEFT_PORT_2 2
 #define CAN_LEFT_PORT_3 -1
-#define CAN_RIGHT_PORT_1 1			// 1
-#define CAN_RIGHT_PORT_2 3			// 3
+#define CAN_RIGHT_PORT_1 1
+#define CAN_RIGHT_PORT_2 3
 #define CAN_RIGHT_PORT_3 -1
+// Talon parameters
+#define MOTOR_CURRENT_LIMIT 20
 // Shifter
-#define PCM_SHIFT_PORT_LOW -1		// 0
+#define PCM_SHIFT_PORT_LOW 0
 #define PCM_SHIFT_MODULE 0
 #define CHILD_PROOF_SPEED 0.75
 #define FLIP_HIGH_GEAR true
@@ -79,18 +81,23 @@
 #define LOWSPEED_MODIFIER_X 0.75
 #define LOWSPEED_MODIFIER_Y 0.25
 // Encoders
-#define ENC_LEFT_1 FeedbackDevice::QuadEncoder
-//#define ENC_LEFT_2 FeedbackDevice::None
-#define ENC_RIGHT_1	FeedbackDevice::QuadEncoder
-//#define ENC_RIGHT_2	FeedbackDevice::None
-#define CODES_PER_REV 4416.0
-#define CODES_PER_INCH 234.979
+#define ENC_PRESENT_1 true
+#define ENC_TYPE_1 FeedbackDevice::QuadEncoder
+#define ENC_PRESENT_2 false
+#define ENC_TYPE_2 FeedbackDevice::QuadEncoder
+#define CODES_PER_REV 5400.0
+#define CODES_PER_INCH 286.479
 #define WHEEL_DIAMETER 6.0
-#define WHEEL_TRACK 22.50
+#define WHEEL_TRACK 23.50
 
 
 // Compressor
 #define PCM_COMPRESSOR_SOLENOID 0
+
+
+// Gyro
+#define CAN_GYRO1 0
+#define CAN_GYRO2 -1
 
 
 // Lifter
@@ -109,35 +116,17 @@
 
 
 // Intake
-#define CAN_INTAKE_LEFTMOTOR 4		// 4
-#define CAN_INTAKE_RIGHTMOTOR 5		// 5
-#define PCM_INTAKE_MODULE 0			// 0
-#define PCM_INTAKE_SOLENOID 1		// 1
-#define DIO_INTAKE_CUBESENSOR 0		// 0
-#define INT_INGESTSPEED 0.5
-#define INT_EJECTHIGH -0.5
-#define INT_EJECTMED -0.375
-#define INT_EJECTLOW -0.25
-#define INT_EJECTSWITCH -0.325
-#define INT_EJECTSCALE -0.5
-
-
-// Climber
-#define CAN_CLIMBER_MOTOR 7			// 7
-
-
-// Autonomous
-enum AutoMode {
-	kAutoDefault,
-	kAutoCenterSwitchLeft1, kAutoCenterSwitchRight1,
-	kAutoCenterSwitchLeft3, kAutoCenterSwitchRight3,
-	kAutoLeftScaleLeft2, kAutoLeftScaleLeft1, kAutoLeftScaleRight1,
-	kAutoRightScaleLeft1, kAutoRightScaleRight2, kAutoRightScaleRight1,
-	kAutoStraight,
-	kAutoTest
-};
-
-extern AutoMode automode;
-
+#define CAN_INTAKE_MOTOR 4		// Will change in 2019
+#define PCM_INTAKE_MODULE 0			// 0325
+#define PCM_INTAKE_SOLENOIDVAC1 1	// Will change in 2019
+#define PCM_INTAKE_SOLENOIDVAC2 2	// Will change in 2019
+#define PCM_INTAKE_SOLENOIDHATCH1 3
+#define PCM_INTAKE_SOLENOIDHATCH2 4
+#define PCM_INTAKE_SOLENOIDARM1 5
+#define PCM_INTAKE_SOLENOIDARM2 6
+#define PCM_PNEUMATIC_WAIT 0.05
+#define SPARK1 0
+#define SPARK2 1
+#define DIO_INTAKE_CARGOSENSOR 0
 
 #endif /* SRC_CONST_H_ */

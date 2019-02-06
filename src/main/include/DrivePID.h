@@ -13,6 +13,7 @@
 #include <Drivetrain.h>
 #include <frc\WPILib.h>
 #include "OperatorInputs.h"
+#include "Gyro.h"
 
 
 using namespace frc;
@@ -23,7 +24,7 @@ class DrivePID: public PIDSubsystem
 public:
 	enum Feedback { kDisabled, kEncoder, kGyro };
 
-	DrivePID(DriveTrain *drivetrain, OperatorInputs *inputs);
+	DrivePID(DriveTrain *drivetrain, DualGyro *gyro, OperatorInputs *inputs);
 	~DrivePID();
 	void Init(double p = 0, double i = 0, double d = 0, Feedback feedback = kDisabled, bool reset = true);
 	void Loop();
@@ -48,10 +49,10 @@ public:
 
 protected:
 	DriveTrain *m_drivetrain;
+	DualGyro *m_gyro;
 	OperatorInputs *m_inputs;
-	PigeonIMU *m_pigeon;
 	Feedback m_feedback;
-	double m_gyroval[3];
+	double m_heading;
 	double m_p;
 	double m_i;
 	double m_d;

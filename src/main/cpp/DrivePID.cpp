@@ -10,20 +10,18 @@
 #include "const.h"
 
 
-DrivePID::DrivePID(DriveTrain *drivetrain, OperatorInputs *inputs): PIDSubsystem(0.0, 0.0, 0.0)
+DrivePID::DrivePID(DriveTrain *drivetrain, DualGyro *gyro, OperatorInputs *inputs): PIDSubsystem(0.0, 0.0, 0.0)
 {
 	m_drivetrain = drivetrain;
+	m_gyro = gyro;
 	m_inputs = inputs;
 	m_p = 0.0;
 	m_i = 0.0;
 	m_d = 0.0;
 	m_y = 0.0;
 	m_ramp = false;
-	m_pigeon = new PigeonIMU(0);
 	m_feedback = kDisabled;
-	m_gyroval[0] = 0;
-	m_gyroval[1] = 0;
-	m_gyroval[2] = 0;
+	m_heading = 0;
 	m_ontarget = 0;
 }
 
@@ -45,7 +43,7 @@ void DrivePID::Init(double p, double i, double d, Feedback feedback, bool reset)
 	if (reset)
 	{
 		SetSetpoint(0);
-		m_pigeon->SetFusedHeading(0,0);
+		m_gyro->ZeroHeading();
 	}
 	if (feedback != kDisabled)
 		EnablePID();
@@ -55,11 +53,10 @@ void DrivePID::Init(double p, double i, double d, Feedback feedback, bool reset)
 
 void DrivePID::Loop()
 {
-	m_pigeon->GetAccumGyro(m_gyroval);
-	SmartDashboard::PutNumber("Gyrox", m_gyroval[0]);
-	SmartDashboard::PutNumber("Gyroy", m_gyroval[1]);
-	SmartDashboard::PutNumber("Gyroz", m_gyroval[2]);
-	SmartDashboard::PutNumber("GyroFused",m_pigeon->GetFusedHeading());
+	double heading;
+
+	if (m_gyro->GetHeading(heading))
+		m_heading = heading;
 }
 
 
@@ -67,11 +64,9 @@ void DrivePID::Stop()
 {
 	DisablePID();
 	SetAbsoluteAngle(0);
-	m_gyroval[0] = 0;
-	m_gyroval[1] = 0;
-	m_gyroval[2] = 0;
-	m_pigeon->SetFusedHeading(0,0);
-	m_pigeon->SetYaw(0,0);
+	m_heading = 0;
+	m_gyro->ZeroHeading();
+	//m_pigeon->SetYaw(0,0);
 }
 
 
@@ -129,7 +124,7 @@ void DrivePID::SetAbsoluteAngle(double angle)
 
 void DrivePID::ResetGyro()
 {
-	m_pigeon->SetFusedHeading(0, 0);
+	m_gyro->ZeroHeading();
 }
 
 
@@ -196,7 +191,10 @@ double DrivePID::ReturnPIDInput()
 	else
 	if (m_feedback == kGyro)
 	{
-		double retval = m_pigeon->GetFusedHeading();
+		double retval;
+
+		if (!m_gyro->GetHeading(retval))
+			retval = 0;
 
 		SmartDashboard::PutNumber("ReturnPIDInput(Gyro)", retval);
 
