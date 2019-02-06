@@ -190,10 +190,6 @@ void DriveTrain::Init(DriveMode mode)
 			m_lefttalon1->EnableCurrentLimit(true);
 		}
 		m_lefttalon1->SetNeutralMode(NeutralMode::Brake);
-		// configure talon current limiting
-		m_lefttalon1->ConfigPeakCurrentLimit(0);
-		m_lefttalon1->ConfigContinuousCurrentLimit(25);
-		m_lefttalon1->EnableCurrentLimit(true);
 	}
 
 	if (m_righttalon1 != nullptr)
@@ -212,10 +208,6 @@ void DriveTrain::Init(DriveMode mode)
 			m_righttalon1->EnableCurrentLimit(true);
 		}
 		m_righttalon1->SetNeutralMode(NeutralMode::Brake);
-		// configure talon current limiting
-		m_righttalon1->ConfigPeakCurrentLimit(0);
-		m_righttalon1->ConfigContinuousCurrentLimit(25);
-		m_righttalon1->EnableCurrentLimit(true);
 	}
 
 	if (m_lefttalon2 != nullptr)
@@ -264,10 +256,6 @@ void DriveTrain::Init(DriveMode mode)
 			m_lefttalon3->EnableCurrentLimit(true);
 		}
 		m_lefttalon3->SetNeutralMode(NeutralMode::Brake);
-		// configure talon current limiting
-		m_lefttalon3->ConfigPeakCurrentLimit(0);
-		m_lefttalon3->ConfigContinuousCurrentLimit(25);
-		m_lefttalon3->EnableCurrentLimit(true);
 	}
 
 	if (m_righttalon3 != nullptr)
@@ -280,10 +268,6 @@ void DriveTrain::Init(DriveMode mode)
 			m_righttalon3->EnableCurrentLimit(true);
 		}
 		m_righttalon3->SetNeutralMode(NeutralMode::Brake);
-		// configure talon current limiting
-		m_righttalon3->ConfigPeakCurrentLimit(0);
-		m_righttalon3->ConfigContinuousCurrentLimit(25);
-		m_righttalon3->EnableCurrentLimit(true);
 	}
 
 	m_leftpow = 0;

@@ -17,7 +17,6 @@ using namespace frc;
 class Robot : public TimedRobot
 {
 public:
-	static void VisionThread();
 	virtual void RobotInit();
 	virtual void RobotPeriodic();
 	virtual void AutonomousInit();

@@ -12,8 +12,6 @@
 #include <frc/SmartDashboard/SendableChooser.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include "Robot.h"
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/core/core.hpp>
 
 
 void Robot::RobotInit()
