@@ -238,16 +238,6 @@ void DriveTrain::Init(DriveMode mode)
 
 	if (m_righttalon2 != nullptr)
 	{
-<<<<<<< HEAD
-		//m_righttalon2->ConfigSelectedFeedbackSensor(ENC_RIGHT_2, 0, 0);
-		//m_righttalon2->SetSensorPhase(false);
-		m_righttalon2->SetNeutralMode(NeutralMode::Brake);
-		// configure talon current limiting
-		m_righttalon2->ConfigPeakCurrentLimit(0);
-		m_righttalon2->ConfigContinuousCurrentLimit(25);
-		m_righttalon2->EnableCurrentLimit(true);
-}
-=======
 		// configure encoder
 		if (ENC_PRESENT_2)
 		{
@@ -263,7 +253,6 @@ void DriveTrain::Init(DriveMode mode)
 		}
 		m_righttalon2->SetNeutralMode(NeutralMode::Brake);
 	}
->>>>>>> c07b734475960ac1ee09eb43745eec6d26161ac4
 
 	if (m_lefttalon3 != nullptr)
 	{
