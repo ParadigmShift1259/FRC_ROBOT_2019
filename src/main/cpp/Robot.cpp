@@ -16,50 +16,8 @@
 #include <opencv2/core/core.hpp>
 
 
-<<<<<<< HEAD
-AutoMode automode = kAutoStraight;
-
-
-void Robot::VisionThread()
-{
-	cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture();
-	camera.SetResolution(320, 240);
-	cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
-	cs::CvSource outputStreamStd = CameraServer::GetInstance()->PutVideo("Gray", 320, 240);
-	cv::Mat source;
-	cv::Mat output;
-	while (true) 
-	{
-		cvSink.GrabFrame(source);
-		//cvtColor(source, output, cv::COLOR_BGR2GRAY);
-		outputStreamStd.PutFrame(source);
-		Wait(0.02);
-	}
-}
-
-
 void Robot::RobotInit()
 {
-//	thread visionThread(VisionThread);
-//	visionThread.detach();
-	
-	m_chooser.AddDefault(kszAutoDefault, kszAutoDefault);
-	m_chooser.AddObject(kszAutoCenterSwitch1, kszAutoCenterSwitch1);
-	m_chooser.AddObject(kszAutoCenterSwitch3, kszAutoCenterSwitch3);
-	m_chooser.AddObject(kszAutoLeftScale2X, kszAutoLeftScale2X);
-	m_chooser.AddObject(kszAutoRightScale2X, kszAutoRightScale2X);
-	m_chooser.AddObject(kszAutoRightScale2X, kszAutoRightScale2X);
-	m_chooser.AddObject(kszAutoLeftScale1P, kszAutoLeftScale1P);
-	m_chooser.AddObject(kszAutoRightScale1P, kszAutoRightScale1P);
-	m_chooser.AddObject(kszAutoLeftSwitch, kszAutoLeftSwitch);
-	m_chooser.AddObject(kszAutoRightSwitch, kszAutoRightSwitch);
-	m_chooser.AddObject(kszAutoTestMode, kszAutoTestMode);
-	frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
-
-=======
-void Robot::RobotInit()
-{
->>>>>>> c07b734475960ac1ee09eb43745eec6d26161ac4
 	m_driverstation = &DriverStation::GetInstance();
 	m_compressor = nullptr;
 	if (PCM_COMPRESSOR_SOLENOID != -1)
