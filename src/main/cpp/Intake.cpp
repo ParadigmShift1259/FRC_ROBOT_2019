@@ -9,7 +9,7 @@
 #include "Const.h"
 
 
-Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter)
+Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DrivePID *drivepid)
 {
 	m_motor = nullptr;
 	m_solenoidvac1 = nullptr;
@@ -24,6 +24,10 @@ Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter)
 	m_inputs = inputs;
 	m_lifter = lifter;
 	m_waittime = PCM_PNEUMATIC_WAIT;
+    m_drivepid = drivepid;
+    m_counter = 0;
+    m_visionvalid = false;
+    m_nettable = NetworkTableInstance::GetDefault().GetTable("OpenCV");
 
 	if (CAN_INTAKE_MOTOR != -1)
 	{
@@ -106,6 +110,9 @@ void Intake::Init()
 	m_solenoidarm2->Set(false);
     m_spark1->Set(0);
     m_spark2->Set(0);
+    m_visiontimer.Reset();
+    m_visiontimer.Start();
+    m_visionvalid = false;
 }
 
 
@@ -380,4 +387,66 @@ void Intake::Stop()
 	m_spark1->Set(0);
 	m_spark2->Set(0);
 	m_timer.Stop();
+}
+
+
+void Intake::VisionLoop()
+{
+	int counter = m_nettable->GetNumber("visioncounter", 0);
+	double angle = m_nettable->GetNumber("XOffAngle", 0) * -1;
+	double distance = m_nettable->GetNumber("Forward_Distance_Inch", 0);
+
+	double scale = distance / (96 * 2) + 0.25;
+	if (counter > m_counter)
+	{
+		m_counter = counter;
+		if (distance > 0.0)
+		{
+			m_visiontimer.Reset();
+			m_visionvalid = true;
+		}
+	}
+	else
+	if (m_visiontimer.Get() > 0.5)
+	{
+		m_visionvalid = false;
+	}
+
+	switch (m_visioning)
+	{
+	case kIdle:
+		if (m_visionvalid && m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		{
+			m_drivepid->Init(m_pid[0], m_pid[1], m_pid[2], DrivePID::Feedback::kGyro);
+			m_drivepid->EnablePID();
+			m_visioning = kVision;
+		}
+		else
+			m_drivepid->DisablePID();
+		m_counter = 0;
+		break;
+
+	case kVision:
+		if (!m_visionvalid || m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		{
+			m_drivepid->DisablePID();
+			m_visioning = kIdle;
+		}
+		else
+		{
+			//double x = m_inputs->xBoxLeftX(0 * INP_DUAL) * 90;
+			//m_drivepid->SetAbsoluteAngle(x);
+
+			double y = /*m_inputs->xBoxLeftY(0 * INP_DUAL) * */-1*(scale > 1 ? 1 : scale);
+
+			m_drivepid->Drive(y, true);
+			m_drivepid->ResetGyro(); // Watch out! Conflicts with drive heading
+			m_drivepid->SetAbsoluteAngle(angle);
+		}
+		break;
+	}
+	SmartDashboard::PutNumber("IN999_scale", scale);
+	SmartDashboard::PutNumber("IN6_visioncounter", counter);
+	SmartDashboard::PutNumber("IN7_visionangle", angle);
+	SmartDashboard::PutNumber("IN8_distance", distance);
 }

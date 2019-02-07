@@ -15,6 +15,9 @@
 #include <ctre\Phoenix.h>
 #include "OperatorInputs.h"
 #include "Lifter.h"
+#include "DrivePID.h"
+#include <networktables\NetworkTable.h>
+#include <networktables\NetworkTableInstance.h>
 
 
 using namespace frc;
@@ -27,19 +30,22 @@ public:
 	enum IntakeMode {kModeHatch, kModeCargo, kModeAny};
 	enum HatchStage {kHatchIdle, kHatchCapture, kHatchRelease};
 	enum CargoStage {kCargoIdle, kCargoIngest, kCargoIngestWait, kCargoBall, kCargoEject};
+	enum Vision {kIdle, kVision};
 
-	Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter);
+	Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DrivePID *drivepid);
 	virtual ~Intake();
 	void Init();
 	void HatchLoop();
 	void CargoLoop();
 	void TestLoop();
 	void Stop();
+	void VisionLoop();
 
 protected:
 	DriverStation *m_ds;
 	OperatorInputs *m_inputs;
 	Lifter *m_lifter;
+	DrivePID *m_drivepid;
 	WPI_TalonSRX *m_motor;
 	Solenoid *m_solenoidvac1;
 	Solenoid *m_solenoidvac2;
@@ -56,6 +62,12 @@ protected:
 	double m_waittime;
     DigitalInput *m_cargosensor;
 	bool m_onfloor;
+	Vision m_visioning;
+	double m_pid[3] = {0.015, 0.0, 0.0};
+	shared_ptr<NetworkTable> m_nettable;
+	Timer m_visiontimer;
+	bool m_visionvalid;
+	int m_counter;
 };
 
 

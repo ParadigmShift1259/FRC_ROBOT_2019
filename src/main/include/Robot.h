@@ -36,6 +36,7 @@ protected:
 	Autonomous *m_autonomous;
 	Lifter *m_lifter;
 	Intake *m_intake;
+	DrivePID *m_drivepid;
 };
 
 

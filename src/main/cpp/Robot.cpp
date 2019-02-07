@@ -25,7 +25,7 @@ void Robot::RobotInit()
 	m_gyrodrive = new GyroDrive(m_operatorinputs);
 	m_autonomous = new Autonomous(m_operatorinputs, m_gyrodrive);
 	m_lifter = new Lifter(m_driverstation, m_operatorinputs);
-	m_intake = new Intake(m_driverstation, m_operatorinputs, m_lifter);
+	m_intake = new Intake(m_driverstation, m_operatorinputs, m_lifter, m_drivepid);
 }
 
 
@@ -99,6 +99,7 @@ void Robot::TeleopPeriodic()
 {
 	m_gyrodrive->Loop();
 	m_autonomous->Loop();
+	m_intake->VisionLoop();
 //	m_lifter->Loop();
 //	m_intake->CargoLoop();
 //	m_intake->HatchLoop();
