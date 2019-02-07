@@ -52,7 +52,7 @@
 
 
 // Drivetrain
-#define DT_DEFAULT_DIRECTION -1.0
+#define DT_DEFAULT_DIRECTION 1.0
 // Inverts
 #define INVERT_LEFT -1.0
 #define INVERT_RIGHT 1.0			// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
