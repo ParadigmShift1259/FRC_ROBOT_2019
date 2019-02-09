@@ -30,6 +30,9 @@ DualGyro::DualGyro(int gyro1, int gyro2)
     m_gyrovalid1 = false;
     m_gyrovalid2 = false;
 
+    m_previousheading1 = 0.0;
+    m_previousheading2 = 0.0;
+
     if (gyro1 != -1)
         m_pigeon1 = new PigeonIMU(gyro1);
 
@@ -70,6 +73,7 @@ void DualGyro::Loop()
 {
     if (m_pigeon1 != nullptr)
     {
+        m_previousheading1 = m_heading1;
         m_pigeon1->GetAccumGyro(m_gyroval1);
         m_heading1 = m_pigeon1->GetFusedHeading();
         m_gyrovalid1 = true;
@@ -77,6 +81,7 @@ void DualGyro::Loop()
 
     if (m_pigeon2 != nullptr)
     {
+        m_previousheading2 = m_heading2;
         m_pigeon2->GetAccumGyro(m_gyroval2);    
         m_heading2 = m_pigeon2->GetFusedHeading();
         m_gyrovalid2 = true;
@@ -106,6 +111,21 @@ bool DualGyro::GetHeading(double &heading)
     return false;
 }
 
+bool DualGyro::GetDirection(double &direction)
+{
+    if (m_gyrovalid1)
+    {
+        direction = (m_heading1 - m_previousheading1 > 0) ? 1 : -1;
+        return true;
+    }
+    else
+    if (m_gyrovalid2)
+    {
+        direction = (m_heading2 - m_previousheading2 > 0) ? 1 : -1;
+        return true;
+    }
+    return false;
+}
 
 void DualGyro::Dashboard()
 {

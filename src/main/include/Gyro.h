@@ -25,6 +25,7 @@ public:
 	void Loop();
 	void Stop();
     bool GetHeading(double &heading);
+    bool GetDirection(double &direction);
     void Dashboard();
     void ZeroHeading();
 
@@ -35,6 +36,8 @@ protected:
     double m_gyroval2[3];
     double m_heading1;
     double m_heading2;
+    double m_previousheading1;
+    double m_previousheading2;
     bool m_gyrovalid1;
     bool m_gyrovalid2;
 };
