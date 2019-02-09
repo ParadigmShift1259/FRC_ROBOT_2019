@@ -92,7 +92,7 @@
 
 
 // Compressor
-#define PCM_COMPRESSOR_SOLENOID 0
+#define PCM_COMPRESSOR_SOLENOID -1
 
 
 // Gyro
@@ -103,7 +103,7 @@
 // Lifter
 #define CAN_LIFTER_MOTOR -1			// 6
 #define PCM_LIFTER_MODULE 0			// 0
-#define PCM_LIFTER_SOLENOID 2		// 2
+#define PCM_LIFTER_SOLENOID -1		// 2
 #define LIF_RAISESPEED -1.0
 #define LIF_LOWERSPEED 1.0			// 0.75
 #define LIF_LIFTERMAX 24800			// 24050
