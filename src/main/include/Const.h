@@ -57,11 +57,11 @@
 #define INVERT_LEFT -1.0
 #define INVERT_RIGHT 1.0			// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
 // Talons ports
-#define CAN_LEFT_PORT_1 2			// 2
-#define CAN_LEFT_PORT_2 0			// 0
+#define CAN_LEFT_PORT_1 3       // Changed for test bot 2/9/19
+#define CAN_LEFT_PORT_2 4
 #define CAN_LEFT_PORT_3 -1
-#define CAN_RIGHT_PORT_1 1			// 1
-#define CAN_RIGHT_PORT_2 3			// 3
+#define CAN_RIGHT_PORT_1 1
+#define CAN_RIGHT_PORT_2 2
 #define CAN_RIGHT_PORT_3 -1
 // Shifter
 #define PCM_SHIFT_PORT_LOW -1		// 0
@@ -94,7 +94,7 @@
 
 
 // Gyro
-#define CAN_GYRO1 0
+#define CAN_GYRO1 -1
 #define CAN_GYRO2 -1
 
 
@@ -114,17 +114,18 @@
 
 
 // Intake
-#define CAN_INTAKE_MOTOR 4		// Will change in 2019
 #define PCM_INTAKE_MODULE 0			// 0325
-#define PCM_INTAKE_SOLENOIDVAC1 1	// Will change in 2019
-#define PCM_INTAKE_SOLENOIDVAC2 2	// Will change in 2019
-#define PCM_INTAKE_SOLENOIDHATCH1 3
-#define PCM_INTAKE_SOLENOIDHATCH2 4
-#define PCM_INTAKE_SOLENOIDARM1 5
-#define PCM_INTAKE_SOLENOIDARM2 6
+#define PCM_INTAKE_SOLENOIDVAC1 0	// Will change in 2019
+#define PCM_INTAKE_SOLENOIDVAC2 1	// Will change in 2019
+#define PCM_INTAKE_SOLENOIDVAC3 2
+#define PCM_INTAKE_SOLENOIDVAC4 3
+#define SPARK_VAC 0
+#define PCM_INTAKE_SOLENOIDHATCH 4
+#define PCM_INTAKE_SOLENOIDARM1 0   // -1
+#define PCM_INTAKE_SOLENOIDARM2 0   // -1
+#define SPARK_CARGO 4
 #define PCM_PNEUMATIC_WAIT 0.05
-#define SPARK1 0
-#define SPARK2 1
-#define DIO_INTAKE_CARGOSENSOR 0
+
+#define DIO_INTAKE_CARGOSENSOR 0    // -1
 
 #endif /* SRC_CONST_H_ */

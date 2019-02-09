@@ -40,22 +40,29 @@ protected:
 	DriverStation *m_ds;
 	OperatorInputs *m_inputs;
 	Lifter *m_lifter;
-	WPI_TalonSRX *m_motor;
-	Solenoid *m_solenoidvac1;
+
+	Solenoid *m_solenoidvac1;		// Used for vaccuum
 	Solenoid *m_solenoidvac2;
-    Solenoid *m_solenoidhatch1;
-    Solenoid *m_solenoidhatch2;
-	Solenoid *m_solenoidarm1;
+	Solenoid *m_solenoidvac3;
+	Solenoid *m_solenoidvac4;
+	Spark *m_sparkvac;
+
+    Solenoid *m_solenoidhatch;		// Used for ground hatch intake
+
+	Solenoid *m_solenoidarm1;		// Used for moving entire intake
 	Solenoid *m_solenoidarm2;
-    Spark *m_spark1;
-    Spark *m_spark2;
+
+    Spark *m_sparkcargo;			// Used for intaking ball
+	DigitalInput *m_cargosensor;
+	
 	IntakeMode m_mode;
 	HatchStage m_hatchstage;
 	CargoStage m_cargostage;
 	Timer m_timer;
 	double m_waittime;
-    DigitalInput *m_cargosensor;
 	bool m_onfloor;
+
+
 };
 
 
