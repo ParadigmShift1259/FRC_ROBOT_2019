@@ -52,7 +52,7 @@
 
 
 // Drivetrain
-#define DT_DEFAULT_DIRECTION 1.0
+#define DT_DEFAULT_DIRECTION -1.0
 // Inverts
 #define INVERT_LEFT -1.0
 #define INVERT_RIGHT 1.0			// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
@@ -99,7 +99,7 @@
 
 
 // Lifter
-#define CAN_LIFTER_MOTOR 6			// 6
+#define CAN_LIFTER_MOTOR -1			// 6
 #define PCM_LIFTER_MODULE 0			// 0
 #define PCM_LIFTER_SOLENOID 2		// 2
 #define LIF_RAISESPEED -1.0
@@ -115,14 +115,14 @@
 
 // Intake
 #define PCM_INTAKE_MODULE 0			// 0325
-#define PCM_INTAKE_SOLENOIDVAC1 0	// Will change in 2019
-#define PCM_INTAKE_SOLENOIDVAC2 1	// Will change in 2019
+#define PCM_INTAKE_SOLENOIDVAC1 0	
+#define PCM_INTAKE_SOLENOIDVAC2 1	
 #define PCM_INTAKE_SOLENOIDVAC3 2
 #define PCM_INTAKE_SOLENOIDVAC4 3
 #define SPARK_VAC 0
 #define PCM_INTAKE_SOLENOIDHATCH 4
-#define PCM_INTAKE_SOLENOIDARM1 0   // -1
-#define PCM_INTAKE_SOLENOIDARM2 0   // -1
+#define PCM_INTAKE_SOLENOIDARM1 5   // -1
+#define PCM_INTAKE_SOLENOIDARM2 6  // -1
 #define SPARK_CARGO 4
 #define PCM_PNEUMATIC_WAIT 0.05
 
