@@ -118,7 +118,28 @@ void DrivePID::SetRelativeAngle(double angle)
 
 void DrivePID::SetAbsoluteAngle(double angle)
 {
-	SetSetpoint(angle);
+	double trueAngle = angle;
+	double heading;
+	double direction;
+	int rotations;
+	double delta;
+
+	if (fabs(angle) != angle)
+		trueAngle += 360;
+	rotations = trunc(m_gyro->GetHeading(heading) / 360);
+	trueAngle += 360 * rotations;
+	delta = m_gyro->GetHeading(heading) - trueAngle;
+	if (fabs(delta) > 181)
+		delta -= 360 * (fabs(delta) / delta);
+	else if (fabs(delta) == 180)
+	{
+		if (m_gyro->GetDirection(direction) == -1)
+			delta += 180;
+		else
+			delta -= 180;
+	}
+	SetSetpoint(m_gyro->GetHeading(heading) - delta);
+
 }
 
 
