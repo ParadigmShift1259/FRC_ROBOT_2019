@@ -391,6 +391,7 @@ void DriveTrain::Drive(double x, double y, bool ramp)
 		else
 			maxpower = (abs(x) / abs(yd)) + 1;
 	}
+
 	if (!ramp)
 	{
 		m_previousx = x;	//rampInput(previousX, joyStickX, BatteryRampingMin, BatteryRampingMax);
@@ -409,11 +410,13 @@ void DriveTrain::Drive(double x, double y, bool ramp)
 		m_leftpow = m_previousy * Y_SCALING - (m_previousx * X_SCALING);
 		m_rightpow = m_previousy * Y_SCALING + (m_previousx * X_SCALING);
 	}
+
 	if (m_lefttalon1 != nullptr)
 	{
 		m_leftspeed = m_lefttalon1->GetSelectedSensorVelocity(0);
 		m_leftposition = m_lefttalon1->GetSelectedSensorPosition(0);
 	}
+	
 	if (m_righttalon1 != nullptr)
 	{
 		m_rightspeed = m_righttalon1->GetSelectedSensorVelocity(0);
@@ -479,6 +482,8 @@ void DriveTrain::Drive(double x, double y, bool ramp)
 	SmartDashboard::PutNumber("DT17_rightspeed", m_rightspeed);
 	SmartDashboard::PutNumber("DT18_leftposition", m_leftposition);
 	SmartDashboard::PutNumber("DT19_rightposition", m_rightposition);
+	SmartDashboard::PutNumber("DT20_mode", m_mode);
+	SmartDashboard::PutNumber("DT21_maxpower", maxpower);
 }
 
 

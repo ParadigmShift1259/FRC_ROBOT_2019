@@ -394,7 +394,7 @@ void Intake::VisionLoop()
 {
 	int counter = m_nettable->GetNumber("visioncounter", 0);
 	double angle = m_nettable->GetNumber("XOffAngle", 0) * -1;
-	double distance = m_nettable->GetNumber("Forward_Distance_Inch", 0);
+	double distance = 0.01;//m_nettable->GetNumber("Forward_Distance_Inch", 0);
 
 	double scale = distance / (96 * 2) + 0.25;
 	if (counter > m_counter)
