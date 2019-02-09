@@ -57,6 +57,7 @@ Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter)
     m_hatchstage = kHatchIdle;
     m_cargostage = kCargoIdle;
 	m_waittime = PCM_PNEUMATIC_WAIT;
+    m_vacuumpow = PCM_PNEUMATIC_POW;
     m_onfloor = false;
 }
 
@@ -114,9 +115,12 @@ void Intake::Init()
 	//m_solenoidarm2->Set(false);
 
 	m_sparkcargo->Set(0);
+
     m_mode = kModeAny;
     m_cargostage = kCargoIdle;
     m_hatchstage = kHatchIdle;
+    m_timer.Reset();
+    m_timer.Start();
 }
 
 
@@ -153,12 +157,12 @@ void Intake::HatchLoop()
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_hatchstage = kHatchCapture;
+            m_mode = kModeHatch;
         }
         break;
 
     case kHatchCapture:
     	DriverStation::ReportError("kHatchCapture");
-        m_mode = kModeCargo;
 
         m_solenoidvac1->Set(false);
         m_solenoidvac2->Set(false);
@@ -167,7 +171,7 @@ void Intake::HatchLoop()
         m_sparkvac->Set(0.550);
 
         if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-            m_onfloor = true;
+            m_onfloor = !m_onfloor;
 
         if (m_onfloor)
         {
@@ -186,16 +190,6 @@ void Intake::HatchLoop()
             m_solenoidvac4->Set(true);
             m_timer.Reset();
             m_hatchstage = kHatchRelease;
-        }
-        else
-        if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        {
-            m_waittime += .05;
-        }
-        else
-        if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && (m_waittime > PCM_PNEUMATIC_WAIT))
-        {
-            m_waittime -= .05;
         }
         break;
 
@@ -220,6 +214,40 @@ void Intake::HatchLoop()
             m_mode = kModeAny;
         }
         break;
+    }
+
+    if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    {
+        m_waittime += 0.05;
+    }
+    else
+    if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && (m_waittime > 0.05))
+    {
+        m_waittime -= 0.05;
+    }
+
+    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    {
+        m_vacuumpow += 0.025;
+    }
+    else
+    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && (m_vacuumpow > 0.025))
+    {
+        m_vacuumpow -= 0.025;
+    }
+
+    if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    {
+        m_solenoidvac1->Set(false);
+        m_solenoidvac2->Set(false);
+        m_solenoidvac3->Set(false);
+        m_solenoidvac4->Set(false);
+        m_sparkvac->Set(0);
+
+        m_solenoidhatch->Set(false);
+        
+        m_hatchstage = kHatchIdle;
+        m_mode = kModeAny;
     }
 
 	SmartDashboard::PutNumber("IN0_solenoidvac1", m_solenoidvac1->Get());
@@ -285,7 +313,7 @@ void Intake::CargoLoop()
 
         if (/*m_cargosensor->Get() or manual check?*/ m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
-			m_timer.Reset();
+			m_timer.Reset();            
             m_cargostage = kCargoBall;
         }
         break;
@@ -297,6 +325,7 @@ void Intake::CargoLoop()
         {
             m_sparkcargo->Set(0);
             m_cargostage = kCargoBall;
+            m_timer.Reset();
         }
         else
         {
@@ -307,12 +336,15 @@ void Intake::CargoLoop()
     case kCargoBall:
     	DriverStation::ReportError("kCargoBall");
 
-		m_sparkcargo->Set(0);
-
-        if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
         {
             m_sparkcargo->Set(0.7);
         }
+        else
+        {
+            m_sparkcargo->Set(0);
+        }
+
         if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_sparkcargo->Set(-1.0);
@@ -327,7 +359,7 @@ void Intake::CargoLoop()
         break;
     
     case kCargoEject:
-        if (m_timer.Get() > 2)    // Magic # for eject
+        if (m_timer.Get() > 1.5)    // Magic # for eject
         {
             m_sparkcargo->Set(0);
             //m_solenoidarm1->Set(false);
@@ -342,6 +374,15 @@ void Intake::CargoLoop()
         break;
 
     };
+
+    if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    {
+        m_sparkcargo->Set(0);
+        //m_solenoidarm1->Set(false);
+        //m_solenoidarm2->Set(false);
+        m_cargostage = kCargoIdle;
+        m_mode = kModeAny;
+    }
 
 	SmartDashboard::PutNumber("IN0_solenoidvac1", m_solenoidvac1->Get());
 	SmartDashboard::PutNumber("IN1_solenoidvac2", m_solenoidvac2->Get());

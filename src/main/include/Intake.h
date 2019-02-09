@@ -60,6 +60,7 @@ protected:
 	CargoStage m_cargostage;
 	Timer m_timer;
 	double m_waittime;
+	double m_vacuumpow;
 	bool m_onfloor;
 
 
