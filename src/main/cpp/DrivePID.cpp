@@ -118,27 +118,79 @@ void DrivePID::SetRelativeAngle(double angle)
 
 void DrivePID::SetAbsoluteAngle(double angle)
 {
-	double trueAngle = angle;
+	/*
 	double heading;
 	double direction;
 	int rotations;
 	double delta;
 
-	if (fabs(angle) != angle)
-		trueAngle += 360;
+	// Setting the angle to positive 0 - 360
+	if (angle < 0)
+		angle += 360;
+
+	// Scaling the angle (adding 360s) until it reaches heading zone
 	rotations = trunc(m_gyro->GetHeading(heading) / 360);
-	trueAngle += 360 * rotations;
-	delta = m_gyro->GetHeading(heading) - trueAngle;
-	if (fabs(delta) > 181)
-		delta -= 360 * (fabs(delta) / delta);
-	else if (fabs(delta) == 180)
+	angle += 360 * rotations;
+
+	// Find change in angle
+	delta = m_gyro->GetHeading(heading) - angle;
+
+	/* Constain the angle based on value
+		1. If greater than 180 on either side, add 360 in the opposite value of sign
+		2. If somewhere around 180, find previous direction of travel and go that direction
+		3. If less than 180, pass the change in angle through 
+	
+	if (delta > 180)
+		delta -= 360;
+	else if (delta < -180)
+		delta += 360;
+
+	if (fabs(delta) >= 170 && fabs(delta) <= 180)
 	{
-		if (m_gyro->GetDirection(direction) == -1)
-			delta += 180;
-		else
-			delta -= 180;
+		if (m_gyro->GetDirection(direction) != fabs(delta) / delta)
+			if (m_gyro->GetDirection(direction) == 1)
+				delta += 360;
+			else if (m_gyro->GetDirection(direction) == -1)
+				delta -= 360;
 	}
-	SetSetpoint(m_gyro->GetHeading(heading) - delta);
+	this->SetSetpoint(m_gyro->GetHeading(heading) - delta);
+	*/
+	double heading;
+	double heading1;
+	double direction;
+	int rotations;
+	double delta;
+	bool success = m_gyro->GetHeading(heading1);
+
+	heading = heading1 - 360 * truncf(heading1 / 360);
+
+	if (angle < 0)
+		angle += 360;
+
+	// Find change in angle
+	delta = angle - heading;
+	
+	if (delta > 180)
+		delta -= 360;
+	else if (delta < -180)
+		delta += 360;
+	/*
+	if (fabs(delta) >= 170 && fabs(delta) <= 180)
+	{
+		if (m_gyro->GetDirection(direction) != fabs(delta) / delta)
+			if (m_gyro->GetDirection(direction) == 1)
+				delta += 360;
+			else if (m_gyro->GetDirection(direction) == -1)
+				delta -= 360;
+	}
+	*/
+	this->SetSetpointRelative(delta);
+	
+
+	SmartDashboard::PutNumber("DI1_angle", angle);
+	SmartDashboard::PutNumber("DI2_direction", direction);
+	SmartDashboard::PutNumber("DI3_delta", delta);
+	SmartDashboard::PutNumber("DI4_heading", heading);
 
 }
 

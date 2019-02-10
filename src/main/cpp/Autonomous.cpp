@@ -30,7 +30,7 @@ Autonomous::~Autonomous()
 void Autonomous::Init()
 {
 	m_gyrodrive->SetStraightPID(0.04, 0.0012, 0.07);
-    m_gyrodrive->SetAnglePID(0.013, 0.0002, 0.045);
+    m_gyrodrive->SetAnglePID(0.01, 0.002, 0.045);
     m_stage = 0;
     m_heading = 0.0;
     m_side = 1;
