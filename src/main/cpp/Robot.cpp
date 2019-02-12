@@ -56,8 +56,8 @@ void Robot::AutonomousInit()
 		m_compressor->Stop();
 	m_gyrodrive->Init();
 	m_autonomous->Init();
+	m_intake->Init();
 //	m_lifter->Init();
-//	m_intake->Init();
 }
 
 
@@ -65,9 +65,10 @@ void Robot::AutonomousPeriodic()
 {
 	m_gyrodrive->Loop();
 	m_autonomous->Loop();
-//	m_lifter->Loop();
-//	m_intake->CargoLoop();
-//	m_intake->HatchLoop();
+	m_intake->CargoLoop();
+	m_intake->HatchLoop();
+//	m_lifter->LoopAuto();
+//	m_lifter->LoopManual();
 }
 
 
@@ -90,8 +91,8 @@ void Robot::TeleopInit()
 		m_compressor->Start();
 	m_gyrodrive->Init();
 	m_autonomous->Init();
-//	m_lifter->Init();
 	m_intake->Init();
+//	m_lifter->Init();
 }
 
 
@@ -99,10 +100,11 @@ void Robot::TeleopPeriodic()
 {
 	m_gyrodrive->Loop();
 	m_autonomous->Loop();
-	m_intake->VisionLoop();
-//	m_lifter->Loop();
+//	m_intake->VisionLoop();
 	m_intake->CargoLoop();
 	m_intake->HatchLoop();
+//	m_lifter->LoopAuto();
+//	m_lifter->LoopManual();
 }
 
 
@@ -114,8 +116,8 @@ void Robot::DisabledInit()
 		m_compressor->Stop();
 	m_gyrodrive->Stop();
 	m_autonomous->Stop();
-//	m_lifter->Stop();
 	m_intake->Stop();
+//	m_lifter->Stop();
 }
 
 

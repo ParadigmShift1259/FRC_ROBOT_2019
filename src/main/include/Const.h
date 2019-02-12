@@ -113,6 +113,11 @@
 #define LIF_LIFTERSWITCH (LIF_LIFTERMAX * 0.4)			/// ~40% of max height
 #define LIF_LIFTERSTART (LIF_LIFTERMAX * 0.47)			/// ~50% of max height
 #define LIF_LIFTERMAXSPD (LIF_LIFTERMAX	* 0.95)			/// 5% of max height
+#define LIF_HATCH_MID 0
+#define LIF_HATCH_HIGH 0
+#define LIF_CARGO_LOW 0
+#define LIF_CARGO_MID 0
+#define LIF_CARGO_HIGH 0
 
 
 // Intake

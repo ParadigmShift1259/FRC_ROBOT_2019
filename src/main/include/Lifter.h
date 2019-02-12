@@ -25,15 +25,14 @@ public:
 	Lifter(DriverStation *ds, OperatorInputs *inputs);
 	virtual ~Lifter();
 	void Init();
-	void Loop();
+	void LoopManual();
+	void LoopAuto();
 	void TestLoop();
 	void Stop();
 	void ResetPosition();
-	bool IsBottom();
-	bool MoveSmidgeUp();
-	bool MoveBottom();
-	bool AutoRaise();
-	bool AutoRaiseSwitch();
+	void SetHatchLevels();
+	void SetCargoLevels();
+	bool GoToPosition(int designatedposition);
 
 protected:
 	DriverStation *m_ds;
@@ -47,6 +46,10 @@ protected:
 	double m_liftermax;
 	double m_lifterminspd;
 	double m_liftermaxspd;
+
+	int m_lowposition;
+	int m_mediumposition;
+	int m_highposition;
 };
 
 

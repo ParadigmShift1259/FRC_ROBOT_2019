@@ -35,18 +35,19 @@ public:
 	Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DrivePID *drivepid);
 	virtual ~Intake();
 	void Init();
+	void LoopType();
 	void HatchLoop();
 	void CargoLoop();
 	void TestLoop();
 	void Stop();
-	void VisionLoop();
+	//void VisionLoop();
 
 protected:
 	DriverStation *m_ds;
 	OperatorInputs *m_inputs;
 	Lifter *m_lifter;
 
-	Solenoid *m_solenoidvac1;		// Used for vaccuum
+	Solenoid *m_solenoidvac1;		// Used for vaccuum -> decided
 	Solenoid *m_solenoidvac2;
 	Solenoid *m_solenoidvac3;
 	Solenoid *m_solenoidvac4;
@@ -54,8 +55,7 @@ protected:
 
     Solenoid *m_solenoidhatch;		// Used for ground hatch intake
 
-	Solenoid *m_solenoidarm1;		// Used for moving entire intake
-	Solenoid *m_solenoidarm2;
+	Solenoid *m_solenoidarm;		// Used for moving entire intake
 
     Spark *m_sparkcargo;			// Used for intaking ball
 	DigitalInput *m_cargosensor;
