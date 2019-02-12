@@ -25,19 +25,6 @@ Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DriveP
 
 	m_solenoidarm1 = nullptr;
 	m_solenoidarm2 = nullptr;
-<<<<<<< HEAD
-    m_spark1 = nullptr;
-    m_spark2 = nullptr;
-	m_ds = ds;
-	m_inputs = inputs;
-	m_lifter = lifter;
-	m_waittime = PCM_PNEUMATIC_WAIT;
-    m_drivepid = drivepid;
-    m_counter = 0;
-    m_visionvalid = false;
-    m_nettable = NetworkTableInstance::GetDefault().GetTable("OpenCV");
-=======
->>>>>>> 9094d925fae5f9fc350ed92280ca6c5a2b5cff44
 
     m_sparkcargo = nullptr;
     m_cargosensor = nullptr;
@@ -118,17 +105,6 @@ void Intake::Init()
 
 	m_solenoidvac1->Set(false);
 	m_solenoidvac2->Set(false);
-<<<<<<< HEAD
-	m_solenoidhatch1->Set(false);
-	m_solenoidhatch2->Set(false);
-	m_solenoidarm1->Set(false);
-	m_solenoidarm2->Set(false);
-    m_spark1->Set(0);
-    m_spark2->Set(0);
-    m_visiontimer.Reset();
-    m_visiontimer.Start();
-    m_visionvalid = false;
-=======
 	m_solenoidvac3->Set(false);
 	m_solenoidvac4->Set(false);
     m_sparkvac->Set(0);
@@ -145,7 +121,6 @@ void Intake::Init()
     m_hatchstage = kHatchIdle;
     m_timer.Reset();
     m_timer.Start();
->>>>>>> 9094d925fae5f9fc350ed92280ca6c5a2b5cff44
 }
 
 
