@@ -91,7 +91,7 @@ void Robot::TeleopInit()
 	m_gyrodrive->Init();
 	m_autonomous->Init();
 //	m_lifter->Init();
-//	m_intake->Init();
+	m_intake->Init();
 }
 
 
@@ -101,8 +101,8 @@ void Robot::TeleopPeriodic()
 	m_autonomous->Loop();
 	m_intake->VisionLoop();
 //	m_lifter->Loop();
-//	m_intake->CargoLoop();
-//	m_intake->HatchLoop();
+	m_intake->CargoLoop();
+	m_intake->HatchLoop();
 }
 
 
@@ -115,7 +115,7 @@ void Robot::DisabledInit()
 	m_gyrodrive->Stop();
 	m_autonomous->Stop();
 //	m_lifter->Stop();
-//	m_intake->Stop();
+	m_intake->Stop();
 }
 
 
