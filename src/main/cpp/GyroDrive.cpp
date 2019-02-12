@@ -24,9 +24,9 @@ GyroDrive::GyroDrive(OperatorInputs *inputs)
     m_pidstraight[0] = 0.0;
     m_pidstraight[1] = 0.0;
     m_pidstraight[2] = 0.0;
-    m_pidangle[0] = 0.0;
-    m_pidangle[1] = 0.0;
-    m_pidangle[2] = 0.0;
+    m_pidangle[0] = 0.0; // P
+    m_pidangle[1] = 0.0; // I
+    m_pidangle[2] = 0.0; // D
     m_distance = 0;
 }
 
@@ -54,9 +54,9 @@ void GyroDrive::Init()
     m_pidstraight[0] = 0.0;
     m_pidstraight[1] = 0.0;
     m_pidstraight[2] = 0.0;
-    m_pidangle[0] = 0.0;
-    m_pidangle[1] = 0.0;
-    m_pidangle[2] = 0.0;
+    m_pidangle[0] = 0.0;  //P
+    m_pidangle[1] = 0.0;  //I
+    m_pidangle[2] = 0.0;  //D
     m_distance = 0;
 }
 
@@ -110,9 +110,22 @@ void GyroDrive::SetAnglePID(double P, double I, double D)
         m_pidangle[1] = I;
     if (D != -1)
         m_pidangle[2] = D;
+	SmartDashboard::PutNumber("GD01_P", m_pidangle[0]);
+	SmartDashboard::PutNumber("GD02_I", m_pidangle[1]);
+	SmartDashboard::PutNumber("GD03_D", m_pidangle[2]);
 }
 
-
+void  GyroDrive::AdjAnglePID(double P, double I, double D)
+    {    
+	m_pidangle[0] += P;
+	m_pidangle[1] += I;
+    m_pidangle[2] += D;
+	m_drivepid->Init(m_pidangle[0], m_pidangle[1], m_pidangle[2], DrivePID::Feedback::kGyro, false);
+    SmartDashboard::PutNumber("GD01_P", m_pidangle[0]);
+	SmartDashboard::PutNumber("GD02_I", m_pidangle[1]);
+	SmartDashboard::PutNumber("GD03_D", m_pidangle[2]);
+	}
+	
 bool GyroDrive::DriveStraight(double targetdistance, double autopower, bool reset)
 {
 	double modifier;
@@ -187,6 +200,7 @@ bool GyroDrive::DriveAngle(double angle, bool reset)
 bool GyroDrive::DriveHeading(double heading)
 {
 	double gyroheading;
+	bool on_target;
 
 	switch (m_drivestate)
 	{
@@ -195,7 +209,7 @@ bool GyroDrive::DriveHeading(double heading)
 		{
 			if (fabs(gyroheading) >= 360.0)
 				heading += 360.0 * trunc(gyroheading / 360.0);
-			SmartDashboard::PutNumber("DriveHeading", heading);
+
 			m_drivepid->Init(m_pidangle[0], m_pidangle[1], m_pidangle[2], DrivePID::Feedback::kGyro, false);
 			m_drivepid->EnablePID();
 			m_drivepid->SetAbsoluteAngle(heading);
@@ -205,7 +219,8 @@ bool GyroDrive::DriveHeading(double heading)
 
 	case kDrive:
 		m_drivepid->Drive(0, false);
-		if (m_drivepid->IsOnTarget(3))
+		on_target = m_drivepid->IsOnTarget(3);
+		if (on_target)
 		{
 			m_drivepid->DisablePID();
 			m_drivestate = kInit;
@@ -213,5 +228,9 @@ bool GyroDrive::DriveHeading(double heading)
 		}
 		break;
 	}
+	
+	SmartDashboard::PutNumber("m_drivestate", m_drivestate);
+	SmartDashboard::PutNumber("DriveHeading", heading);
+	SmartDashboard::PutNumber("on_target", on_target);
 	return false;
 }

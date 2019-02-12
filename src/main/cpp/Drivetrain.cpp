@@ -352,7 +352,7 @@ void DriveTrain::Loop()
 	}
 
 	SmartDashboard::PutNumber("DT00_direction", m_direction);
-	SmartDashboard::PutNumber("DT01_x", x);
+//	SmartDashboard::PutNumber("DT01_x", x);
 	SmartDashboard::PutNumber("DT02_y", y);
 	SmartDashboard::PutNumber("DT03_top", CHILD_PROOF_SPEED);
 	SmartDashboard::PutNumber("DT04_loop_count", loopcnt);
@@ -470,6 +470,7 @@ void DriveTrain::Drive(double x, double y, bool ramp)
 		break;
 	}
 
+	SmartDashboard::PutNumber("DT01_x", x);
 	SmartDashboard::PutNumber("DT11_turningramp", m_previousx); 			//Left Motors are forward=negative
 	SmartDashboard::PutNumber("DT12_drivingramp", m_previousy); 			//Right Motors are forward=positive
 	SmartDashboard::PutNumber("DT13_leftpow", m_invertleft*m_leftpow); 		//Left Motors are forward=negative

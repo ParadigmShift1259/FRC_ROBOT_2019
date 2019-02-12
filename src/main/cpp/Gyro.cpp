@@ -66,6 +66,8 @@ void DualGyro::Init()
 
     m_gyrovalid1 = false;
     m_gyrovalid2 = false;
+
+    ZeroHeading();
 }
 
 

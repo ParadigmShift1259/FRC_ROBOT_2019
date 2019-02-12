@@ -34,6 +34,7 @@ public:
 	void Drive(double x, double y, bool ramp = false);
     void SetStraightPID(double P = -1, double I = -1, double D = -1);
     void SetAnglePID(double P = -1, double I = -1, double D = -1);
+    void AdjAnglePID(double P, double I, double D);
     bool DriveStraight(double targetdistance, double autopower, bool reset = true);
     bool DriveAngle(double angle, bool reset = true);
     bool DriveHeading(double heading);
