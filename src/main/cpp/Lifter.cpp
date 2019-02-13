@@ -28,6 +28,10 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 	m_lowposition = 0;
 	m_mediumposition = 0;
 	m_highposition = 0;
+	m_selectedposition = 0;
+
+	m_manualraising = false;
+	m_autoraising = false;
 
 	if (CAN_LIFTER_MOTOR != -1)
 	{
@@ -62,10 +66,13 @@ void Lifter::Init()
 	// do initialization for any mode
 	m_motor->StopMotor();
 	m_stage = kIdle;
+
+	m_manualraising = false;
+	m_autoraising = false;
 }
 
 
-void Lifter::LoopManual()
+void Lifter::ManualLoop()
 {
 	if (m_motor == nullptr)
 		return;
@@ -73,41 +80,46 @@ void Lifter::LoopManual()
 	m_position = m_motor->GetSelectedSensorPosition(0);
 
 	/// if left bumper and Y override position sensor and raise lift
-	if (m_inputs->xBoxRightX(1 * INP_DUAL) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && !m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+	if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && !m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
 	{
 		m_motor->Set(m_raisespeed * 0.5);
+		m_manualraising = true;
 	}
 	else
 	/// if Y raise list only if not at max position
-	if (m_inputs->xBoxRightX(1 * INP_DUAL) && (m_position < m_liftermax)  && !m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))		/// raise lifter - positive
+	if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5) && (m_position < m_liftermax)  && !m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))		/// raise lifter - positive
 	{
 		if (m_position > m_liftermaxspd)
 			m_motor->Set(m_raisespeed * 0.5);
 		else
 			m_motor->Set(m_raisespeed);
+		m_manualraising = true;
 	}
 	else
 	/// if left bumper and X override position sensor and lower lift
-	if (m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5 && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+	if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
 	{
 		m_motor->Set(m_lowerspeed * 0.5);
 		m_motor->SetSelectedSensorPosition(0, 0, 0);
+		m_manualraising = true;
 	}
 	else
 	/// if X lower lift only if not at min position
-	if (m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5 && (m_position > m_liftermin))		/// lower lifter - negative
+	if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && (m_position > m_liftermin))		/// lower lifter - negative
 	{
 		if (m_position < m_lifterminspd)
 			m_motor->Set(m_lowerspeed * 0.5);
 		else
 			m_motor->Set(m_lowerspeed);
+		m_manualraising = true;
 	}
 	else
 	/// if x and less than or at min position stop lift
-	if (m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5 && (m_position <= m_liftermin))
+	if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && (m_position <= m_liftermin))
 	{
 		m_motor->StopMotor();
 		m_motor->SetSelectedSensorPosition(0, 0, 0);
+		m_manualraising = true;
 	}
 
 	SmartDashboard::PutNumber("LI1_liftermin", m_liftermin);
@@ -116,7 +128,7 @@ void Lifter::LoopManual()
 }
 
 
-void Lifter::LoopAuto()
+void Lifter::AutoLoop()
 {
 	m_position = m_motor->GetSelectedSensorPosition();
 
@@ -125,18 +137,22 @@ void Lifter::LoopAuto()
 		if (m_highposition < m_position)
 		{
 			GoToPosition(m_highposition);
+			m_autoraising = true;
 		}
 		else if (m_mediumposition < m_position)
 		{
 			GoToPosition(m_mediumposition);
+			m_autoraising = true;
 		}
 		else if (m_lowposition < m_position && m_lowposition != 0)
 		{
 			GoToPosition(m_lowposition);
+			m_autoraising = true;
 		}
 		else
 		{
 			GoToPosition(m_liftermin);
+			m_autoraising = true;
 		}
 	}
 	else if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
@@ -144,18 +160,22 @@ void Lifter::LoopAuto()
 		if (m_lowposition > m_position && m_lowposition != 0)
 		{
 			GoToPosition(m_lowposition);
+			m_autoraising = true;
 		}
 		else if (m_mediumposition < m_position)
 		{
 			GoToPosition(m_mediumposition);
+			m_autoraising = true;
 		}
 		else if (m_highposition < m_position)
 		{
 			GoToPosition(m_highposition);
+			m_autoraising = true;
 		}
 		else
 		{
 			GoToPosition(m_liftermax);
+			m_autoraising = true;
 		}
 	}
 	else
@@ -229,6 +249,9 @@ void Lifter::SetCargoLevels()
 bool Lifter::GoToPosition(int designatedposition)		// Magic numbers are for slack
 {
 	m_position = m_motor->GetSelectedSensorPosition();
+
+	if (m_manualraising)
+		return true;
 
 	if (m_position > designatedposition + 20)
 	{

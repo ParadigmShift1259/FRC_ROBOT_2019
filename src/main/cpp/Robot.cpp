@@ -65,20 +65,19 @@ void Robot::AutonomousPeriodic()
 {
 	m_gyrodrive->Loop();
 	m_autonomous->Loop();
-	m_intake->CargoLoop();
-	m_intake->HatchLoop();
+	m_intake->Loop();
 //	m_lifter->LoopAuto();
 //	m_lifter->LoopManual();
 }
 
 
-void Robot::TestInit()
+void Robot::TestInit()				// Do not use
 {
 	DriverStation::ReportError("TestInit");
 }
 
 
-void Robot::TestPeriodic()
+void Robot::TestPeriodic()			// Do not use
 {
 }
 
@@ -101,8 +100,7 @@ void Robot::TeleopPeriodic()
 	m_gyrodrive->Loop();
 	m_autonomous->Loop();
 //	m_intake->VisionLoop();
-	m_intake->CargoLoop();
-	m_intake->HatchLoop();
+	m_intake->Loop();
 //	m_lifter->LoopAuto();
 //	m_lifter->LoopManual();
 }

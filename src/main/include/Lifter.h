@@ -25,8 +25,8 @@ public:
 	Lifter(DriverStation *ds, OperatorInputs *inputs);
 	virtual ~Lifter();
 	void Init();
-	void LoopManual();
-	void LoopAuto();
+	void ManualLoop();
+	void AutoLoop();
 	void TestLoop();
 	void Stop();
 	void ResetPosition();
@@ -50,6 +50,10 @@ protected:
 	int m_lowposition;
 	int m_mediumposition;
 	int m_highposition;
+	int m_selectedposition;
+	
+	bool m_manualraising;
+	bool m_autoraising;
 };
 
 

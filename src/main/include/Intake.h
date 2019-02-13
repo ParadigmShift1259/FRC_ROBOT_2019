@@ -27,7 +27,7 @@ using namespace nt;
 class Intake
 {
 public:
-	enum IntakeMode {kModeHatch, kModeCargo, kModeAny};
+	enum IntakeMode {kModeNone, kModeHatch, kModeCargo};
 	enum HatchStage {kHatchIdle, kHatchCapture, kHatchRelease};
 	enum CargoStage {kCargoIdle, kCargoIngest, kCargoIngestWait, kCargoBall, kCargoEject};
 	enum Vision {kIdle, kVision};
@@ -35,12 +35,15 @@ public:
 	Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DrivePID *drivepid);
 	virtual ~Intake();
 	void Init();
-	void LoopType();
-	void HatchLoop();
-	void CargoLoop();
+	void Loop();
 	void TestLoop();
-	void Stop();
 	//void VisionLoop();
+	void Stop();
+
+protected:	
+	void CheckMode();
+	void Hatch();
+	void Cargo();
 
 protected:
 	DriverStation *m_ds;
@@ -67,8 +70,6 @@ protected:
 	double m_waittime;
 	double m_vacuumpow;
 	bool m_onfloor;
-
-
 };
 
 
