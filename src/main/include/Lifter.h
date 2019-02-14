@@ -21,24 +21,26 @@ class Lifter
 {
 public:
 	enum Stage {kIdle, kRaise};
+	enum LoopMode {kManual, kAutoUp, kAutoDown};
 
 	Lifter(DriverStation *ds, OperatorInputs *inputs);
 	virtual ~Lifter();
 	void Init();
-	void ManualLoop();
-	void AutoLoop();
+	void Loop();
 	void TestLoop();
 	void Stop();
 	void ResetPosition();
 	void SetHatchLevels();
 	void SetCargoLevels();
-	bool GoToPosition(int designatedposition);
+	int FindPosition(bool up);
 
 protected:
 	DriverStation *m_ds;
 	OperatorInputs *m_inputs;
 	WPI_TalonSRX *m_motor;
 	Stage m_stage;
+	LoopMode m_loopmode;
+
 	int m_position;
 	double m_raisespeed;
 	double m_lowerspeed;
@@ -51,9 +53,8 @@ protected:
 	int m_mediumposition;
 	int m_highposition;
 	int m_selectedposition;
-	
-	bool m_manualraising;
-	bool m_autoraising;
+
+	Solenoid *m_solenoid;
 };
 
 

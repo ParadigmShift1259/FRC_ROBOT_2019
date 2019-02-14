@@ -24,14 +24,12 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 	m_lifterminspd = LIF_LIFTERMINSPD;
 	m_liftermaxspd = LIF_LIFTERMAXSPD;
 	m_stage = kIdle;
+	m_loopmode = kManual;
 
 	m_lowposition = 0;
 	m_mediumposition = 0;
 	m_highposition = 0;
 	m_selectedposition = 0;
-
-	m_manualraising = false;
-	m_autoraising = false;
 
 	if (CAN_LIFTER_MOTOR != -1)
 	{
@@ -40,6 +38,8 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 		m_motor->SetNeutralMode(NeutralMode::Brake);
 		m_motor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 0);
 	}
+
+	m_solenoid = new Solenoid(PCM_LIFTER_MODULE, PCM_LIFTER_SOLENOID);
 }
 
 
@@ -47,6 +47,8 @@ Lifter::~Lifter()
 {
 	if (m_motor != nullptr)
 		delete m_motor;
+
+	delete m_solenoid;
 }
 
 
@@ -64,124 +66,134 @@ void Lifter::Init()
 	}
 
 	// do initialization for any mode
+	m_position = 0;
+	m_lowposition = 0;
+	m_mediumposition = 0;
+	m_highposition = 0;
+	m_selectedposition = 0;
+
 	m_motor->StopMotor();
 	m_stage = kIdle;
+	m_loopmode = kManual;
 
-	m_manualraising = false;
-	m_autoraising = false;
+	m_solenoid->Set(true);
 }
 
 
-void Lifter::ManualLoop()
+void Lifter::Loop()
 {
 	if (m_motor == nullptr)
 		return;
 
-	m_position = m_motor->GetSelectedSensorPosition(0);
+	switch(m_loopmode)
+	{
+	case kManual:
+		m_position = m_motor->GetSelectedSensorPosition(0);
 
-	/// if left bumper and Y override position sensor and raise lift
-	if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && !m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-	{
-		m_motor->Set(m_raisespeed * 0.5);
-		m_manualraising = true;
-	}
-	else
-	/// if Y raise list only if not at max position
-	if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5) && (m_position < m_liftermax)  && !m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))		/// raise lifter - positive
-	{
-		if (m_position > m_liftermaxspd)
+		/// if left bumper and Y override position sensor and raise lift
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && !m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+		{
 			m_motor->Set(m_raisespeed * 0.5);
+		}
 		else
-			m_motor->Set(m_raisespeed);
-		m_manualraising = true;
-	}
-	else
-	/// if left bumper and X override position sensor and lower lift
-	if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-	{
-		m_motor->Set(m_lowerspeed * 0.5);
-		m_motor->SetSelectedSensorPosition(0, 0, 0);
-		m_manualraising = true;
-	}
-	else
-	/// if X lower lift only if not at min position
-	if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && (m_position > m_liftermin))		/// lower lifter - negative
-	{
-		if (m_position < m_lifterminspd)
+		/// if Y raise list only if not at max position
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5) && (m_position < m_liftermax)  && !m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))		/// raise lifter - positive
+		{
+			if (m_position > m_liftermaxspd)
+				m_motor->Set(m_raisespeed * 0.5);
+			else
+				m_motor->Set(m_raisespeed);
+		}
+		else
+		/// if left bumper and X override position sensor and lower lift
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+		{
 			m_motor->Set(m_lowerspeed * 0.5);
+			m_motor->SetSelectedSensorPosition(0, 0, 0);
+		}
 		else
-			m_motor->Set(m_lowerspeed);
-		m_manualraising = true;
-	}
-	else
-	/// if x and less than or at min position stop lift
-	if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && (m_position <= m_liftermin))
-	{
-		m_motor->StopMotor();
-		m_motor->SetSelectedSensorPosition(0, 0, 0);
-		m_manualraising = true;
+		/// if X lower lift only if not at min position
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && (m_position > m_liftermin))		/// lower lifter - negative
+		{
+			if (m_position < m_lifterminspd)
+				m_motor->Set(m_lowerspeed * 0.5);
+			else
+				m_motor->Set(m_lowerspeed);
+		}
+		else
+		/// if x and less than or at min position stop lift
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && (m_position <= m_liftermin))
+		{
+			m_motor->StopMotor();
+			m_motor->SetSelectedSensorPosition(0, 0, 0);
+		}
+		else
+		{
+			m_motor->Set(-0.06);
+		}
+
+		if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_highposition != 0)
+		{
+			m_selectedposition = FindPosition(true);
+			m_loopmode = kAutoUp;
+		}
+		if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_highposition != 0)
+		{
+			m_selectedposition = FindPosition(false);
+			m_loopmode = kAutoDown;
+		}
+		break;
+
+	case kAutoUp:
+		m_position = m_motor->GetSelectedSensorPosition(0);
+
+		if (m_position < m_selectedposition - LIF_SLACK)
+		{
+			if (m_position > m_liftermaxspd)
+				m_motor->Set(m_raisespeed * 0.5 * 0.7);
+			else
+				m_motor->Set(m_raisespeed * 0.7);
+		}
+		else if (m_position > m_selectedposition - LIF_SLACK)
+		{
+			m_motor->StopMotor();
+			m_loopmode = kManual;
+		}
+
+		if (fabs(m_inputs->xBoxLeftY(1 * INP_DUAL)) > 0.50)
+		{
+			m_loopmode = kManual;
+		}
+		break;
+
+	case kAutoDown:
+		m_position = m_motor->GetSelectedSensorPosition(0);
+
+		if (m_position > m_selectedposition + LIF_SLACK)
+		{
+			if (m_position < m_lifterminspd)
+				m_motor->Set(m_lowerspeed * 0.5 * 0.7);
+			else
+				m_motor->Set(m_lowerspeed * 0.7);
+		}
+		else if (m_position < m_selectedposition + LIF_SLACK)
+		{
+			m_motor->StopMotor();
+			m_loopmode = kManual;
+		}
+
+		if (fabs(m_inputs->xBoxLeftY(1 * INP_DUAL)) > 0.50)
+		{
+			m_loopmode = kManual;
+		}
+		break;
 	}
 
 	SmartDashboard::PutNumber("LI1_liftermin", m_liftermin);
 	SmartDashboard::PutNumber("LI2_liftermax", m_liftermax);
 	SmartDashboard::PutNumber("LI3_position", m_position);
-}
-
-
-void Lifter::AutoLoop()
-{
-	m_position = m_motor->GetSelectedSensorPosition();
-
-	if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-	{
-		if (m_highposition < m_position)
-		{
-			GoToPosition(m_highposition);
-			m_autoraising = true;
-		}
-		else if (m_mediumposition < m_position)
-		{
-			GoToPosition(m_mediumposition);
-			m_autoraising = true;
-		}
-		else if (m_lowposition < m_position && m_lowposition != 0)
-		{
-			GoToPosition(m_lowposition);
-			m_autoraising = true;
-		}
-		else
-		{
-			GoToPosition(m_liftermin);
-			m_autoraising = true;
-		}
-	}
-	else if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-	{
-		if (m_lowposition > m_position && m_lowposition != 0)
-		{
-			GoToPosition(m_lowposition);
-			m_autoraising = true;
-		}
-		else if (m_mediumposition < m_position)
-		{
-			GoToPosition(m_mediumposition);
-			m_autoraising = true;
-		}
-		else if (m_highposition < m_position)
-		{
-			GoToPosition(m_highposition);
-			m_autoraising = true;
-		}
-		else
-		{
-			GoToPosition(m_liftermax);
-			m_autoraising = true;
-		}
-	}
-	else
-	{
-		m_motor->StopMotor();
-	}
+	SmartDashboard::PutNumber("LI4_mode", m_loopmode);
+	SmartDashboard::PutNumber("LI5_selectedposition", m_selectedposition);
 }
 
 
@@ -218,6 +230,7 @@ void Lifter::Stop()
 		return;
 
 	m_motor->StopMotor();
+	m_solenoid->Set(false);
 }
 
 
@@ -233,7 +246,7 @@ void Lifter::ResetPosition()
 
 void Lifter::SetHatchLevels()
 {
-	m_lowposition = 0;
+	m_lowposition = -1;
 	m_mediumposition = LIF_HATCH_MID;
 	m_highposition = LIF_HATCH_HIGH;
 }
@@ -246,32 +259,54 @@ void Lifter::SetCargoLevels()
 	m_highposition = LIF_CARGO_HIGH;
 }
 
-bool Lifter::GoToPosition(int designatedposition)		// Magic numbers are for slack
+int Lifter::FindPosition(bool up)
 {
 	m_position = m_motor->GetSelectedSensorPosition();
 
-	if (m_manualraising)
-		return true;
-
-	if (m_position > designatedposition + 20)
+	if (up)
 	{
-		if (m_position < m_lifterminspd)
-			m_motor->Set(m_lowerspeed * 0.5);
+		if (m_position < m_lowposition - LIF_SLACK && m_lowposition != -1)
+		{
+			return m_lowposition;
+			DriverStation::ReportError("Up Low");
+		}
+		else if (m_position < m_mediumposition - LIF_SLACK)
+		{
+			return m_mediumposition;
+			DriverStation::ReportError("Up Medium");
+		}
+		else if (m_position < m_highposition - LIF_SLACK)
+		{
+			return m_highposition;
+			DriverStation::ReportError("Up High");
+		}
 		else
-			m_motor->Set(m_lowerspeed);
-		return false;
+		{
+			return m_liftermax;
+			DriverStation::ReportError("Up Max");
+		}
 	}
-	else if (m_position < designatedposition - 20)
+	else 
 	{
-		if (m_position > m_liftermaxspd)
-			m_motor->Set(m_raisespeed * 0.5);
+		if (m_position > m_highposition + LIF_SLACK)
+		{
+			return m_highposition;
+			DriverStation::ReportError("Down High");
+		}
+		else if (m_position > m_mediumposition + LIF_SLACK)
+		{
+			return m_mediumposition;
+			DriverStation::ReportError("Down Medium");
+		}
+		else if (m_position > m_lowposition + LIF_SLACK && m_lowposition != -1)
+		{
+			return m_lowposition;
+			DriverStation::ReportError("Down Low");
+		}
 		else
-			m_motor->Set(m_raisespeed);
-		return false;
-	}
-	else if (m_position > designatedposition - 20 && m_position < designatedposition + 20)
-	{
-		m_motor->StopMotor();
-		return true;
+		{
+			return m_liftermin;
+			DriverStation::ReportError("Down Min");
+		}
 	}
 }
