@@ -38,8 +38,6 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 		m_motor->SetNeutralMode(NeutralMode::Brake);
 		m_motor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 0);
 	}
-
-	m_solenoid = new Solenoid(PCM_LIFTER_MODULE, PCM_LIFTER_SOLENOID);
 }
 
 
@@ -47,8 +45,6 @@ Lifter::~Lifter()
 {
 	if (m_motor != nullptr)
 		delete m_motor;
-
-	delete m_solenoid;
 }
 
 
@@ -75,8 +71,6 @@ void Lifter::Init()
 	m_motor->StopMotor();
 	m_stage = kIdle;
 	m_loopmode = kManual;
-
-	m_solenoid->Set(true);
 }
 
 
@@ -93,14 +87,14 @@ void Lifter::Loop()
 		/// if left bumper and Y override position sensor and raise lift
 		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && !m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
 		{
-			m_motor->Set(m_raisespeed * 0.5);
+			m_motor->Set(m_raisespeed * 0.5 * fabs(m_inputs->xBoxRightY(1* INP_DUAL)));
 		}
 		else
 		/// if Y raise list only if not at max position
 		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5) && (m_position < m_liftermax)  && !m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))		/// raise lifter - positive
 		{
 			if (m_position > m_liftermaxspd)
-				m_motor->Set(m_raisespeed * 0.5);
+				m_motor->Set(m_raisespeed * 0.5 * fabs(m_inputs->xBoxRightY(1* INP_DUAL)));
 			else
 				m_motor->Set(m_raisespeed);
 		}
@@ -108,7 +102,7 @@ void Lifter::Loop()
 		/// if left bumper and X override position sensor and lower lift
 		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
 		{
-			m_motor->Set(m_lowerspeed * 0.5);
+			m_motor->Set(m_lowerspeed * 0.5 * fabs(m_inputs->xBoxRightY(1* INP_DUAL)));
 			m_motor->SetSelectedSensorPosition(0, 0, 0);
 		}
 		else
@@ -116,9 +110,9 @@ void Lifter::Loop()
 		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && (m_position > m_liftermin))		/// lower lifter - negative
 		{
 			if (m_position < m_lifterminspd)
-				m_motor->Set(m_lowerspeed * 0.5);
+				m_motor->Set(m_lowerspeed * 0.5 * fabs(m_inputs->xBoxRightY(1* INP_DUAL)));
 			else
-				m_motor->Set(m_lowerspeed);
+				m_motor->Set(m_lowerspeed * fabs(m_inputs->xBoxRightY(1* INP_DUAL)));
 		}
 		else
 		/// if x and less than or at min position stop lift
@@ -129,7 +123,7 @@ void Lifter::Loop()
 		}
 		else
 		{
-			m_motor->Set(-0.06);
+			m_motor->Set(LIF_LIFTERHOLD);
 		}
 
 		if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_highposition != 0)
@@ -230,7 +224,6 @@ void Lifter::Stop()
 		return;
 
 	m_motor->StopMotor();
-	m_solenoid->Set(false);
 }
 
 
