@@ -53,6 +53,7 @@ Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DriveP
 	m_mode = kModeNone;
     m_hatchstage = kHatchIdle;
     m_cargostage = kCargoIdle;
+    m_flushstage - kFlushIdle;
 	m_waittime = INT_VACUUM_WAIT;
     m_vacuumpow = INT_VACUUM_POW;
     m_onfloor = false;
@@ -113,6 +114,7 @@ void Intake::Init()
     m_mode = kModeNone;
     m_cargostage = kCargoIdle;
     m_hatchstage = kHatchIdle;
+    m_flushstage = kFlushIdle;
     m_timer.Reset();
     m_timer.Start();
 }
@@ -123,6 +125,7 @@ void Intake::Loop()
     CheckMode();
     Cargo();
     Hatch();
+    Flush();
 }
 
 
@@ -286,7 +289,7 @@ void Intake::Hatch()
     if (m_sparkcargo == nullptr)
         return;
     
-    if (m_mode != kModeHatch)
+    if (m_mode == kModeCargo)
     {
         m_solenoidvac1->Set(false);
         m_solenoidvac2->Set(false);
@@ -295,8 +298,15 @@ void Intake::Hatch()
         m_sparkvac->Set(0);
 
         m_solenoidhatch->Set(false);
+        
         return;
     }
+
+    if (m_mode != kModeHatch)
+    {
+        return;
+    }
+
 
     switch (m_hatchstage)
     {
@@ -416,8 +426,6 @@ void Intake::Hatch()
         m_solenoidvac3->Set(false);
         m_solenoidvac4->Set(false);
         m_sparkvac->Set(0);
-
-        m_solenoidhatch->Set(false);
         
         m_hatchstage = kHatchIdle;
         m_mode = kModeNone;
@@ -452,10 +460,15 @@ void Intake::Cargo()
     if (m_sparkcargo == nullptr)
         return;
 
-    if (m_mode != kModeCargo)
+    if (m_mode == kModeHatch)
     {
         m_sparkcargo->Set(0);
         //m_solenoidarm->Set(false);
+        return;
+    }
+
+    if (m_mode != kModeCargo)
+    {
         return;
     }
 
@@ -571,4 +584,79 @@ void Intake::Cargo()
     SmartDashboard::PutNumber("IN9_cargomode", m_cargostage);
 	SmartDashboard::PutNumber("IN10_waittime", m_waittime);
 	SmartDashboard::PutNumber("IN11_cargosensor", m_cargosensor->Get());
+}
+
+
+void Intake::Flush()
+{
+    if (m_solenoidvac1 == nullptr || m_solenoidvac2 == nullptr || m_solenoidvac3 == nullptr || m_solenoidvac4 == nullptr || m_sparkvac == nullptr)
+        return;
+    if (m_solenoidhatch == nullptr)
+        return;
+    if (m_solenoidarm == nullptr)
+        return;
+    if (m_sparkcargo == nullptr)
+        return;
+
+    if (m_mode != kModeNone)
+    {
+        return;
+    }
+
+    switch (m_flushstage)
+    {
+    case kFlushIdle:
+        m_solenoidvac1->Set(false);
+        m_solenoidvac2->Set(false);
+        m_solenoidvac3->Set(false);
+        m_solenoidvac4->Set(false);
+        m_sparkvac->Set(0);
+
+        m_sparkcargo->Set(0);
+        //m_solenoidarm->Set(false);
+
+        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        {
+            m_timer.Reset();
+            m_flushstage = kFlushPoof;
+        }
+        break;
+    
+    case kFlushPoof:
+        m_solenoidhatch->Set(false);
+
+        if (m_timer.Get() > m_waittime)
+        {
+            m_solenoidvac1->Set(false);
+            m_solenoidvac2->Set(false);
+            m_solenoidvac3->Set(false);
+            m_solenoidvac4->Set(false);
+
+            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+
+            m_flushstage = kFlushEject;
+        }
+        else
+        {
+            m_solenoidvac1->Set(true);
+            m_solenoidvac2->Set(true);
+            m_solenoidvac3->Set(true);
+            m_solenoidvac4->Set(true);
+
+            m_sparkcargo->Set(0);
+        }
+        break;
+
+    case kFlushEject:
+        if (m_timer.Get() > INT_CARGO_EJECT_WAIT + m_waittime)
+        {
+            m_sparkcargo->Set(0);
+            m_flushstage = kFlushIdle;
+        }
+        else
+        {
+            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+        }
+        break;
+    }
 }

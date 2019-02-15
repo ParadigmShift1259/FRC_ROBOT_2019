@@ -30,6 +30,7 @@ public:
 	enum IntakeMode {kModeNone, kModeHatch, kModeCargo};
 	enum HatchStage {kHatchIdle, kHatchCapture, kHatchRelease};
 	enum CargoStage {kCargoIdle, kCargoIngest, kCargoIngestWait, kCargoBall, kCargoEject};
+	enum FlushStage {kFlushIdle, kFlushPoof, kFlushEject};
 	enum Vision {kIdle, kVision};
 
 	Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DrivePID *drivepid);
@@ -44,6 +45,7 @@ protected:
 	void CheckMode();
 	void Hatch();
 	void Cargo();
+	void Flush();
 
 protected:
 	DriverStation *m_ds;
@@ -66,6 +68,8 @@ protected:
 	IntakeMode m_mode;
 	HatchStage m_hatchstage;
 	CargoStage m_cargostage;
+	FlushStage m_flushstage;
+
 	Timer m_timer;
 	double m_waittime;
 	double m_vacuumpow;
