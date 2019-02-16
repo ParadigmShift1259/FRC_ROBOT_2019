@@ -144,4 +144,8 @@
 
 #define DIO_INTAKE_CARGOSENSOR 0    // -1
 
+
+extern bool Debug;                  // Set to true to enable additional debugging
+
+
 #endif /* SRC_CONST_H_ */

@@ -20,8 +20,8 @@ using namespace frc;
 class Lifter
 {
 public:
-	enum Stage {kIdle, kRaise};
 	enum LoopMode {kManual, kAutoUp, kAutoDown};
+	enum LifterDir {kUp, kDown};
 
 	Lifter(DriverStation *ds, OperatorInputs *inputs);
 	virtual ~Lifter();
@@ -32,13 +32,12 @@ public:
 	void ResetPosition();
 	void SetHatchLevels();
 	void SetCargoLevels();
-	int FindPosition(bool up);
+	int FindPosition(LifterDir direction);
 
 protected:
 	DriverStation *m_ds;
 	OperatorInputs *m_inputs;
 	WPI_TalonSRX *m_motor;
-	Stage m_stage;
 	LoopMode m_loopmode;
 
 	int m_position;

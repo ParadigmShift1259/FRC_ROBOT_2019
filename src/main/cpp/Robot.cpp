@@ -14,6 +14,9 @@
 #include "Robot.h"
 
 
+bool Debug = true;
+
+
 void Robot::RobotInit()
 {
 	m_driverstation = &DriverStation::GetInstance();
