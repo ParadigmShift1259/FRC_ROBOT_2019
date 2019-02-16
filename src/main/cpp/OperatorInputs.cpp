@@ -16,9 +16,9 @@ OperatorInputs::OperatorInputs()
 	if (INP_JOYSTICK != -1)
 		m_joystick = new Joystick(INP_JOYSTICK);
 	if (INP_XBOX_1 != -1)
-		m_xbox.push_back(new Joystick(INP_XBOX_1));
+		m_xbox.push_back(new XboxController(INP_XBOX_1));
 	if (INP_XBOX_2 != -1)
-		m_xbox.push_back(new Joystick(INP_XBOX_2));
+		m_xbox.push_back(new XboxController(INP_XBOX_2));
 }
 
 
@@ -26,7 +26,7 @@ OperatorInputs::~OperatorInputs()
 {
 	if (m_joystick != nullptr)
 		delete m_joystick;
-	for (std::vector< Joystick* >::iterator it = m_xbox.begin() ; it != m_xbox.end(); it++)
+	for (std::vector<XboxController * >::iterator it = m_xbox.begin() ; it != m_xbox.end(); it++)
 	     delete (*it);
 	m_xbox.clear();
 }

@@ -38,6 +38,8 @@ protected:
 	DriverStation *m_ds;
 	OperatorInputs *m_inputs;
 	WPI_TalonSRX *m_motor;
+	Solenoid *m_solenoid;
+
 	LoopMode m_loopmode;
 
 	int m_position;
@@ -52,8 +54,6 @@ protected:
 	int m_mediumposition;
 	int m_highposition;
 	int m_selectedposition;
-
-	Solenoid *m_solenoid;
 };
 
 

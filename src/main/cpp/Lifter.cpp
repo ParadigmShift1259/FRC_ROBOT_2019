@@ -16,6 +16,7 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 	m_inputs = inputs;
 
 	m_motor = nullptr;
+	m_solenoid = nullptr;
 	m_position = 0;
 	m_raisespeed = LIF_RAISESPEED;
 	m_lowerspeed = LIF_LOWERSPEED;
@@ -38,7 +39,8 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 		m_motor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 0);
 	}
 
-	m_solenoid = new Solenoid(PCM_LIFTER_SOLENOID);
+	if (PCM_LIFTER_SOLENOID != -1)
+		m_solenoid = new Solenoid(PCM_LIFTER_SOLENOID);
 }
 
 
@@ -51,7 +53,7 @@ Lifter::~Lifter()
 
 void Lifter::Init()
 {
-	if (m_motor == nullptr)
+	if ((m_motor == nullptr) || (m_solenoid == nullptr))
 		return;
 
 	if (Debug) DriverStation::ReportError("LifterInit");
@@ -60,6 +62,7 @@ void Lifter::Init()
 	if (m_ds->IsAutonomous())
 	{
 		m_motor->SetSelectedSensorPosition(LIF_LIFTERSTART, 0, 0);
+		m_solenoid->Set(false);
 	}
 
 	// do initialization for any mode
@@ -78,7 +81,7 @@ void Lifter::Init()
 
 void Lifter::Loop()
 {
-	if (m_motor == nullptr)
+	if ((m_motor == nullptr) || (m_solenoid == nullptr))
 		return;
 
 	m_position = m_motor->GetSelectedSensorPosition(0);
@@ -194,6 +197,12 @@ void Lifter::Loop()
 		break;
 	}
 
+	if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))				// straighten lifter forward - deploy - true
+		m_solenoid->Set(true);
+	else
+	if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))			// angle lifter back - retract - false (default)
+		m_solenoid->Set(false);
+
 	SmartDashboard::PutNumber("LI1_liftermin", m_liftermin);
 	SmartDashboard::PutNumber("LI2_liftermax", m_liftermax);
 	SmartDashboard::PutNumber("LI3_position", m_position);
@@ -204,7 +213,7 @@ void Lifter::Loop()
 
 void Lifter::TestLoop()
 {
-	if (m_motor == nullptr)
+	if ((m_motor == nullptr) || (m_solenoid == nullptr))
 		return;
 
 	m_position = m_motor->GetSelectedSensorPosition(0);
@@ -231,7 +240,7 @@ void Lifter::TestLoop()
 
 void Lifter::Stop()
 {
-	if (m_motor == nullptr)
+	if ((m_motor == nullptr) || (m_solenoid == nullptr))
 		return;
 
 	m_motor->StopMotor();
@@ -267,6 +276,9 @@ void Lifter::SetCargoLevels()
 
 int Lifter::FindPosition(LifterDir direction)
 {
+	if (m_motor == nullptr)
+		return m_position;
+
 	m_position = m_motor->GetSelectedSensorPosition();
 
 	if (direction == kUp)

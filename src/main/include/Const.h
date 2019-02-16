@@ -57,11 +57,11 @@
 #define INVERT_LEFT -1.0
 #define INVERT_RIGHT 1.0			// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
 // Talons ports
-#define CAN_LEFT_PORT_1 3       // Changed for test bot 2/9/19
-#define CAN_LEFT_PORT_2 4
+#define CAN_LEFT_PORT_1 2       // Changed for test bot 2/9/19
+#define CAN_LEFT_PORT_2 0
 #define CAN_LEFT_PORT_3 -1
 #define CAN_RIGHT_PORT_1 1
-#define CAN_RIGHT_PORT_2 2
+#define CAN_RIGHT_PORT_2 3
 #define CAN_RIGHT_PORT_3 -1
 // Talon parameters
 #define MOTOR_CURRENT_LIMIT 20
