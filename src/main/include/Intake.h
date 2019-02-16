@@ -58,8 +58,7 @@ protected:
 	Spark *m_sparkvac;
 
     Solenoid *m_solenoidhatch;		// Used for ground hatch intake
-
-	Solenoid *m_solenoidarm;		// Used for moving entire intake
+	Solenoid *m_solenoidcargo;		// Used for moving entire intake
 
     Spark *m_sparkcargo;			// Used for intaking ball
 	DigitalInput *m_cargosensor;

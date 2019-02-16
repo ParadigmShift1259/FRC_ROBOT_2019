@@ -16,7 +16,9 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 	m_inputs = inputs;
 
 	m_motor = nullptr;
+	m_motorslave = nullptr;
 	m_solenoid = nullptr;
+
 	m_position = 0;
 	m_raisespeed = LIF_RAISESPEED;
 	m_lowerspeed = LIF_LOWERSPEED;
@@ -31,12 +33,17 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 	m_highposition = 0;
 	m_selectedposition = 0;
 
-	if (CAN_LIFTER_MOTOR != -1)
+	if ((CAN_LIFTER_MOTOR1 != -1) && (CAN_LIFTER_MOTOR2 != -1))
 	{
-		m_motor = new WPI_TalonSRX(CAN_LIFTER_MOTOR);
+		m_motor = new WPI_TalonSRX(CAN_LIFTER_MOTOR1);
 		m_motor->Set(ControlMode::PercentOutput, 0);
 		m_motor->SetNeutralMode(NeutralMode::Brake);
 		m_motor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 0);
+
+		m_motorslave = new WPI_TalonSRX(CAN_LIFTER_MOTOR2);
+		m_motorslave->Set(ControlMode::Follower, CAN_LIFTER_MOTOR1);
+		m_motorslave->SetNeutralMode(NeutralMode::Brake);
+		m_motorslave->SetInverted(InvertType::OpposeMaster);
 	}
 
 	if (PCM_LIFTER_SOLENOID != -1)
@@ -48,6 +55,8 @@ Lifter::~Lifter()
 {
 	if (m_motor != nullptr)
 		delete m_motor;
+	if (m_motorslave != nullptr)
+		delete m_motorslave;
 }
 
 
@@ -197,10 +206,10 @@ void Lifter::Loop()
 		break;
 	}
 
-	if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))				// straighten lifter forward - deploy - true
+	if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))				// straighten lifter forward - deploy - true
 		m_solenoid->Set(true);
 	else
-	if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))			// angle lifter back - retract - false (default)
+	if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))			// angle lifter back - retract - false (default)
 		m_solenoid->Set(false);
 
 	SmartDashboard::PutNumber("LI1_liftermin", m_liftermin);

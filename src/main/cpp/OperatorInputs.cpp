@@ -334,11 +334,26 @@ bool OperatorInputs::xBoxDPadUpLeft(ToggleChoice choice, unsigned int i)
 }
 
 
+bool OperatorInputs::xBoxL3(ToggleChoice choice, unsigned int i)
+{
+	if (i < m_xbox.size())
+	{
+		bool button = m_xbox[i]->GetRawButton(L3_BUTTON);
+
+		if (choice == kToggle)
+			return toggle("xBoxL3", button);
+		if (choice == kHold)
+			return button;
+	}
+	return false;
+}
+
+
 bool OperatorInputs::xBoxR3(ToggleChoice choice, unsigned int i)
 {
 	if (i < m_xbox.size())
 	{
-		bool button = m_xbox[i]->GetRawButton(10);
+		bool button = m_xbox[i]->GetRawButton(R3_BUTTON);
 
 		if (choice == kToggle)
 			return toggle("xBoxR3", button);

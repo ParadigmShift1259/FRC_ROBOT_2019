@@ -38,6 +38,7 @@ protected:
 	DriverStation *m_ds;
 	OperatorInputs *m_inputs;
 	WPI_TalonSRX *m_motor;
+	WPI_TalonSRX *m_motorslave;
 	Solenoid *m_solenoid;
 
 	LoopMode m_loopmode;

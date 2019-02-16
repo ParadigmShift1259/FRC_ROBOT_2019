@@ -306,7 +306,8 @@ void DriveTrain::Loop()
 	{
 		ChangeDirection();
 	}
-	if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+	if ((INP_DUAL && m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL)) ||
+		(!INP_DUAL && m_inputs->xBoxL3(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL)))
 	{
 		m_shift = true;
 		m_lowspeedmode = false;

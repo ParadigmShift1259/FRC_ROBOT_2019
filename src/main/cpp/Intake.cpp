@@ -23,7 +23,7 @@ Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DriveP
 
 	m_solenoidhatch = nullptr;
 
-	m_solenoidarm = nullptr;
+	m_solenoidcargo = nullptr;
 
     m_sparkcargo = nullptr;
     m_cargosensor = nullptr;
@@ -42,8 +42,8 @@ Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DriveP
 	if (PCM_INTAKE_SOLENOIDHATCH != -1)
 		m_solenoidhatch = new Solenoid(PCM_INTAKE_MODULE, PCM_INTAKE_SOLENOIDHATCH);
 
-    if (PCM_INTAKE_SOLENOIDARM != -1)
-		m_solenoidarm = new Solenoid(PCM_INTAKE_MODULE, PCM_INTAKE_SOLENOIDARM);
+    if (PCM_INTAKE_SOLENOIDCARGO != -1)
+		m_solenoidcargo = new Solenoid(PCM_INTAKE_MODULE, PCM_INTAKE_SOLENOIDCARGO);
 	
 	if (PWM_INTAKE_SPARKCARGO != -1)
 		m_sparkcargo = new Spark(PWM_INTAKE_SPARKCARGO);
@@ -77,8 +77,8 @@ Intake::~Intake()
 	if (m_solenoidhatch != nullptr)
         delete m_solenoidhatch;
 
-	if (m_solenoidarm != nullptr)
-        delete m_solenoidarm;
+	if (m_solenoidcargo != nullptr)
+        delete m_solenoidcargo;
 
     if (m_sparkcargo != nullptr)
         delete m_sparkcargo;
@@ -87,19 +87,18 @@ Intake::~Intake()
 
 void Intake::Init()
 {
-    //DriverStation::ReportError("Intake Init");
     if (m_solenoidvac1 == nullptr || m_solenoidvac2 == nullptr || m_solenoidvac3 == nullptr || m_solenoidvac4 == nullptr || m_sparkvac == nullptr)
         return;
     if (m_solenoidhatch == nullptr)
         return;
-    if (m_solenoidarm == nullptr)
+    if (m_solenoidcargo == nullptr)
         return;
     if (m_sparkcargo == nullptr)
         return;
 	
-    m_inited = true;
+	if (Debug) DriverStation::ReportError("Intake Init");
 
-	if (Debug) DriverStation::ReportError("IntakeInit");
+    m_inited = true;
 
 	m_solenoidvac1->Set(false);
 	m_solenoidvac2->Set(false);
@@ -109,7 +108,7 @@ void Intake::Init()
 
 	m_solenoidhatch->Set(false);
 
-	m_solenoidarm->Set(false);
+	m_solenoidcargo->Set(false);
 
 	m_sparkcargo->Set(0);
 
@@ -153,7 +152,7 @@ void Intake::Loop()
 
 	SmartDashboard::PutNumber("IN5_solenoidhatch", m_solenoidhatch->Get());
 
-	SmartDashboard::PutNumber("IN6_solenoidarm", m_solenoidarm->Get());
+	SmartDashboard::PutNumber("IN6_solenoidarm", m_solenoidcargo->Get());
 
 	SmartDashboard::PutNumber("IN7_mode", m_mode);
     SmartDashboard::PutNumber("IN8_hatchmode", m_hatchstage);
@@ -178,7 +177,7 @@ void Intake::TestLoop()
 
 	m_solenoidhatch->Set(false);
 
-	m_solenoidarm->Set(false);
+	m_solenoidcargo->Set(false);
 
 	m_sparkcargo->Set(0);
 }
@@ -261,7 +260,7 @@ void Intake::Stop()
 
 	m_solenoidhatch->Set(false);
 
-	m_solenoidarm->Set(false);
+	m_solenoidcargo->Set(false);
 
 	m_sparkcargo->Set(0);
 
@@ -273,23 +272,25 @@ void Intake::Hatch()
 {
     if (!m_inited)
         return;
-    
-    if (m_mode == kModeCargo)
+
+    switch (m_mode)
     {
+    case kModeNone:                     // no mode selected or flush mode
+        return;
+        break;
+
+    case kModeHatch:                    // hatch mode
+        break;
+
+    case kModeCargo:                    // cargo mode - turn off hatch mechanisms
         m_solenoidvac1->Set(false);
         m_solenoidvac2->Set(false);
         m_solenoidvac3->Set(false);
         m_solenoidvac4->Set(false);
         m_sparkvac->Set(0);
-
         m_solenoidhatch->Set(false);
-        
         return;
-    }
-
-    if (m_mode != kModeHatch)
-    {
-        return;
+        break;
     }
 
     switch (m_hatchstage)
@@ -334,6 +335,7 @@ void Intake::Hatch()
 
         if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             m_onfloor = false;
+        else
         if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             m_onfloor = true;
         
@@ -422,16 +424,20 @@ void Intake::Cargo()
     if (!m_inited)
         return;
 
-    if (m_mode == kModeHatch)
+    switch (m_mode)
     {
-        m_sparkcargo->Set(0);
-        m_solenoidarm->Set(false);
+    case kModeNone:                     // no mode selected or flush mode
         return;
-    }
+        break;
 
-    if (m_mode != kModeCargo)
-    {
+    case kModeHatch:                    // hatch mode - turn off cargo mechanisms
+        m_sparkcargo->Set(0);
+        m_solenoidcargo->Set(false);
         return;
+        break;
+
+    case kModeCargo:                    // cargo mode
+        break;
     }
 
     switch (m_cargostage)
@@ -441,8 +447,16 @@ void Intake::Cargo()
 
         m_sparkcargo->Set(0);
 
-        m_solenoidarm->Set(false);
-
+        if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        {
+            m_solenoidcargo->Set(true);
+        }
+        else
+        if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        {
+            m_solenoidcargo->Set(false);
+        }
+        else
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_cargostage = kCargoIngest;
@@ -454,8 +468,16 @@ void Intake::Cargo()
 
 		m_sparkcargo->Set(INT_CARGO_INGEST_SPEED);
 
-        m_solenoidarm->Set(false);
-
+        if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        {
+            m_solenoidcargo->Set(true);
+        }
+        else
+        if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        {
+            m_solenoidcargo->Set(false);
+        }
+        else
         if ((m_cargosensor && m_cargosensor->Get()) || m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
 			m_timer.Reset();            
@@ -491,11 +513,11 @@ void Intake::Cargo()
 
         if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
-            m_solenoidarm->Set(true);
+            m_solenoidcargo->Set(true);
         }
         if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
-            m_solenoidarm->Set(false);
+            m_solenoidcargo->Set(false);
         }
 
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
@@ -511,7 +533,6 @@ void Intake::Cargo()
         if (m_timer.Get() > INT_CARGO_EJECT_WAIT)
         {
             m_sparkcargo->Set(0);
-            m_solenoidarm->Set(false);
             m_cargostage = kCargoIdle;
             //m_mode = kModeNone;                   // this is commented to allow for quick cycles in cargo mode
         }
@@ -526,7 +547,7 @@ void Intake::Cargo()
     if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
         m_sparkcargo->Set(0);
-        m_solenoidarm->Set(false);
+        m_solenoidcargo->Set(false);
         m_cargostage = kCargoIdle;
         m_mode = kModeNone;
     }
@@ -553,7 +574,7 @@ void Intake::Flush()
         m_sparkvac->Set(0);
 
         m_sparkcargo->Set(0);
-        m_solenoidarm->Set(false);
+        m_solenoidcargo->Set(false);
 
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
@@ -564,6 +585,7 @@ void Intake::Flush()
     
     case kFlushPoof:
         m_solenoidhatch->Set(false);
+        m_sparkvac->Set(0);
 
         if (m_timer.Get() > m_waittime)
         {
@@ -588,6 +610,8 @@ void Intake::Flush()
         break;
 
     case kFlushEject:
+        m_sparkvac->Set(0);
+
         if (m_timer.Get() > INT_CARGO_EJECT_WAIT + m_waittime)
         {
             m_sparkcargo->Set(0);
