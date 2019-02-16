@@ -57,6 +57,7 @@ Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DriveP
 	m_waittime = INT_VACUUM_WAIT;
     m_vacuumpow = INT_VACUUM_POW;
     m_onfloor = false;
+    m_inited = false;
 }
 
 
@@ -96,7 +97,9 @@ void Intake::Init()
     if (m_sparkcargo == nullptr)
         return;
 	
-	DriverStation::ReportError("IntakeInit");
+    m_inited = true;
+
+	if (Debug) DriverStation::ReportError("IntakeInit");
 
 	m_solenoidvac1->Set(false);
 	m_solenoidvac2->Set(false);
@@ -106,8 +109,7 @@ void Intake::Init()
 
 	m_solenoidhatch->Set(false);
 
-	//m_solenoidarm1->Set(false);
-	//m_solenoidarm2->Set(false);
+	m_solenoidarm->Set(false);
 
 	m_sparkcargo->Set(0);
 
@@ -122,22 +124,50 @@ void Intake::Init()
 
 void Intake::Loop()
 {
-    CheckMode();
+    if (!m_inited)
+        return;
+
+    if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    {
+        m_mode = kModeHatch;
+        m_hatchstage = kHatchIdle;
+        m_lifter->SetHatchLevels();
+    }
+    else
+    if (m_inputs->xBoxRightTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    {
+        m_mode = kModeCargo;
+        m_cargostage = kCargoIdle;
+        m_lifter->SetCargoLevels();
+    }
+
     Cargo();
     Hatch();
     Flush();
+    
+    SmartDashboard::PutNumber("IN0_solenoidvac1", m_solenoidvac1->Get());
+	SmartDashboard::PutNumber("IN1_solenoidvac2", m_solenoidvac2->Get());
+	SmartDashboard::PutNumber("IN2_solenoidvac3", m_solenoidvac3->Get());
+	SmartDashboard::PutNumber("IN3_solenoidvac4", m_solenoidvac4->Get());
+    SmartDashboard::PutNumber("IN4_sparkvac", m_sparkvac->Get());
+
+	SmartDashboard::PutNumber("IN5_solenoidhatch", m_solenoidhatch->Get());
+
+	SmartDashboard::PutNumber("IN6_solenoidarm", m_solenoidarm->Get());
+
+	SmartDashboard::PutNumber("IN7_mode", m_mode);
+    SmartDashboard::PutNumber("IN8_hatchmode", m_hatchstage);
+    SmartDashboard::PutNumber("IN9_cargomode", m_cargostage);
+	SmartDashboard::PutNumber("IN10_waittime", m_waittime);
+
+	if (m_cargosensor)
+        SmartDashboard::PutNumber("IN11_cargosensor", m_cargosensor->Get());
 }
 
 
 void Intake::TestLoop()
 {
-    if (m_solenoidvac1 == nullptr || m_solenoidvac2 == nullptr || m_solenoidvac3 == nullptr || m_solenoidvac4 == nullptr || m_sparkvac == nullptr)
-        return;
-    if (m_solenoidhatch == nullptr)
-        return;
-    if (m_solenoidarm == nullptr)
-        return;
-    if (m_sparkcargo == nullptr)
+    if (!m_inited)
         return;
 	
 	m_solenoidvac1->Set(false);
@@ -148,25 +178,9 @@ void Intake::TestLoop()
 
 	m_solenoidhatch->Set(false);
 
-	//m_solenoidarm->Set(false);
+	m_solenoidarm->Set(false);
 
 	m_sparkcargo->Set(0);
-	
-	SmartDashboard::PutNumber("IN0_solenoidvac1", m_solenoidvac1->Get());
-	SmartDashboard::PutNumber("IN1_solenoidvac2", m_solenoidvac2->Get());
-	SmartDashboard::PutNumber("IN2_solenoidvac3", m_solenoidvac3->Get());
-	SmartDashboard::PutNumber("IN3_solenoidvac4", m_solenoidvac4->Get());
-    SmartDashboard::PutNumber("IN4_sparkvac", m_sparkvac->Get());
-
-	SmartDashboard::PutNumber("IN5_solenoidhatch", m_solenoidhatch->Get());
-
-	//SmartDashboard::PutNumber("IN6_solenoidarm", m_solenoidarm->Get());
-
-	SmartDashboard::PutNumber("IN8_mode", m_mode);
-    SmartDashboard::PutNumber("IN9_hatchmode", m_hatchstage);
-    SmartDashboard::PutNumber("IN_10, cargomode", m_cargostage);
-	SmartDashboard::PutNumber("IN8_waittime", m_waittime);
-	SmartDashboard::PutNumber("IN9_cargosensor", m_cargosensor->Get());
 }
 
 
@@ -236,13 +250,7 @@ void Intake::VisionLoop()
 
 void Intake::Stop()
 {
-    if (m_solenoidvac1 == nullptr || m_solenoidvac2 == nullptr || m_solenoidvac3 == nullptr || m_solenoidvac4 == nullptr || m_sparkvac == nullptr)
-        return;
-    if (m_solenoidhatch == nullptr)
-        return;
-    if (m_solenoidarm == nullptr)
-        return;
-    if (m_sparkcargo == nullptr)
+    if (!m_inited)
         return;
 
 	m_solenoidvac1->Set(false);
@@ -253,7 +261,7 @@ void Intake::Stop()
 
 	m_solenoidhatch->Set(false);
 
-	//m_solenoidarm->Set(false);
+	m_solenoidarm->Set(false);
 
 	m_sparkcargo->Set(0);
 
@@ -261,32 +269,9 @@ void Intake::Stop()
 }
 
 
-void Intake::CheckMode()
-{
-    if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-    {
-        m_mode = kModeHatch;
-        m_hatchstage = kHatchIdle;
-        m_lifter->SetHatchLevels();
-    }
-    if (m_inputs->xBoxRightTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-    {
-        m_mode = kModeCargo;
-        m_cargostage = kCargoIdle;
-        m_lifter->SetCargoLevels();
-    }
-}
-
-
 void Intake::Hatch()
 {
-    if (m_solenoidvac1 == nullptr || m_solenoidvac2 == nullptr || m_solenoidvac3 == nullptr || m_solenoidvac4 == nullptr || m_sparkvac == nullptr)
-        return;
-    if (m_solenoidhatch == nullptr)
-        return;
-    if (m_solenoidarm == nullptr)
-        return;
-    if (m_sparkcargo == nullptr)
+    if (!m_inited)
         return;
     
     if (m_mode == kModeCargo)
@@ -307,11 +292,10 @@ void Intake::Hatch()
         return;
     }
 
-
     switch (m_hatchstage)
     {
     case kHatchIdle:
-    	DriverStation::ReportError("kHatchIdle");
+    	if (Debug) DriverStation::ReportError("kHatchIdle");
 
         m_solenoidvac1->Set(false);
         m_solenoidvac2->Set(false);
@@ -340,13 +324,13 @@ void Intake::Hatch()
         break;
 
     case kHatchCapture:
-    	DriverStation::ReportError("kHatchCapture");
+    	if (Debug) DriverStation::ReportError("kHatchCapture");
 
         m_solenoidvac1->Set(false);
         m_solenoidvac2->Set(false);
         m_solenoidvac3->Set(false);
         m_solenoidvac4->Set(false);
-        m_sparkvac->Set(INT_VACUUM_POW);         // Magic number, change later
+        m_sparkvac->Set(m_vacuumpow);
 
         if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             m_onfloor = false;
@@ -374,7 +358,7 @@ void Intake::Hatch()
         break;
 
     case kHatchRelease:
-    	DriverStation::ReportError("kHatchRelease");
+    	if (Debug) DriverStation::ReportError("kHatchRelease");
 
         m_solenoidhatch->Set(false);
         m_sparkvac->Set(0);
@@ -391,7 +375,7 @@ void Intake::Hatch()
 
             m_onfloor = false;
             m_hatchstage = kHatchIdle;
-            //m_mode = kModeNone;
+            //m_mode = kModeNone;               // this is commented to allow for quick cycles in hatch mode
                                                 // back up while poofing?
         }
         break;
@@ -430,40 +414,18 @@ void Intake::Hatch()
         m_hatchstage = kHatchIdle;
         m_mode = kModeNone;
     }
-
-	SmartDashboard::PutNumber("IN0_solenoidvac1", m_solenoidvac1->Get());
-	SmartDashboard::PutNumber("IN1_solenoidvac2", m_solenoidvac2->Get());
-	SmartDashboard::PutNumber("IN2_solenoidvac3", m_solenoidvac3->Get());
-	SmartDashboard::PutNumber("IN3_solenoidvac4", m_solenoidvac4->Get());
-    SmartDashboard::PutNumber("IN4_sparkvac", m_sparkvac->Get());
-
-	SmartDashboard::PutNumber("IN5_solenoidhatch", m_solenoidhatch->Get());
-
-	//SmartDashboard::PutNumber("IN6_solenoidarm", m_solenoidarm->Get());
-
-	SmartDashboard::PutNumber("IN8_mode", m_mode);
-    SmartDashboard::PutNumber("IN9_hatchmode", m_hatchstage);
-    SmartDashboard::PutNumber("IN10_cargomode", m_cargostage);
-	SmartDashboard::PutNumber("IN11_waittime", m_waittime);
-	SmartDashboard::PutNumber("IN12_cargosensor", m_cargosensor->Get());
 }
 
 
 void Intake::Cargo()
 {
-    if (m_solenoidvac1 == nullptr || m_solenoidvac2 == nullptr || m_solenoidvac3 == nullptr || m_solenoidvac4 == nullptr || m_sparkvac == nullptr)
-        return;
-    if (m_solenoidhatch == nullptr)
-        return;
-    if (m_solenoidarm == nullptr)
-        return;
-    if (m_sparkcargo == nullptr)
+    if (!m_inited)
         return;
 
     if (m_mode == kModeHatch)
     {
         m_sparkcargo->Set(0);
-        //m_solenoidarm->Set(false);
+        m_solenoidarm->Set(false);
         return;
     }
 
@@ -475,11 +437,11 @@ void Intake::Cargo()
     switch (m_cargostage)
     {
     case kCargoIdle:
-    	DriverStation::ReportError("kCargoIdle");
+    	if (Debug) DriverStation::ReportError("kCargoIdle");
 
         m_sparkcargo->Set(0);
 
-        //m_solenoidarm->Set(false);
+        m_solenoidarm->Set(false);
 
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
@@ -488,13 +450,13 @@ void Intake::Cargo()
         break;
 
     case kCargoIngest:
-    	DriverStation::ReportError("kCargoIngest");
+    	if (Debug) DriverStation::ReportError("kCargoIngest");
 
-		m_sparkcargo->Set(INT_CARGO_INGEST_SPEED);     // magic number, change later
+		m_sparkcargo->Set(INT_CARGO_INGEST_SPEED);
 
-        //m_solenoidarm->Set(false);
+        m_solenoidarm->Set(false);
 
-        if (/*m_cargosensor->Get() || */ m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        if ((m_cargosensor && m_cargosensor->Get()) || m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
 			m_timer.Reset();            
             m_cargostage = kCargoIngestWait;
@@ -502,21 +464,21 @@ void Intake::Cargo()
         break;
 
     case kCargoIngestWait:
-    	DriverStation::ReportError("kCargoIngestWait");
+    	if (Debug) DriverStation::ReportError("kCargoIngestWait");
 
-        if (m_timer.Get() > INT_CARGO_INGEST_WAIT)        // Magic # used for ingest
+        if (m_timer.Get() > INT_CARGO_INGEST_WAIT)
         {
             m_sparkcargo->Set(0);
             m_cargostage = kCargoBall;
         }
         else
         {
-            m_sparkcargo->Set(0.7);     // Magic number, change later
+            m_sparkcargo->Set(INT_CARGO_INGEST_SPEED);
         }
         break;
     
     case kCargoBall:
-    	DriverStation::ReportError("kCargoBall");
+    	if (Debug) DriverStation::ReportError("kCargoBall");
 
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
         {
@@ -529,11 +491,11 @@ void Intake::Cargo()
 
         if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
-            //m_solenoidarm->Set(true);
+            m_solenoidarm->Set(true);
         }
         if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
-            //m_solenoidarm->Set(false);
+            m_solenoidarm->Set(false);
         }
 
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
@@ -546,16 +508,16 @@ void Intake::Cargo()
         break;
     
     case kCargoEject:
-        if (m_timer.Get() > INT_CARGO_EJECT_WAIT)    // Magic # for eject timer
+        if (m_timer.Get() > INT_CARGO_EJECT_WAIT)
         {
             m_sparkcargo->Set(0);
-            //m_solenoidarm->Set(false);
+            m_solenoidarm->Set(false);
             m_cargostage = kCargoIdle;
-            //m_mode = kModeNone;
+            //m_mode = kModeNone;                   // this is commented to allow for quick cycles in cargo mode
         }
         else
         {
-            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);    // Magic # for eject
+            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
         }
         break;
 
@@ -564,38 +526,16 @@ void Intake::Cargo()
     if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
         m_sparkcargo->Set(0);
-        //m_solenoidarm->Set(false);
+        m_solenoidarm->Set(false);
         m_cargostage = kCargoIdle;
         m_mode = kModeNone;
     }
-
-	SmartDashboard::PutNumber("IN0_solenoidvac1", m_solenoidvac1->Get());
-	SmartDashboard::PutNumber("IN1_solenoidvac2", m_solenoidvac2->Get());
-	SmartDashboard::PutNumber("IN2_solenoidvac3", m_solenoidvac3->Get());
-	SmartDashboard::PutNumber("IN3_solenoidvac4", m_solenoidvac4->Get());
-    SmartDashboard::PutNumber("IN4_sparkvac", m_sparkvac->Get());
-
-	SmartDashboard::PutNumber("IN5_solenoidhatch", m_solenoidhatch->Get());
-
-	//SmartDashboard::PutNumber("IN6_solenoidarm", m_solenoidarm->Get());
-
-	SmartDashboard::PutNumber("IN7_mode", m_mode);
-    SmartDashboard::PutNumber("IN8_hatchmode", m_hatchstage);
-    SmartDashboard::PutNumber("IN9_cargomode", m_cargostage);
-	SmartDashboard::PutNumber("IN10_waittime", m_waittime);
-	SmartDashboard::PutNumber("IN11_cargosensor", m_cargosensor->Get());
 }
 
 
 void Intake::Flush()
 {
-    if (m_solenoidvac1 == nullptr || m_solenoidvac2 == nullptr || m_solenoidvac3 == nullptr || m_solenoidvac4 == nullptr || m_sparkvac == nullptr)
-        return;
-    if (m_solenoidhatch == nullptr)
-        return;
-    if (m_solenoidarm == nullptr)
-        return;
-    if (m_sparkcargo == nullptr)
+    if (!m_inited)
         return;
 
     if (m_mode != kModeNone)
@@ -613,7 +553,7 @@ void Intake::Flush()
         m_sparkvac->Set(0);
 
         m_sparkcargo->Set(0);
-        //m_solenoidarm->Set(false);
+        m_solenoidarm->Set(false);
 
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {

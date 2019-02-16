@@ -52,6 +52,8 @@ protected:
 	int m_mediumposition;
 	int m_highposition;
 	int m_selectedposition;
+
+	Solenoid *m_solenoid;
 };
 
 

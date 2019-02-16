@@ -37,6 +37,8 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 		m_motor->SetNeutralMode(NeutralMode::Brake);
 		m_motor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 0);
 	}
+
+	m_solenoid = new Solenoid(PCM_LIFTER_SOLENOID);
 }
 
 
@@ -69,6 +71,8 @@ void Lifter::Init()
 
 	m_motor->StopMotor();
 	m_loopmode = kManual;
+
+	m_solenoid->Set(true);
 }
 
 
@@ -231,6 +235,7 @@ void Lifter::Stop()
 		return;
 
 	m_motor->StopMotor();
+	m_solenoid->Set(false);
 }
 
 
@@ -282,11 +287,6 @@ int Lifter::FindPosition(LifterDir direction)
 		{
 			if (Debug) DriverStation::ReportError("Up High");
 			return m_highposition;
-		}
-		else
-		{
-			if (Debug) DriverStation::ReportError("Up Max");
-			return m_liftermax;
 		}
 	}
 	else

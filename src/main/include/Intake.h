@@ -42,7 +42,6 @@ public:
 	void Stop();
 
 protected:	
-	void CheckMode();
 	void Hatch();
 	void Cargo();
 	void Flush();
@@ -52,7 +51,7 @@ protected:
 	OperatorInputs *m_inputs;
 	Lifter *m_lifter;
 
-	Solenoid *m_solenoidvac1;		// Used for vaccuum -> decided
+	Solenoid *m_solenoidvac1;		// Used for vaccuum 
 	Solenoid *m_solenoidvac2;
 	Solenoid *m_solenoidvac3;
 	Solenoid *m_solenoidvac4;
@@ -74,6 +73,7 @@ protected:
 	double m_waittime;
 	double m_vacuumpow;
 	bool m_onfloor;
+	bool m_inited;
 };
 
 

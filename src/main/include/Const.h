@@ -103,7 +103,7 @@
 // Lifter
 #define CAN_LIFTER_MOTOR 6			// 6
 #define PCM_LIFTER_MODULE 0			// 0
-#define PCM_LIFTER_SOLENOID -1		// 2
+#define PCM_LIFTER_SOLENOID 2		// 2
 #define LIF_RAISESPEED -0.5
 #define LIF_LOWERSPEED 0.375			// 0.75
 #define LIF_LIFTERMAX 24800			// 24050
