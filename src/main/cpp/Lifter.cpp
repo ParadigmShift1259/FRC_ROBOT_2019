@@ -33,17 +33,20 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 	m_highposition = 0;
 	m_selectedposition = 0;
 
-	if ((CAN_LIFTER_MOTOR1 != -1) && (CAN_LIFTER_MOTOR2 != -1))
+	if (CAN_LIFTER_MOTOR1 != -1)
 	{
 		m_motor = new WPI_TalonSRX(CAN_LIFTER_MOTOR1);
 		m_motor->Set(ControlMode::PercentOutput, 0);
 		m_motor->SetNeutralMode(NeutralMode::Brake);
 		m_motor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 0);
 
-		m_motorslave = new WPI_TalonSRX(CAN_LIFTER_MOTOR2);
-		m_motorslave->Set(ControlMode::Follower, CAN_LIFTER_MOTOR1);
-		m_motorslave->SetNeutralMode(NeutralMode::Brake);
-		m_motorslave->SetInverted(InvertType::OpposeMaster);
+		if (CAN_LIFTER_MOTOR2 != -1)
+		{
+			m_motorslave = new WPI_TalonSRX(CAN_LIFTER_MOTOR2);
+			m_motorslave->Set(ControlMode::Follower, CAN_LIFTER_MOTOR1);
+			m_motorslave->SetNeutralMode(NeutralMode::Brake);
+			m_motorslave->SetInverted(InvertType::OpposeMaster);
+		}
 	}
 
 	if (PCM_LIFTER_SOLENOID != -1)

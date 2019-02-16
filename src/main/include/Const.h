@@ -107,8 +107,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 // Lifter
 //   Motors
-#define CAN_LIFTER_MOTOR1 4
-#define CAN_LIFTER_MOTOR2 5
+#define CAN_LIFTER_MOTOR1 4             // 4
+#define CAN_LIFTER_MOTOR2 -1            // 5
 //   Solenoids
 #define PCM_LIFTER_MODULE 0			    // 0
 #define PCM_LIFTER_SOLENOID 2		    // 2
