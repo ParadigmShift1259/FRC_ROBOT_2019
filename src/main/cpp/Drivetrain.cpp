@@ -313,7 +313,7 @@ void DriveTrain::Loop()
 		m_lowspeedmode = false;
 	}
 
-	LowSpeedDriving();
+	//LowSpeedDriving();
 
 	x = m_inputs->xBoxLeftX(0 * INP_DUAL);
 	y = m_inputs->xBoxLeftY(0 * INP_DUAL);
