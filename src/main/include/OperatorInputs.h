@@ -68,7 +68,7 @@ public:
 
 protected:
 	Joystick *m_joystick;
-	vector<Joystick*> m_xbox;
+	vector<XboxController *> m_xbox;
 
 private:
 	bool toggle(string buttonName, bool buttonValue);
