@@ -182,6 +182,18 @@ void Lifter::Loop()
 		{
 			m_loopmode = kManual;
 		}
+
+		/// if Y is pressed, increase target position
+		if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+		{
+			UpdatePosition(kUp);
+		}
+		else
+		/// if X is pressed, decrease target position
+		if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+		{
+			UpdatePosition(kDown);
+		}
 		break;
 
 	case kAutoDown:
@@ -205,6 +217,18 @@ void Lifter::Loop()
 		if (fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.50)
 		{
 			m_loopmode = kManual;
+		}
+
+		/// if Y is pressed, increase target position
+		if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+		{
+			UpdatePosition(kUp);
+		}
+		else
+		/// if X is pressed, decrease target position
+		if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+		{
+			UpdatePosition(kDown);
 		}
 		break;
 	}
@@ -272,7 +296,7 @@ void Lifter::ResetPosition()
 
 void Lifter::SetHatchLevels()
 {
-	m_lowposition = -1;
+	m_lowposition = 0;
 	m_mediumposition = LIF_HATCH_MID;
 	m_highposition = LIF_HATCH_HIGH;
 }
@@ -295,7 +319,7 @@ int Lifter::FindPosition(LifterDir direction)
 
 	if (direction == kUp)
 	{
-		if ((m_position < (m_lowposition - LIF_SLACK)) && (m_lowposition != -1))
+		if ((m_position < (m_lowposition - LIF_SLACK)) && (m_lowposition != 0))
 		{
 			if (Debug) DriverStation::ReportError("Up Low");
 			return m_lowposition;
@@ -328,7 +352,7 @@ int Lifter::FindPosition(LifterDir direction)
 			return m_mediumposition;
 		}
 		else 
-		if ((m_position > (m_lowposition + LIF_SLACK)) && (m_lowposition != -1))
+		if ((m_position > (m_lowposition + LIF_SLACK)) && (m_lowposition != 0))
 		{
 			if (Debug) DriverStation::ReportError("Down Low");
 			return m_lowposition;
@@ -339,4 +363,40 @@ int Lifter::FindPosition(LifterDir direction)
 			return m_liftermin;
 		}
 	}
+}
+
+
+void Lifter::UpdatePosition(LifterDir direction)
+{
+	if (direction == kUp)
+	{
+		if (m_selectedposition == m_liftermin)
+			m_selectedposition = m_lowposition;
+		else
+		if (m_selectedposition == m_lowposition)
+			m_selectedposition = m_mediumposition;
+		else
+		if (m_selectedposition == m_mediumposition)
+			m_selectedposition = m_highposition;
+	}
+	else
+	if (direction == kDown)
+	{
+		if (m_selectedposition == m_highposition)
+			m_selectedposition = m_mediumposition;
+		else
+		if (m_selectedposition == m_mediumposition)
+			m_selectedposition = m_lowposition;
+		else
+		if (m_selectedposition == m_lowposition)
+			m_selectedposition = m_liftermin;
+	}
+
+	if (m_position > (m_selectedposition + LIF_SLACK))
+		m_loopmode = kAutoDown;
+	else
+	if (m_position < (m_selectedposition - LIF_SLACK))
+		m_loopmode = kAutoUp;
+	else
+		m_loopmode = kManual;
 }

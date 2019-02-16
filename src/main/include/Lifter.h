@@ -33,6 +33,7 @@ public:
 	void SetHatchLevels();
 	void SetCargoLevels();
 	int FindPosition(LifterDir direction);
+	void UpdatePosition(LifterDir direction);
 
 protected:
 	DriverStation *m_ds;

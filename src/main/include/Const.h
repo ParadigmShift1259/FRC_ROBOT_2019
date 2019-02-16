@@ -14,7 +14,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 // OperatorInputs
 //   Controllers
-#define INP_DUAL 0
+#define INP_DUAL 1
 #define INP_JOYSTICK -1
 #define INP_XBOX_1 0
 #define INP_XBOX_2 1
