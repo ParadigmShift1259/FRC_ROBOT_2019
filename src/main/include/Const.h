@@ -64,7 +64,7 @@
 #define CAN_RIGHT_PORT_2 3			// 3
 #define CAN_RIGHT_PORT_3 -1
 // Shifter
-#define PCM_SHIFT_PORT_LOW -1		// 0
+#define PCM_SHIFT_PORT_LOW 0		// 0
 #define PCM_SHIFT_MODULE 0
 #define CHILD_PROOF_SPEED 0.75
 #define FLIP_HIGH_GEAR true
