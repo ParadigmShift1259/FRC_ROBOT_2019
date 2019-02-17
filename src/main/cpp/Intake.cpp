@@ -492,7 +492,7 @@ void Intake::Cargo()
         if (m_timer.Get() > INT_CARGO_INGEST_WAIT)
         {
             m_sparkcargo->Set(0);
-            m_solenoidcargo->Set(true);
+            //m_solenoidcargo->Set(true);
             m_cargostage = kCargoBall;
         }
         else

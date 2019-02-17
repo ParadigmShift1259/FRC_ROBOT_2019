@@ -54,8 +54,6 @@ void Pneumatics::Loop()
     switch (m_stage)
     {
     case kRun:
-        if (Debug) DriverStation::ReportError("Pneumatic Run");
-
         if ((m_pdp->GetTotalCurrent() > PNE_CURRENT_DRAW) ||
             (m_pdp->GetVoltage() < PNE_VOLTAGE_DROP))
         {
@@ -70,8 +68,6 @@ void Pneumatics::Loop()
         break;
 
     case kWait:
-        if (Debug) DriverStation::ReportError("Pneumatic Wait");
-        
         if (m_timer.Get() > PNE_WAITTIME)
         {
             m_stage = kRun;

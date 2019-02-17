@@ -245,10 +245,10 @@ void Lifter::Loop()
 		break;
 	}
 
-	if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))			// straighten lifter forward - deploy - true
+	if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))			// angle lifter back - retract - false (default)
 		m_solenoid->Set(true);
 	else
-	if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))			// angle lifter back - retract - false (default)
+	if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))			// straighten lifter forward - deploy - true
 		m_solenoid->Set(false);
 
 	SmartDashboard::PutNumber("LI1_liftermin", m_liftermin);
