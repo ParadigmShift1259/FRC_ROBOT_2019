@@ -60,6 +60,8 @@ Lifter::~Lifter()
 		delete m_motor;
 	if (m_motorslave != nullptr)
 		delete m_motorslave;
+	if (m_solenoid != nullptr)
+		delete m_solenoid;
 }
 
 
@@ -102,31 +104,29 @@ void Lifter::Loop()
 	{
 	case kManual:
 		/// if left bumper and Y override position sensor and raise lift
-		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
-			!m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -LIF_DEADZONE_Y) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
 		{
 			m_motor->Set(m_raisespeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
 		}
 		else
 		/// if Y raise lift only if not at max position
-		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -0.5) && (m_position < m_liftermax) && 
-			!m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))		/// raise lifter - positive
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -LIF_DEADZONE_Y) && (m_position < m_liftermax))
 		{
 			if (m_position > m_liftermaxspd)
 				m_motor->Set(m_raisespeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
 			else
-				m_motor->Set(m_raisespeed);
+				m_motor->Set(m_raisespeed * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
 		}
 		else
 		/// if left bumper and X override position sensor and lower lift
-		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > LIF_DEADZONE_Y) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
 		{
 			m_motor->Set(m_lowerspeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
 			m_motor->SetSelectedSensorPosition(0, 0, 0);
 		}
 		else
 		/// if X lower lift only if not at min position
-		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && (m_position > m_liftermin))		/// lower lifter - negative
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > LIF_DEADZONE_Y) && (m_position > m_liftermin))
 		{
 			if (m_position < m_lifterminspd)
 				m_motor->Set(m_lowerspeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
@@ -146,14 +146,14 @@ void Lifter::Loop()
 		}
 
 		/// if Y is pressed, initiate up auto sequence
-		if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_highposition != 0)
+		if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_highposition)
 		{
 			m_selectedposition = FindPosition(kUp);
 			m_loopmode = kAutoUp;
 		}
 		else
 		/// if X is pressed, initiate down auto sequence
-		if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_highposition != 0)
+		if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_highposition)
 		{
 			m_selectedposition = FindPosition(kDown);
 			m_loopmode = kAutoDown;
@@ -182,7 +182,7 @@ void Lifter::Loop()
 		{
 			m_loopmode = kManual;
 		}
-
+		else
 		/// if Y is pressed, increase target position
 		if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
 		{
@@ -214,11 +214,11 @@ void Lifter::Loop()
 		}
 
 		/// if manual control is sensed, return to manual control
-		if (fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.50)
+		if (fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > LIF_DEADZONE_Y)
 		{
 			m_loopmode = kManual;
 		}
-
+		else
 		/// if Y is pressed, increase target position
 		if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
 		{
@@ -233,7 +233,7 @@ void Lifter::Loop()
 		break;
 	}
 
-	if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))				// straighten lifter forward - deploy - true
+	if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))			// straighten lifter forward - deploy - true
 		m_solenoid->Set(true);
 	else
 	if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))			// angle lifter back - retract - false (default)

@@ -127,6 +127,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define LIF_CARGO_MID 12000
 #define LIF_CARGO_HIGH 18000
 #define LIF_SLACK 200
+#define LIF_DEADZONE_Y 0.5
 
 
 // Intake

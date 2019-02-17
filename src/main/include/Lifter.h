@@ -32,6 +32,8 @@ public:
 	void ResetPosition();
 	void SetHatchLevels();
 	void SetCargoLevels();
+
+protected:
 	int FindPosition(LifterDir direction);
 	void UpdatePosition(LifterDir direction);
 
