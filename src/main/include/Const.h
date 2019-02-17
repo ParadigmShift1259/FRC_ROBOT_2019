@@ -97,7 +97,11 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // Compressor
-#define PCM_COMPRESSOR_SOLENOID -1      // 0
+#define PCM_COMPRESSOR_SOLENOID 0      // 0
+#define CAN_POWER_DISTRIBUTION_PANEL 0  // 0
+#define PNE_CURRENT_DRAW 80
+#define PNE_VOLTAGE_DROP 10
+#define PNE_WAITTIME 1.0
 
 
 // Gyro

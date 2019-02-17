@@ -6,6 +6,7 @@
 #include "Const.h"
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
+#include "Pneumatics.h"
 #include "Autonomous.h"
 #include "Lifter.h"
 #include "Intake.h"
@@ -30,9 +31,9 @@ public:
 
 protected:
 	DriverStation *m_driverstation;
-	Compressor *m_compressor;
 	OperatorInputs *m_operatorinputs;
 	GyroDrive *m_gyrodrive;
+	Pneumatics *m_pneumatics;
 	Autonomous *m_autonomous;
 	Lifter *m_lifter;
 	Intake *m_intake;

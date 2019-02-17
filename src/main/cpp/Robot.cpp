@@ -20,12 +20,10 @@ bool Debug = true;
 void Robot::RobotInit()
 {
 	m_driverstation = &DriverStation::GetInstance();
-	m_compressor = nullptr;
-	if (PCM_COMPRESSOR_SOLENOID != -1)
-		m_compressor = new Compressor(PCM_COMPRESSOR_SOLENOID);
 
 	m_operatorinputs = new OperatorInputs();
 	m_gyrodrive = new GyroDrive(m_operatorinputs);
+	m_pneumatics = new Pneumatics();
 	m_autonomous = new Autonomous(m_operatorinputs, m_gyrodrive);
 	m_lifter = new Lifter(m_driverstation, m_operatorinputs);
 	m_intake = new Intake(m_driverstation, m_operatorinputs, m_lifter, m_drivepid);
@@ -55,8 +53,7 @@ void Robot::AutonomousInit()
 {
 	DriverStation::ReportError("AutonomousInit");
 
-	if (m_compressor != nullptr)
-		m_compressor->Start();
+	m_pneumatics->Init();
 	m_gyrodrive->Init();
 	m_intake->Init();
 	m_lifter->Init();
@@ -86,8 +83,7 @@ void Robot::TeleopInit()
 {
 	DriverStation::ReportError("TeleopInit");
 
-	if (m_compressor != nullptr)
-		m_compressor->Start();
+	m_pneumatics->Init();
 	m_gyrodrive->Init();
 	m_intake->Init();
 	m_lifter->Init();
@@ -96,6 +92,7 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
+	m_pneumatics->Loop();
 	m_gyrodrive->Loop();
 	m_intake->Loop();
 	m_lifter->Loop();
@@ -106,8 +103,7 @@ void Robot::DisabledInit()
 {
 	DriverStation::ReportError("DisabledInit");
 
-	if (m_compressor != nullptr)
-		m_compressor->Stop();
+	m_pneumatics->Stop();
 	m_gyrodrive->Stop();
 	m_intake->Stop();
 	m_lifter->Stop();
