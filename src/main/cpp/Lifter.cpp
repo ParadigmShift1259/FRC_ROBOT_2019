@@ -27,6 +27,7 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 	m_lifterminspd = LIF_LIFTERMINSPD;
 	m_liftermaxspd = LIF_LIFTERMAXSPD;
 	m_loopmode = kManual;
+	m_stage = kIdle;
 
 	m_lowposition = 0;
 	m_mediumposition = 0;
@@ -88,8 +89,7 @@ void Lifter::Init()
 
 	m_motor->StopMotor();
 	m_loopmode = kManual;
-
-	m_solenoid->Set(true);
+	m_stage = kIdle;
 }
 
 
@@ -142,9 +142,21 @@ void Lifter::Loop()
 		}
 		else
 		{
-			m_motor->Set(LIF_LIFTERHOLD);
+			if (m_position > m_liftermin)
+				m_motor->Set(LIF_LIFTERHOLD);
+			else
+				m_motor->StopMotor();
 		}
 
+		/// no buttons pressed so check for staging of lifter (pre game)
+		if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+			m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+			m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+		{
+			m_selectedposition = LIF_LIFTERSTART;
+			m_loopmode = kAutoUp;
+		}
+		else
 		/// if Y is pressed, initiate up auto sequence
 		if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_highposition)
 		{

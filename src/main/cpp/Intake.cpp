@@ -459,6 +459,7 @@ void Intake::Cargo()
         else
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
+            m_solenoidcargo->Set(false);
             m_cargostage = kCargoIngest;
         }
         break;
@@ -491,6 +492,7 @@ void Intake::Cargo()
         if (m_timer.Get() > INT_CARGO_INGEST_WAIT)
         {
             m_sparkcargo->Set(0);
+            m_solenoidcargo->Set(true);
             m_cargostage = kCargoBall;
         }
         else

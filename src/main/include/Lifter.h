@@ -22,6 +22,7 @@ class Lifter
 public:
 	enum LoopMode {kManual, kAutoUp, kAutoDown};
 	enum LifterDir {kUp, kDown};
+	enum Stage {kIdle, kRaise};
 
 	Lifter(DriverStation *ds, OperatorInputs *inputs);
 	virtual ~Lifter();
@@ -32,6 +33,7 @@ public:
 	void ResetPosition();
 	void SetHatchLevels();
 	void SetCargoLevels();
+	void AutoRaise();
 
 protected:
 	int FindPosition(LifterDir direction);
@@ -45,6 +47,7 @@ protected:
 	Solenoid *m_solenoid;
 
 	LoopMode m_loopmode;
+	Stage m_stage;
 
 	int m_position;
 	double m_raisespeed;
