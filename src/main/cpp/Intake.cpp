@@ -298,10 +298,6 @@ void Intake::Hatch()
     case kHatchIdle:
     	if (Debug) DriverStation::ReportError("kHatchIdle");
 
-        m_solenoidvac1->Set(false);
-        m_solenoidvac2->Set(false);
-        m_solenoidvac3->Set(false);
-        m_solenoidvac4->Set(false);
         m_sparkvac->Set(0);
 
         if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
@@ -321,6 +317,21 @@ void Intake::Hatch()
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_hatchstage = kHatchCapture;
+        }
+        else
+        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+        {
+            m_solenoidvac1->Set(true);
+            m_solenoidvac2->Set(true);
+            m_solenoidvac3->Set(true);
+            m_solenoidvac4->Set(true);
+        }
+        else
+        {
+            m_solenoidvac1->Set(false);
+            m_solenoidvac2->Set(false);
+            m_solenoidvac3->Set(false);
+            m_solenoidvac4->Set(false);
         }
         break;
 
@@ -445,7 +456,7 @@ void Intake::Cargo()
     case kCargoIdle:
     	if (Debug) DriverStation::ReportError("kCargoIdle");
 
-        m_sparkcargo->Set(0);
+        //m_sparkcargo->Set(0);
 
         if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
@@ -459,8 +470,23 @@ void Intake::Cargo()
         else
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
-            m_solenoidcargo->Set(false);
             m_cargostage = kCargoIngest;
+        }
+        else
+        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        {
+            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+            m_timer.Reset();
+            m_cargostage = kCargoEject;
+        }
+        else 
+        if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
+        {
+            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+        }
+        else
+        {
+            m_sparkcargo->Set(0);
         }
         break;
 
@@ -492,7 +518,6 @@ void Intake::Cargo()
         if (m_timer.Get() > INT_CARGO_INGEST_WAIT)
         {
             m_sparkcargo->Set(0);
-            //m_solenoidcargo->Set(true);
             m_cargostage = kCargoBall;
         }
         else
@@ -509,6 +534,13 @@ void Intake::Cargo()
             m_sparkcargo->Set(INT_CARGO_INGEST_SPEED);
         }
         else
+        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        {
+            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+            m_timer.Reset();
+            m_cargostage = kCargoEject;
+        }
+        else
         {
             m_sparkcargo->Set(0);
         }
@@ -517,18 +549,11 @@ void Intake::Cargo()
         {
             m_solenoidcargo->Set(true);
         }
+        else
         if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_solenoidcargo->Set(false);
         }
-
-        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        {
-            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
-            m_timer.Reset();
-            m_cargostage = kCargoEject;
-        }
-
         break;
     
     case kCargoEject:

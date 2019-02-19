@@ -79,7 +79,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define RAMPING_RATE_PERIOD 0.10
 #define RAMPING_RATE_MIN 0.6
 #define RAMPING_RATE_MAX 4.0
-#define X_SCALING 1.0
+#define X_SCALING 0.75
 #define Y_SCALING 1.0
 #define LEFT_MOTOR_SCALING 1
 #define RIGHT_MOTOR_SCALING 1
@@ -117,12 +117,13 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define PCM_LIFTER_MODULE 0			    // 0
 #define PCM_LIFTER_SOLENOID 2		    // 2
 //   Constants
-#define LIF_RAISESPEED -0.5            // -1.0
-#define LIF_LOWERSPEED 0.5  			// 0.75
+#define LIF_RAISESPEED -1            // -1.0
+#define LIF_LOWERSPEED 1  			// 0.75
 #define LIF_LIFTERMAX 21000			    // 21000
-#define LIF_LIFTERMIN 100								/// minimum cutoff
+#define LIF_LIFTERMIN 300								/// minimum cutoff
 #define LIF_LIFTERMINSPD (LIF_LIFTERMAX * 0.1)			/// 5% of max height
-#define LIF_LIFTERSTART (LIF_LIFTERMAX * 0.47)			/// ~50% of max height
+//#define LIF_LIFTERSTART 6000                			/// ~50% of max height
+#define LIF_LIFTERSTART 0               // Sussex
 #define LIF_LIFTERMAXSPD (LIF_LIFTERMAX	* 0.95)			/// 5% of max height
 #define LIF_LIFTERHOLD -0.05              // -0.06
 #define LIF_HATCH_MID 7000                  // Not determined
@@ -154,8 +155,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INT_CARGO_EJECT_WAIT 1.5
 #define INT_CARGO_EJECT_SPEED 1.0      // -1.0
 //   Hatch Constants
-#define INT_VACUUM_WAIT 0.250
-#define INT_VACUUM_POW 0.550
+#define INT_VACUUM_WAIT 0.25             // 0.250
+#define INT_VACUUM_POW 0.275
 
 
 #endif /* SRC_CONST_H_ */
