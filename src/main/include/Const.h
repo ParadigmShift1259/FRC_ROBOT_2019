@@ -78,7 +78,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 //   Ramping
 #define RAMPING_RATE_PERIOD 0.10
 #define RAMPING_RATE_MIN 0.6
-#define RAMPING_RATE_MAX 4.0
+#define RAMPING_RATE_MAX 2.0            // 4.0
 #define X_SCALING 0.75
 #define Y_SCALING 1.0
 #define LEFT_MOTOR_SCALING 1
@@ -132,7 +132,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define LIF_CARGO_MID 13900
 #define LIF_CARGO_HIGH 21000
 #define LIF_SLACK 200
-#define LIF_DEADZONE_Y 0.5
+#define LIF_DEADZONE_Y 0.18
 
 
 // Intake
@@ -155,8 +155,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INT_CARGO_EJECT_WAIT 1.5
 #define INT_CARGO_EJECT_SPEED 1.0      // -1.0
 //   Hatch Constants
-#define INT_VACUUM_WAIT 0.25             // 0.250
-#define INT_VACUUM_POW 0.275
+#define INT_VACUUM_WAIT 0.4             // 0.250
+#define INT_VACUUM_POW 0.45
 
 
 #endif /* SRC_CONST_H_ */
