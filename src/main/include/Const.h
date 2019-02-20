@@ -119,18 +119,18 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 //   Constants
 #define LIF_RAISESPEED -1            // -1.0
 #define LIF_LOWERSPEED 1  			// 0.75
-#define LIF_LIFTERMAX 21000			    // 21000
+#define LIF_LIFTERMAX 22220			    // 21000
 #define LIF_LIFTERMIN 300								/// minimum cutoff
 #define LIF_LIFTERMINSPD (LIF_LIFTERMAX * 0.1)			/// 5% of max height
 //#define LIF_LIFTERSTART 6000                			/// ~50% of max height
 #define LIF_LIFTERSTART 0               // Sussex
 #define LIF_LIFTERMAXSPD (LIF_LIFTERMAX	* 0.95)			/// 5% of max height
 #define LIF_LIFTERHOLD -0.05              // -0.06
-#define LIF_HATCH_MID 7000                  // Not determined
-#define LIF_HATCH_HIGH 14000                // Not determined
+#define LIF_HATCH_MID 8600                  // Not determined
+#define LIF_HATCH_HIGH 17770                // Not determined
 #define LIF_CARGO_LOW 5300
 #define LIF_CARGO_MID 13900
-#define LIF_CARGO_HIGH 21000
+#define LIF_CARGO_HIGH 22220
 #define LIF_SLACK 200
 #define LIF_DEADZONE_Y 0.18
 
@@ -148,15 +148,15 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define PCM_INTAKE_SOLENOIDVAC3 6
 #define PCM_INTAKE_SOLENOIDVAC4 7
 //   Digital Inputs
-#define DIO_INTAKE_CARGOSENSOR -1       // 0
+#define DIO_INTAKE_CARGOSENSOR 0       // 0
 //   Cargo Constants
 #define INT_CARGO_INGEST_WAIT 0.5
-#define INT_CARGO_INGEST_SPEED -0.5      // 0.7
+#define INT_CARGO_INGEST_SPEED -0.8   // 0.7
 #define INT_CARGO_EJECT_WAIT 1.5
 #define INT_CARGO_EJECT_SPEED 1.0      // -1.0
 //   Hatch Constants
 #define INT_VACUUM_WAIT 0.4             // 0.250
-#define INT_VACUUM_POW 0.45
+#define INT_VACUUM_POW 0.55
 
 
 #endif /* SRC_CONST_H_ */
