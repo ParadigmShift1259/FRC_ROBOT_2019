@@ -27,12 +27,16 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 	m_lifterminspd = LIF_LIFTERMINSPD;
 	m_liftermaxspd = LIF_LIFTERMAXSPD;
 	m_loopmode = kManual;
-	m_stage = kIdle;
+	m_movingdir = kNone;
 
 	m_lowposition = 0;
 	m_mediumposition = 0;
 	m_highposition = 0;
 	m_selectedposition = 0;
+
+	m_smidge = false;
+	m_cargoejected = false;
+	m_staging = false;
 
 	if (CAN_LIFTER_MOTOR1 != -1)
 	{
@@ -89,9 +93,13 @@ void Lifter::Init()
 	m_highposition = 0;
 	m_selectedposition = 0;
 
+	m_smidge = false;
+	m_cargoejected = false;
+	m_staging = false;
+
 	m_motor->StopMotor();
 	m_loopmode = kManual;
-	m_stage = kIdle;
+	m_movingdir = kNone;
 }
 
 
@@ -105,10 +113,16 @@ void Lifter::Loop()
 	switch (m_loopmode)
 	{
 	case kManual:
+		m_raisespeed = LIF_RAISESPEED;
+		m_lowerspeed = LIF_LOWERSPEED;
+		m_smidge = false;
+		m_staging = false;
+
 		/// if left bumper and Y override position sensor and raise lift
 		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -LIF_DEADZONE_Y) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
 		{
 			m_motor->Set(m_raisespeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
+			m_movingdir = kUp;
 		}
 		else
 		/// if Y raise lift only if not at max position
@@ -118,6 +132,7 @@ void Lifter::Loop()
 				m_motor->Set(m_raisespeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
 			else
 				m_motor->Set(m_raisespeed * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
+			m_movingdir = kUp;
 		}
 		else
 		/// if left bumper and X override position sensor and lower lift
@@ -125,6 +140,7 @@ void Lifter::Loop()
 		{
 			m_motor->Set(m_lowerspeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
 			m_motor->SetSelectedSensorPosition(0, 0, 0);
+			m_movingdir = kDown;
 		}
 		else
 		/// if X lower lift only if not at min position
@@ -134,6 +150,7 @@ void Lifter::Loop()
 				m_motor->Set(m_lowerspeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
 			else
 				m_motor->Set(m_lowerspeed * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
+			m_movingdir = kDown;
 		}
 		else
 		/// if x and less than or at min position stop lift
@@ -141,6 +158,7 @@ void Lifter::Loop()
 		{
 			m_motor->StopMotor();
 			m_motor->SetSelectedSensorPosition(0, 0, 0);
+			m_movingdir = kNone;
 		}
 		else
 		{
@@ -148,6 +166,7 @@ void Lifter::Loop()
 				m_motor->Set(LIF_LIFTERHOLD);
 			else
 				m_motor->StopMotor();
+			m_movingdir = kNone;
 		}
 
 		/// no buttons pressed so check for staging of lifter (pre game)
@@ -156,7 +175,9 @@ void Lifter::Loop()
 			m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
 		{
 			m_selectedposition = LIF_LIFTERSTART;
+			m_raisespeed = LIF_RAISESPEED * 0.5;
 			m_loopmode = kAutoUp;
+			m_staging = true;
 		}
 		else
 		/// if Y is pressed, initiate up auto sequence
@@ -182,6 +203,7 @@ void Lifter::Loop()
 				m_motor->Set(m_raisespeed * 0.5);
 			else
 				m_motor->Set(m_raisespeed);
+			m_movingdir = kUp;
 		}
 		else 
 		/// if position is greater than goal, stop and return to manual control
@@ -189,6 +211,7 @@ void Lifter::Loop()
 		{
 			m_motor->StopMotor();
 			m_loopmode = kManual;
+			m_movingdir = kNone;
 		}
 
 		/// if manual control is sensed, return to manual control
@@ -218,6 +241,7 @@ void Lifter::Loop()
 				m_motor->Set(m_lowerspeed * 0.5);
 			else
 				m_motor->Set(m_lowerspeed);
+			m_movingdir = kDown;
 		}
 		else 
 		/// if position is less than goal, stop and return to manual control
@@ -225,6 +249,7 @@ void Lifter::Loop()
 		{
 			m_motor->StopMotor();
 			m_loopmode = kManual;
+			m_movingdir = kNone;
 		}
 
 		/// if manual control is sensed, return to manual control
@@ -396,6 +421,12 @@ void Lifter::UpdatePosition(LifterDir direction)
 	else
 	if (direction == kDown)
 	{
+		if (m_cargoejected)
+		{
+			m_selectedposition = m_liftermin;
+			m_cargoejected = false;
+		}
+		else
 		if (m_selectedposition == m_highposition)
 			m_selectedposition = m_mediumposition;
 		else
@@ -413,4 +444,41 @@ void Lifter::UpdatePosition(LifterDir direction)
 		m_loopmode = kAutoUp;
 	else
 		m_loopmode = kManual;
+}
+
+
+bool Lifter::MoveSmidgeUp()
+{
+	if (!m_smidge)
+	{
+		m_selectedposition = LIF_LIFTERSMIDGELOW + LIF_SLACK;
+		m_smidge = true;
+		m_loopmode = kAutoUp;
+	}
+	else
+	if (m_loopmode == kManual)
+	{
+		m_smidge = false;
+		return true;
+	}
+	return false;
+}
+
+
+bool Lifter::NearBottom()
+{
+	if (m_movingdir == kNone)
+	{
+		return (m_position < LIF_LIFTERSMIDGELOW);
+	}
+	else
+	if (m_movingdir == kUp)
+	{
+		return (m_position < LIF_LIFTERSMIDGELOW);
+	}
+	else
+	if (m_movingdir == kDown)
+	{
+		return (m_position < LIF_LIFTERSMIDGEHIGH);
+	}
 }

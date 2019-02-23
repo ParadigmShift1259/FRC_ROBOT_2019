@@ -10,6 +10,7 @@
 
 
 extern bool Debug;                  // Set to true to enable additional debugging
+extern bool StartedInAuto;          // Set to true when starting in autonomous
 
 
 // OperatorInputs
@@ -124,6 +125,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define LIF_LIFTERMINSPD (LIF_LIFTERMAX * 0.1)			/// 5% of max height
 //#define LIF_LIFTERSTART 6000                			/// ~50% of max height
 #define LIF_LIFTERSTART 0               // Sussex
+#define LIF_LIFTERSMIDGELOW 900
+#define LIF_LIFTERSMIDGEHIGH 2000
 #define LIF_LIFTERMAXSPD (LIF_LIFTERMAX	* 0.95)			/// 5% of max height
 #define LIF_LIFTERHOLD -0.05              // -0.06
 #define LIF_HATCH_MID 8600                  // Not determined

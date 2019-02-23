@@ -29,17 +29,24 @@ class Intake
 public:
 	enum IntakeMode {kModeNone, kModeHatch, kModeCargo};
 	enum HatchStage {kHatchIdle, kHatchCapture, kHatchRelease};
-	enum CargoStage {kCargoIdle, kCargoIngest, kCargoIngestWait, kCargoBall, kCargoEject};
-	enum FlushStage {kFlushIdle, kFlushPoof, kFlushEject};
+	enum HatchDir {kHatchUp, kHatchDown};
+	enum HatchVac {kVacOn, kVacOff, kPoofOn, kPoofOff};
+	enum CargoStage {kCargoIdle, kCargoIngest, kCargoIngestWait, kCargoBallSmidge, kCargoBall, kCargoEject};
+	enum CargoDir {kCargoUp, kCargoDown, kCargoOff, kCargoIn, kCargoOut};
+	enum FlushStage {kFlushNone, kFlushStart, kFlushPoof, kFlushEject};
 	enum Vision {kIdle, kVision};
 
 	Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DrivePID *drivepid);
 	virtual ~Intake();
 	void Init();
 	void Loop();
-	void TestLoop();
-	//void VisionLoop();
 	void Stop();
+
+	void SetCargoIntake(CargoDir cargodir);
+	CargoDir GetCargoIntake();
+	void SetHatchIntake(HatchDir hatchdir);
+	HatchDir GetHatchIntake();
+	void SetHatchVac(HatchVac hatchvac);
 
 protected:	
 	void Hatch();
@@ -71,7 +78,6 @@ protected:
 	Timer m_timer;
 	double m_waittime;
 	double m_vacuumpow;
-	bool m_onfloor;
 	bool m_inited;
 };
 

@@ -21,8 +21,7 @@ class Lifter
 {
 public:
 	enum LoopMode {kManual, kAutoUp, kAutoDown};
-	enum LifterDir {kUp, kDown};
-	enum Stage {kIdle, kRaise};
+	enum LifterDir {kNone, kUp, kDown};
 
 	Lifter(DriverStation *ds, OperatorInputs *inputs);
 	virtual ~Lifter();
@@ -33,7 +32,10 @@ public:
 	void ResetPosition();
 	void SetHatchLevels();
 	void SetCargoLevels();
-	void AutoRaise();
+	bool MoveSmidgeUp();
+	void CargoEjected() { m_cargoejected = true; }
+	bool NearBottom();
+	bool IsStaging() { return m_staging; }
 
 protected:
 	int FindPosition(LifterDir direction);
@@ -47,7 +49,7 @@ protected:
 	Solenoid *m_solenoid;
 
 	LoopMode m_loopmode;
-	Stage m_stage;
+	LifterDir m_movingdir;
 
 	int m_position;
 	double m_raisespeed;
@@ -61,6 +63,10 @@ protected:
 	int m_mediumposition;
 	int m_highposition;
 	int m_selectedposition;
+
+	bool m_smidge;
+	bool m_cargoejected;
+	bool m_staging;
 };
 
 

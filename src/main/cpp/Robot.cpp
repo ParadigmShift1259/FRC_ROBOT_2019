@@ -15,6 +15,7 @@
 
 
 bool Debug = true;
+bool StartedInAuto = false;
 
 
 void Robot::RobotInit()
@@ -52,6 +53,8 @@ void Robot::RobotPeriodic()
 void Robot::AutonomousInit()
 {
 	DriverStation::ReportError("AutonomousInit");
+
+	StartedInAuto = true;
 
 	m_pneumatics->Init();
 	m_gyrodrive->Init();
@@ -102,6 +105,8 @@ void Robot::TeleopPeriodic()
 void Robot::DisabledInit()
 {
 	DriverStation::ReportError("DisabledInit");
+
+	StartedInAuto = false;			// WIP
 
 	m_pneumatics->Stop();
 	m_gyrodrive->Stop();

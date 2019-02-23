@@ -53,10 +53,9 @@ Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DriveP
 	m_mode = kModeNone;
     m_hatchstage = kHatchIdle;
     m_cargostage = kCargoIdle;
-    m_flushstage - kFlushIdle;
+    m_flushstage - kFlushNone;
 	m_waittime = INT_VACUUM_WAIT;
     m_vacuumpow = INT_VACUUM_POW;
-    m_onfloor = false;
     m_inited = false;
 }
 
@@ -115,7 +114,7 @@ void Intake::Init()
     m_mode = kModeNone;
     m_cargostage = kCargoIdle;
     m_hatchstage = kHatchIdle;
-    m_flushstage = kFlushIdle;
+    m_flushstage = kFlushNone;
     m_timer.Reset();
     m_timer.Start();
 }
@@ -139,6 +138,12 @@ void Intake::Loop()
         m_cargostage = kCargoIdle;
         m_lifter->SetCargoLevels();
     }
+    
+    if (m_lifter->NearBottom())             // if lifter is near bottom, lower the cargo intake
+        SetCargoIntake(kCargoDown);
+    else
+    if (m_lifter->IsStaging())              // if lifter is staging and above bottom, raise the cargo intake
+        SetCargoIntake(kCargoUp);
 
     Cargo();
     Hatch();
@@ -162,89 +167,6 @@ void Intake::Loop()
 	if (m_cargosensor)
         SmartDashboard::PutNumber("IN11_cargosensor", m_cargosensor->Get());
 }
-
-
-void Intake::TestLoop()
-{
-    if (!m_inited)
-        return;
-	
-	m_solenoidvac1->Set(false);
-	m_solenoidvac2->Set(false);
-	m_solenoidvac3->Set(false);
-	m_solenoidvac4->Set(false);
-    m_sparkvac->Set(0);
-
-	m_solenoidhatch->Set(false);
-
-	m_solenoidcargo->Set(false);
-
-	m_sparkcargo->Set(0);
-}
-
-
-/*
-void Intake::VisionLoop()
-{
-	int counter = m_nettable->GetNumber("visioncounter", 0);
-	double angle = m_nettable->GetNumber("XOffAngle", 0) * -1;
-	double distance = 0.01;//m_nettable->GetNumber("Forward_Distance_Inch", 0);
-
-	double scale = distance / (96 * 2) + 0.25;
-	if (counter > m_counter)
-	{
-		m_counter = counter;
-		if (distance > 0.0)
-		{
-			m_visiontimer.Reset();
-			m_visionvalid = true;
-		}
-	}
-	else
-	if (m_visiontimer.Get() > 0.5)
-	{
-		m_visionvalid = false;
-	}
-
-	switch (m_visioning)
-	{
-	case kIdle:
-		if (m_visionvalid && m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-		{
-			m_drivepid->Init(m_pid[0], m_pid[1], m_pid[2], DrivePID::Feedback::kGyro);
-			m_drivepid->EnablePID();
-			m_visioning = kVision;
-		}
-		else
-			m_drivepid->DisablePID();
-		m_counter = 0;
-		break;
-
-	case kVision:
-		if (!m_visionvalid || m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-		{
-			m_drivepid->DisablePID();
-			m_visioning = kIdle;
-		}
-		else
-		{
-			//double x = m_inputs->xBoxLeftX(0 * INP_DUAL) * 90;
-			//m_drivepid->SetAbsoluteAngle(x);
-
-			double y = /*m_inputs->xBoxLeftY(0 * INP_DUAL) * -1*(scale > 1 ? 1 : scale);
-
-			m_drivepid->Drive(y, true);
-			m_drivepid->ResetGyro(); // Watch out! Conflicts with drive heading
-			m_drivepid->SetAbsoluteAngle(angle);
-		}
-		break;
-	}
-	SmartDashboard::PutNumber("IN999_scale", scale);
-	SmartDashboard::PutNumber("IN6_visioncounter", counter);
-	SmartDashboard::PutNumber("IN7_visionangle", angle);
-	SmartDashboard::PutNumber("IN8_distance", distance);
-}
-*/
 
 
 void Intake::Stop()
@@ -283,12 +205,9 @@ void Intake::Hatch()
         break;
 
     case kModeCargo:                    // cargo mode - turn off hatch mechanisms
-        m_solenoidvac1->Set(false);
-        m_solenoidvac2->Set(false);
-        m_solenoidvac3->Set(false);
-        m_solenoidvac4->Set(false);
-        m_sparkvac->Set(0);
-        m_solenoidhatch->Set(false);
+        SetHatchVac(kVacOff);
+        SetHatchVac(kPoofOff);
+        SetHatchIntake(kHatchUp);
         return;
         break;
     }
@@ -298,22 +217,6 @@ void Intake::Hatch()
     case kHatchIdle:
     	if (Debug) DriverStation::ReportError("kHatchIdle");
 
-        m_sparkvac->Set(0);
-
-        if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-            m_onfloor = false;
-        if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-            m_onfloor = true;
-        
-        if (m_onfloor)
-        {
-            m_solenoidhatch->Set(true);
-        }
-        else
-        {
-            m_solenoidhatch->Set(false);
-        }
-    
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_hatchstage = kHatchCapture;
@@ -321,111 +224,66 @@ void Intake::Hatch()
         else
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
         {
-            m_solenoidvac1->Set(true);
-            m_solenoidvac2->Set(true);
-            m_solenoidvac3->Set(true);
-            m_solenoidvac4->Set(true);
+            SetHatchVac(kVacOff);
+            SetHatchVac(kPoofOn);
         }
         else
         {
-            m_solenoidvac1->Set(false);
-            m_solenoidvac2->Set(false);
-            m_solenoidvac3->Set(false);
-            m_solenoidvac4->Set(false);
+            SetHatchVac(kVacOff);
+            SetHatchVac(kPoofOff);
         }
         break;
 
     case kHatchCapture:
     	if (Debug) DriverStation::ReportError("kHatchCapture");
 
-        m_solenoidvac1->Set(false);
-        m_solenoidvac2->Set(false);
-        m_solenoidvac3->Set(false);
-        m_solenoidvac4->Set(false);
-        m_sparkvac->Set(m_vacuumpow);
-
-        if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-            m_onfloor = false;
-        else
-        if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-            m_onfloor = true;
-        
-        if (m_onfloor)
-        {
-            m_solenoidhatch->Set(true);
-        }
-        else
-        {
-            m_solenoidhatch->Set(false);
-        }
+        SetHatchVac(kPoofOff);
 
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
-            m_solenoidvac1->Set(true);
-            m_solenoidvac2->Set(true);
-            m_solenoidvac3->Set(true);
-            m_solenoidvac4->Set(true);
+            SetHatchVac(kVacOff);
+            SetHatchVac(kPoofOn);
             m_timer.Reset();
             m_hatchstage = kHatchRelease;
+        }
+        else
+        {
+            SetHatchVac(kVacOn);
         }
         break;
 
     case kHatchRelease:
     	if (Debug) DriverStation::ReportError("kHatchRelease");
 
-        m_solenoidhatch->Set(false);
-        m_sparkvac->Set(0);
+        SetHatchVac(kVacOff);
+        SetHatchVac(kPoofOn);
 
         if (m_timer.Get() > m_waittime)
         {
-            m_solenoidvac1->Set(false);
-            m_solenoidvac2->Set(false);
-            m_solenoidvac3->Set(false);
-            m_solenoidvac4->Set(false);
-            m_sparkvac->Set(0);
+            SetHatchVac(kVacOff);
+            SetHatchVac(kPoofOff);
 
-            m_solenoidhatch->Set(false);
-
-            m_onfloor = false;
             m_hatchstage = kHatchIdle;
-            //m_mode = kModeNone;               // this is commented to allow for quick cycles in hatch mode
                                                 // back up while poofing?
         }
         break;
     }
 
-    /*
-    if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
-        m_waittime += 0.05;
+        SetHatchIntake(kHatchUp);
     }
     else
-    if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && (m_waittime > 0.05))
+    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
-        m_waittime -= 0.05;
-    }
-
-    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-    {
-        m_vacuumpow += 0.025;
+        SetHatchIntake(kHatchDown);
     }
     else
-    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && (m_vacuumpow > 0.025))
-    {
-        m_vacuumpow -= 0.025;
-    }
-    */
-
     if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
-        m_solenoidvac1->Set(false);
-        m_solenoidvac2->Set(false);
-        m_solenoidvac3->Set(false);
-        m_solenoidvac4->Set(false);
-        m_sparkvac->Set(0);
-        
         m_hatchstage = kHatchIdle;
         m_mode = kModeNone;
+        m_flushstage = kFlushStart;
     }
 }
 
@@ -442,8 +300,8 @@ void Intake::Cargo()
         break;
 
     case kModeHatch:                    // hatch mode - turn off cargo mechanisms
-        m_sparkcargo->Set(0);
-        m_solenoidcargo->Set(false);
+        SetCargoIntake(kCargoOff);
+        SetCargoIntake(kCargoDown);
         return;
         break;
 
@@ -456,18 +314,6 @@ void Intake::Cargo()
     case kCargoIdle:
     	if (Debug) DriverStation::ReportError("kCargoIdle");
 
-        //m_sparkcargo->Set(0);
-
-        if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        {
-            m_solenoidcargo->Set(true);
-        }
-        else
-        if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        {
-            m_solenoidcargo->Set(false);
-        }
-        else
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_cargostage = kCargoIngest;
@@ -475,36 +321,21 @@ void Intake::Cargo()
         else
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
-            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+            SetCargoIntake(kCargoOut);
             m_timer.Reset();
             m_cargostage = kCargoEject;
         }
-        else 
-        if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
-        {
-            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
-        }
         else
         {
-            m_sparkcargo->Set(0);
+            SetCargoIntake(kCargoOff);
         }
         break;
 
     case kCargoIngest:
     	if (Debug) DriverStation::ReportError("kCargoIngest");
 
-		m_sparkcargo->Set(INT_CARGO_INGEST_SPEED);
+		SetCargoIntake(kCargoIn);
 
-        if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        {
-            m_solenoidcargo->Set(true);
-        }
-        else
-        if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        {
-            m_solenoidcargo->Set(false);
-        }
-        else
         if ((m_cargosensor && m_cargosensor->Get()) || m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
 			m_timer.Reset();            
@@ -517,66 +348,73 @@ void Intake::Cargo()
 
         if (m_timer.Get() > INT_CARGO_INGEST_WAIT)
         {
-            m_sparkcargo->Set(0);
-            m_cargostage = kCargoBall;
+            SetCargoIntake(kCargoOff);
+            m_lifter->MoveSmidgeUp();
+            m_cargostage = kCargoBallSmidge;
         }
         else
         {
-            m_sparkcargo->Set(INT_CARGO_INGEST_SPEED);
+            SetCargoIntake(kCargoIn);
         }
         break;
     
+    case kCargoBallSmidge:
+        if (m_lifter->MoveSmidgeUp())
+        {
+            SetCargoIntake(kCargoUp);
+            m_cargostage = kCargoBall;
+        }
+        break;
+
     case kCargoBall:
     	if (Debug) DriverStation::ReportError("kCargoBall");
 
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
         {
-            m_sparkcargo->Set(INT_CARGO_INGEST_SPEED);
+            SetCargoIntake(kCargoIn);
         }
         else
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
-            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+            SetCargoIntake(kCargoOut);
+            m_lifter->CargoEjected();
             m_timer.Reset();
             m_cargostage = kCargoEject;
         }
         else
         {
-            m_sparkcargo->Set(0);
-        }
-
-        if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        {
-            m_solenoidcargo->Set(true);
-        }
-        else
-        if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        {
-            m_solenoidcargo->Set(false);
+            SetCargoIntake(kCargoOff);
         }
         break;
     
     case kCargoEject:
         if (m_timer.Get() > INT_CARGO_EJECT_WAIT)
         {
-            m_sparkcargo->Set(0);
+            SetCargoIntake(kCargoOff);
             m_cargostage = kCargoIdle;
-            //m_mode = kModeNone;                   // this is commented to allow for quick cycles in cargo mode
         }
         else
         {
-            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+            SetCargoIntake(kCargoOut);
         }
         break;
+    }
 
-    };
-
+    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && !m_lifter->NearBottom())
+    {
+        SetCargoIntake(kCargoUp);
+    }
+    else
+    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    {
+        SetCargoIntake(kCargoDown);
+    }
+    else
     if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
-        m_sparkcargo->Set(0);
-        m_solenoidcargo->Set(false);
         m_cargostage = kCargoIdle;
         m_mode = kModeNone;
+        m_flushstage = kFlushStart;
     }
 }
 
@@ -587,67 +425,121 @@ void Intake::Flush()
         return;
 
     if (m_mode != kModeNone)
-    {
         return;
-    }
 
     switch (m_flushstage)
     {
-    case kFlushIdle:
-        m_solenoidvac1->Set(false);
-        m_solenoidvac2->Set(false);
-        m_solenoidvac3->Set(false);
-        m_solenoidvac4->Set(false);
-        m_sparkvac->Set(0);
-
+    case kFlushNone:
+        if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            m_flushstage = kFlushStart;
+        break;
+    
+    case kFlushStart:
         m_sparkcargo->Set(0);
-        m_solenoidcargo->Set(false);
+        SetCargoIntake(kCargoDown);
+        SetHatchIntake(kHatchUp);
+        SetHatchVac(kVacOff);
+        SetHatchVac(kPoofOn);
 
-        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        {
-            m_timer.Reset();
-            m_flushstage = kFlushPoof;
-        }
+        m_timer.Reset();
+        m_flushstage = kFlushPoof;
         break;
     
     case kFlushPoof:
-        m_solenoidhatch->Set(false);
-        m_sparkvac->Set(0);
 
         if (m_timer.Get() > m_waittime)
         {
-            m_solenoidvac1->Set(false);
-            m_solenoidvac2->Set(false);
-            m_solenoidvac3->Set(false);
-            m_solenoidvac4->Set(false);
-
+            SetHatchVac(kPoofOff);
             m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
 
+            m_timer.Reset();
             m_flushstage = kFlushEject;
-        }
-        else
-        {
-            m_solenoidvac1->Set(true);
-            m_solenoidvac2->Set(true);
-            m_solenoidvac3->Set(true);
-            m_solenoidvac4->Set(true);
-
-            m_sparkcargo->Set(0);
         }
         break;
 
     case kFlushEject:
-        m_sparkvac->Set(0);
-
-        if (m_timer.Get() > INT_CARGO_EJECT_WAIT + m_waittime)
+        if (m_timer.Get() > INT_CARGO_EJECT_WAIT)
         {
             m_sparkcargo->Set(0);
-            m_flushstage = kFlushIdle;
-        }
-        else
-        {
-            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+            m_flushstage = kFlushNone;
         }
         break;
+    }
+}
+
+
+void Intake::SetCargoIntake(CargoDir cargodir)
+{
+    if (cargodir == kCargoUp)
+        m_solenoidcargo->Set(false);
+    else
+    if (cargodir == kCargoDown)
+        m_solenoidcargo->Set(true);
+    else
+    if (cargodir == kCargoOff)
+        m_sparkcargo->Set(0);
+    else
+    if (cargodir == kCargoIn)
+        m_sparkcargo->Set(INT_CARGO_INGEST_SPEED);
+    else
+    if (cargodir == kCargoOut)
+        m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+}
+
+
+Intake::CargoDir Intake::GetCargoIntake()
+{
+    if (m_solenoidcargo->Get())
+        return kCargoDown;
+    else
+        return kCargoUp;
+}
+
+
+void Intake::SetHatchIntake(HatchDir hatchdir)
+{
+    if (hatchdir == kHatchUp)
+        m_solenoidhatch->Set(false);
+    else
+    if (hatchdir == kHatchDown)
+        m_solenoidhatch->Set(true);
+}
+
+
+Intake::HatchDir Intake::GetHatchIntake()
+{
+    if (m_solenoidhatch->Get())
+        return kHatchDown;
+    else
+        return kHatchUp;
+}
+
+
+void Intake::SetHatchVac(HatchVac hatchvac)
+{
+    if (hatchvac == kVacOn)
+    {
+        m_sparkvac->Set(m_vacuumpow);
+    }
+    else
+    if (hatchvac == kVacOff)
+    {
+        m_sparkvac->Set(0);
+    }
+    else
+    if (hatchvac == kPoofOn)
+    {
+        m_solenoidvac1->Set(true);
+        m_solenoidvac2->Set(true);
+        m_solenoidvac3->Set(true);
+        m_solenoidvac4->Set(true);
+    }
+    else
+    if (hatchvac == kPoofOff)
+    {
+        m_solenoidvac1->Set(false);
+        m_solenoidvac2->Set(false);
+        m_solenoidvac3->Set(false);
+        m_solenoidvac4->Set(false);
     }
 }
