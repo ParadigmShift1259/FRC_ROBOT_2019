@@ -54,7 +54,8 @@ void Robot::AutonomousInit()
 {
 	DriverStation::ReportError("AutonomousInit");
 
-	StartedInAuto = true;
+	if (m_driverstation->IsFMSAttached())
+		StartedInAuto = true;
 
 	m_pneumatics->Init();
 	m_gyrodrive->Init();
@@ -84,12 +85,16 @@ void Robot::TestPeriodic()			// Do not use
 
 void Robot::TeleopInit()
 {
-	DriverStation::ReportError("TeleopInit");
+	if (!StartedInAuto)
+	{
+		DriverStation::ReportError("TeleopInit");
 
-	m_pneumatics->Init();
-	m_gyrodrive->Init();
-	m_intake->Init();
-	m_lifter->Init();
+		m_pneumatics->Init();
+		m_gyrodrive->Init();
+		m_intake->Init();
+		m_lifter->Init();
+	}
+	StartedInAuto = false;
 }
 
 
@@ -104,14 +109,15 @@ void Robot::TeleopPeriodic()
 
 void Robot::DisabledInit()
 {
-	DriverStation::ReportError("DisabledInit");
+	if (!StartedInAuto)
+	{
+		DriverStation::ReportError("DisabledInit");
 
-	StartedInAuto = false;			// WIP
-
-	m_pneumatics->Stop();
-	m_gyrodrive->Stop();
-	m_intake->Stop();
-	m_lifter->Stop();
+		m_pneumatics->Stop();
+		m_gyrodrive->Stop();
+		m_intake->Stop();
+		m_lifter->Stop();
+	}
 }
 
 
