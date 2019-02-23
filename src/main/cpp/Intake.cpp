@@ -56,7 +56,7 @@ Intake::Intake(DriverStation *ds, OperatorInputs *inputs)
 	m_waittime = INT_VACUUM_WAIT;
     m_vacuumpow = INT_VACUUM_POW;
     m_inited = false;
-    m_hascargo = false;
+    m_hascargohatch = false;
     m_atbottom = false;
 }
 
@@ -87,7 +87,9 @@ Intake::~Intake()
 
 void Intake::Init()
 {
-    if (m_solenoidvac1 == nullptr || m_solenoidvac2 == nullptr || m_solenoidvac3 == nullptr || m_solenoidvac4 == nullptr || m_sparkvac == nullptr)
+    if (m_solenoidvac1 == nullptr)
+        return;
+    if (m_sparkvac == nullptr)
         return;
     if (m_solenoidhatch == nullptr)
         return;
@@ -99,13 +101,13 @@ void Intake::Init()
 	if (Debug) DriverStation::ReportError("Intake Init");
 
     m_inited = true;
-    m_hascargo = false;
+    m_hascargohatch = false;
     m_atbottom = false;
 
 	m_solenoidvac1->Set(false);
-	m_solenoidvac2->Set(false);
-	m_solenoidvac3->Set(false);
-	m_solenoidvac4->Set(false);
+	if (m_solenoidvac2) m_solenoidvac2->Set(false);
+	if (m_solenoidvac3) m_solenoidvac3->Set(false);
+	if (m_solenoidvac4) m_solenoidvac4->Set(false);
     m_sparkvac->Set(0);
 
 	m_solenoidhatch->Set(false);
@@ -133,9 +135,9 @@ void Intake::Loop()
     Flush();
     
     SmartDashboard::PutNumber("IN0_solenoidvac1", m_solenoidvac1->Get());
-	SmartDashboard::PutNumber("IN1_solenoidvac2", m_solenoidvac2->Get());
-	SmartDashboard::PutNumber("IN2_solenoidvac3", m_solenoidvac3->Get());
-	SmartDashboard::PutNumber("IN3_solenoidvac4", m_solenoidvac4->Get());
+	if (m_solenoidvac2) SmartDashboard::PutNumber("IN1_solenoidvac2", m_solenoidvac2->Get());
+	if (m_solenoidvac3) SmartDashboard::PutNumber("IN2_solenoidvac3", m_solenoidvac3->Get());
+	if (m_solenoidvac4) SmartDashboard::PutNumber("IN3_solenoidvac4", m_solenoidvac4->Get());
     SmartDashboard::PutNumber("IN4_sparkvac", m_sparkvac->Get());
 
 	SmartDashboard::PutNumber("IN5_solenoidhatch", m_solenoidhatch->Get());
@@ -158,9 +160,9 @@ void Intake::Stop()
         return;
 
 	m_solenoidvac1->Set(false);
-	m_solenoidvac2->Set(false);
-	m_solenoidvac3->Set(false);
-	m_solenoidvac4->Set(false);
+	if (m_solenoidvac2) m_solenoidvac2->Set(false);
+	if (m_solenoidvac3) m_solenoidvac3->Set(false);
+	if (m_solenoidvac4) m_solenoidvac4->Set(false);
     m_sparkvac->Set(0);
 
 	m_solenoidhatch->Set(false);
@@ -204,6 +206,7 @@ void Intake::Hatch()
         {
             SetHatchVac(kVacOn);
             SetHatchVac(kPoofOff);
+            m_hascargohatch = true;
             m_hatchstage = kHatchCapture;
         }
         else
@@ -243,6 +246,7 @@ void Intake::Hatch()
         {
             SetHatchVac(kVacOff);
             SetHatchVac(kPoofOff);
+            m_hascargohatch = false;
             m_hatchstage = kHatchIdle;
                                                 // back up while poofing?
         }
@@ -338,7 +342,7 @@ void Intake::Cargo()
         if (m_timer.Get() > INT_CARGO_INGEST_WAIT)
         {
             SetCargoIntake(kCargoOff);
-            m_hascargo = true;
+            m_hascargohatch = true;
             m_cargostage = kCargoBall;
         }
         else
@@ -371,7 +375,7 @@ void Intake::Cargo()
         if (m_timer.Get() > INT_CARGO_EJECT_WAIT)
         {
             SetCargoIntake(kCargoOff);
-            m_hascargo = false;
+            m_hascargohatch = false;
             m_cargostage = kCargoIdle;
         }
         else
@@ -434,6 +438,7 @@ void Intake::Flush()
             SetCargoIntake(kCargoOut);
 
             m_timer.Reset();
+            m_hascargohatch = false;
             m_flushstage = kFlushEject;
         }
         break;
@@ -442,7 +447,7 @@ void Intake::Flush()
         if (m_timer.Get() > INT_CARGO_EJECT_WAIT)
         {
             SetCargoIntake(kCargoOff);
-            m_hascargo = false;
+            m_hascargohatch = false;
             m_flushstage = kFlushNone;
         }
         break;
@@ -469,19 +474,34 @@ void Intake::SetIntakeMode(IntakeMode intakemode)
 void Intake::SetCargoIntake(CargoDir cargodir)
 {
     if (cargodir == kCargoUp && !m_atbottom)
+    {
+        if (Debug) DriverStation::ReportError("kCargoUp");
         m_solenoidcargo->Set(false);
+    }
     else
     if (cargodir == kCargoDown)
+    {
+        if (Debug) DriverStation::ReportError("kCargoDown");
         m_solenoidcargo->Set(true);
+    }
     else
     if (cargodir == kCargoOff)
+    {
+        if (Debug) DriverStation::ReportError("kCargoOff");
         m_sparkcargo->Set(0);
+    }
     else
     if (cargodir == kCargoIn)
+    {
+        if (Debug) DriverStation::ReportError("kCargoIn");
         m_sparkcargo->Set(INT_CARGO_INGEST_SPEED);
+    }
     else
     if (cargodir == kCargoOut)
+    {
+        if (Debug) DriverStation::ReportError("kCargoOut");
         m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+    }
 }
 
 
@@ -528,16 +548,16 @@ void Intake::SetHatchVac(HatchVac hatchvac)
     if (hatchvac == kPoofOn)
     {
         m_solenoidvac1->Set(true);
-        m_solenoidvac2->Set(true);
-        m_solenoidvac3->Set(true);
-        m_solenoidvac4->Set(true);
+        if (m_solenoidvac2) m_solenoidvac2->Set(true);
+        if (m_solenoidvac3) m_solenoidvac3->Set(true);
+        if (m_solenoidvac4) m_solenoidvac4->Set(true);
     }
     else
     if (hatchvac == kPoofOff)
     {
         m_solenoidvac1->Set(false);
-        m_solenoidvac2->Set(false);
-        m_solenoidvac3->Set(false);
-        m_solenoidvac4->Set(false);
+        if (m_solenoidvac2) m_solenoidvac2->Set(false);
+        if (m_solenoidvac3) m_solenoidvac3->Set(false);
+        if (m_solenoidvac4) m_solenoidvac4->Set(false);
     }
 }

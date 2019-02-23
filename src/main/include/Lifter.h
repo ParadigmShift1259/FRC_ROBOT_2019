@@ -39,7 +39,7 @@ protected:
 
 	int FindPosition(LifterDir direction);
 	void UpdatePosition(LifterDir direction);
-	void CheckCargoEjected();
+	void CheckCargoHatchEjected();
 
 protected:
 	DriverStation *m_ds;
@@ -65,7 +65,7 @@ protected:
 	int m_highposition;
 	int m_selectedposition;
 
-	bool m_prevhascargo;
+	bool m_prevhascargohatch;
 	bool m_movebottom;
 	bool m_movesmidge;
 	bool m_staging;

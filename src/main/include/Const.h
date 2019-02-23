@@ -112,8 +112,8 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 
 // Lifter
 //   Motors
-#define CAN_LIFTER_MOTOR1 4             // 4, Yoshi 6
-#define CAN_LIFTER_MOTOR2 5             // 5, Yoshi -1
+#define CAN_LIFTER_MOTOR1 6             // 4, Yoshi 6
+#define CAN_LIFTER_MOTOR2 -1            // 5, Yoshi -1
 //   Solenoids
 #define PCM_LIFTER_MODULE 0			    // 0
 #define PCM_LIFTER_SOLENOID 2		    // 2
@@ -125,7 +125,7 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define LIF_LIFTERMIN 300								// minimum cutoff
 #define LIF_LIFTERMINSPD (LIF_LIFTERMAX * 0.1)          // down slow position
 #define LIF_LIFTERSMIDGELOW 900
-#define LIF_LIFTERSMIDGEHIGH 2000
+#define LIF_LIFTERSMIDGEHIGH 4000
 #define LIF_LIFTERSTART 5600
 #define LIF_LIFTERMAXSPD (LIF_LIFTERMAX	* 0.95)			// up slow position
 #define LIF_LIFTERMAX 22220
@@ -149,12 +149,12 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define PCM_INTAKE_MODULE 0
 #define PCM_INTAKE_SOLENOIDCARGO 1      // 1, Yoshi 1
 #define PCM_INTAKE_SOLENOIDHATCH 3      // 3, Yoshi 1
-#define PCM_INTAKE_SOLENOIDVAC1 4
-#define PCM_INTAKE_SOLENOIDVAC2 5	
-#define PCM_INTAKE_SOLENOIDVAC3 6
-#define PCM_INTAKE_SOLENOIDVAC4 7
+#define PCM_INTAKE_SOLENOIDVAC1 4       // 4
+#define PCM_INTAKE_SOLENOIDVAC2 5       // 5
+#define PCM_INTAKE_SOLENOIDVAC3 -1      // 6
+#define PCM_INTAKE_SOLENOIDVAC4 -1      // 7
 //   Digital Inputs
-#define DIO_INTAKE_CARGOSENSOR 0       // 0
+#define DIO_INTAKE_CARGOSENSOR -1       // 0
 //   Cargo Constants
 #define INT_CARGO_INGEST_WAIT 0.5
 #define INT_CARGO_INGEST_SPEED -0.8   // 0.7

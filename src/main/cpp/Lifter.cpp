@@ -36,7 +36,7 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs, Intake *intake)
 	m_highposition = 0;
 	m_selectedposition = 0;
 
-	m_prevhascargo = false;
+	m_prevhascargohatch = false;
 	m_movebottom = false;
 	m_movesmidge = false;
 	m_staging = false;
@@ -96,7 +96,7 @@ void Lifter::Init()
 	m_highposition = 0;
 	m_selectedposition = 0;
 
-	m_prevhascargo = false;
+	m_prevhascargohatch = false;
 	m_movebottom = false;
 	m_movesmidge = false;
 	m_staging = false;
@@ -135,7 +135,7 @@ void Lifter::Loop()
         m_intake->SetCargoIntake(Intake::kCargoUp);
 
 	// if cargo just ejected, enable move all the way down
-	CheckCargoEjected();
+	CheckCargoHatchEjected();
 
 	// if cargo just ingested, move lifter up a smidge and raise cargo intake
 	CheckMoveSmidge();
@@ -452,32 +452,34 @@ void Lifter::UpdatePosition(LifterDir direction)
 
 
 // controls the ability to move all the way down based on whether ball has just been intaked/ejected
-void Lifter::CheckCargoEjected()
+void Lifter::CheckCargoHatchEjected()
 {
-	bool newhascargo = m_intake->HasCargo();
+	bool newhascargohatch = m_intake->HasCargoHatch();
 
-	if (m_prevhascargo && !newhascargo)		// if just ejected, allow move all the way down
+	if (m_prevhascargohatch && !newhascargohatch)		// if just ejected, allow move all the way down
 	{
 		m_movebottom = true;
 	}
 	else
-	if (!m_prevhascargo && newhascargo)		// if just intaked, prevent move all the way down
+	if (!m_prevhascargohatch && newhascargohatch)		// if just intaked, prevent move all the way down
 	{
 		m_movebottom = false;
-		m_movesmidge = true;
+		if (m_intake->GetIntakeMode() == Intake::kModeCargo)
+		{
+			m_selectedposition = LIF_LIFTERSMIDGELOW + LIF_SLACK;
+			m_loopmode = kAutoUp;
+			m_movesmidge = true;
+		}
 	}
-	m_prevhascargo = newhascargo;
+	m_prevhascargohatch = newhascargohatch;
 }
 
 
 void Lifter::CheckMoveSmidge()
 {
-	if (m_movesmidge)
-	{
-		m_selectedposition = LIF_LIFTERSMIDGELOW + LIF_SLACK;
-		m_loopmode = kAutoUp;
-	}
-	else
+	if (!m_movesmidge)
+		return;
+
 	if (m_loopmode == kManual)
 	{
 		m_intake->SetCargoIntake(Intake::kCargoUp);
@@ -488,18 +490,18 @@ void Lifter::CheckMoveSmidge()
 
 bool Lifter::NearBottom()
 {
-	if (m_movingdir == kNone)
+	if ((m_movingdir == kNone) || (m_movingdir == kUp))
 	{
-		return (m_position < LIF_LIFTERSMIDGELOW);
-	}
-	else
-	if (m_movingdir == kUp)
-	{
-		return (m_position < LIF_LIFTERSMIDGELOW);
+		bool atbottom = (m_position < LIF_LIFTERSMIDGELOW);
+		m_intake->SetAtBottom(atbottom);
+		return atbottom;
 	}
 	else
 	if (m_movingdir == kDown)
 	{
-		return (m_position < LIF_LIFTERSMIDGEHIGH);
+		bool atbottom = (m_position < LIF_LIFTERSMIDGEHIGH);
+		m_intake->SetAtBottom(atbottom);
+		return atbottom;
 	}
+	return false;
 }

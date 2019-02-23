@@ -36,13 +36,14 @@ public:
 	void Stop();
 
 	void SetIntakeMode(IntakeMode intakemode);
+	IntakeMode GetIntakeMode() { return m_mode; }
 	void SetCargoIntake(CargoDir cargodir);
 	CargoDir GetCargoIntake();
 	void SetHatchIntake(HatchDir hatchdir);
 	HatchDir GetHatchIntake();
 	void SetHatchVac(HatchVac hatchvac);
 
-	bool HasCargo() { return m_hascargo; }
+	bool HasCargoHatch() { return m_hascargohatch; }
 	void SetAtBottom(bool atbottom) { m_atbottom = atbottom; }
 
 protected:	
@@ -75,7 +76,7 @@ protected:
 	double m_waittime;
 	double m_vacuumpow;
 	bool m_inited;
-	bool m_hascargo;
+	bool m_hascargohatch;
 	bool m_atbottom;
 };
 
