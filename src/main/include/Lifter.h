@@ -12,6 +12,7 @@
 #include <frc\WPILib.h>
 #include <ctre\Phoenix.h>
 #include "OperatorInputs.h"
+#include "Intake.h"
 
 
 using namespace frc;
@@ -23,27 +24,27 @@ public:
 	enum LoopMode {kManual, kAutoUp, kAutoDown};
 	enum LifterDir {kNone, kUp, kDown};
 
-	Lifter(DriverStation *ds, OperatorInputs *inputs);
+	Lifter(DriverStation *ds, OperatorInputs *inputs, Intake *intake);
 	virtual ~Lifter();
 	void Init();
 	void Loop();
-	void TestLoop();
 	void Stop();
+
+protected:
 	void ResetPosition();
 	void SetHatchLevels();
 	void SetCargoLevels();
-	bool MoveSmidgeUp();
-	void CargoEjected() { m_cargoejected = true; }
+	void CheckMoveSmidge();
 	bool NearBottom();
-	bool IsStaging() { return m_staging; }
 
-protected:
 	int FindPosition(LifterDir direction);
 	void UpdatePosition(LifterDir direction);
+	void CheckCargoEjected();
 
 protected:
 	DriverStation *m_ds;
 	OperatorInputs *m_inputs;
+	Intake *m_intake;
 	WPI_TalonSRX *m_motor;
 	WPI_TalonSRX *m_motorslave;
 	Solenoid *m_solenoid;
@@ -64,8 +65,9 @@ protected:
 	int m_highposition;
 	int m_selectedposition;
 
-	bool m_smidge;
-	bool m_cargoejected;
+	bool m_prevhascargo;
+	bool m_movebottom;
+	bool m_movesmidge;
 	bool m_staging;
 };
 

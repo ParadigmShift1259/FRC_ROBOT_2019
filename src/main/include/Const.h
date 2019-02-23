@@ -112,28 +112,31 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 
 // Lifter
 //   Motors
-#define CAN_LIFTER_MOTOR1 4             // 4
-#define CAN_LIFTER_MOTOR2 5             // 5
+#define CAN_LIFTER_MOTOR1 4             // 4, Yoshi 6
+#define CAN_LIFTER_MOTOR2 5             // 5, Yoshi -1
 //   Solenoids
 #define PCM_LIFTER_MODULE 0			    // 0
 #define PCM_LIFTER_SOLENOID 2		    // 2
-//   Constants
-#define LIF_RAISESPEED -1            // -1.0
-#define LIF_LOWERSPEED 1  			// 0.75
-#define LIF_LIFTERMAX 22220			    // 21000
-#define LIF_LIFTERMIN 300								/// minimum cutoff
-#define LIF_LIFTERMINSPD (LIF_LIFTERMAX * 0.1)			/// 5% of max height
-//#define LIF_LIFTERSTART 6000                			/// ~50% of max height
-#define LIF_LIFTERSTART 0               // Sussex
+//   Speeds
+#define LIF_RAISESPEED -1
+#define LIF_LOWERSPEED 1
+#define LIF_HOLDSPEED -0.05
+//   Positions
+#define LIF_LIFTERMIN 300								// minimum cutoff
+#define LIF_LIFTERMINSPD (LIF_LIFTERMAX * 0.1)          // down slow position
 #define LIF_LIFTERSMIDGELOW 900
 #define LIF_LIFTERSMIDGEHIGH 2000
-#define LIF_LIFTERMAXSPD (LIF_LIFTERMAX	* 0.95)			/// 5% of max height
-#define LIF_LIFTERHOLD -0.05              // -0.06
-#define LIF_HATCH_MID 8600                  // Not determined
-#define LIF_HATCH_HIGH 17770                // Not determined
+#define LIF_LIFTERSTART 5600
+#define LIF_LIFTERMAXSPD (LIF_LIFTERMAX	* 0.95)			// up slow position
+#define LIF_LIFTERMAX 22220
+//   Hatch positions
+#define LIF_HATCH_MID 8600
+#define LIF_HATCH_HIGH 17770
+//   Cargo positions
 #define LIF_CARGO_LOW 5300
 #define LIF_CARGO_MID 13900
 #define LIF_CARGO_HIGH 22220
+//   Other
 #define LIF_SLACK 200
 #define LIF_DEADZONE_Y 0.18
 
@@ -144,8 +147,8 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define PWM_INTAKE_SPARKVAC 1
 //   Solenoids
 #define PCM_INTAKE_MODULE 0
-#define PCM_INTAKE_SOLENOIDCARGO 1
-#define PCM_INTAKE_SOLENOIDHATCH 3
+#define PCM_INTAKE_SOLENOIDCARGO 1      // 1, Yoshi 1
+#define PCM_INTAKE_SOLENOIDHATCH 3      // 3, Yoshi 1
 #define PCM_INTAKE_SOLENOIDVAC1 4
 #define PCM_INTAKE_SOLENOIDVAC2 5	
 #define PCM_INTAKE_SOLENOIDVAC3 6

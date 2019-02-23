@@ -9,11 +9,10 @@
 #include "Const.h"
 
 
-Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DrivePID *drivepid)
+Intake::Intake(DriverStation *ds, OperatorInputs *inputs)
 {
 	m_ds = ds;
 	m_inputs = inputs;
-	m_lifter = lifter;
 
 	m_solenoidvac1 = nullptr;
 	m_solenoidvac2 = nullptr;
@@ -57,6 +56,8 @@ Intake::Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DriveP
 	m_waittime = INT_VACUUM_WAIT;
     m_vacuumpow = INT_VACUUM_POW;
     m_inited = false;
+    m_hascargo = false;
+    m_atbottom = false;
 }
 
 
@@ -98,6 +99,8 @@ void Intake::Init()
 	if (Debug) DriverStation::ReportError("Intake Init");
 
     m_inited = true;
+    m_hascargo = false;
+    m_atbottom = false;
 
 	m_solenoidvac1->Set(false);
 	m_solenoidvac2->Set(false);
@@ -124,26 +127,6 @@ void Intake::Loop()
 {
     if (!m_inited)
         return;
-
-    if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-    {
-        m_mode = kModeHatch;
-        m_hatchstage = kHatchIdle;
-        m_lifter->SetHatchLevels();
-    }
-    else
-    if (m_inputs->xBoxRightTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-    {
-        m_mode = kModeCargo;
-        m_cargostage = kCargoIdle;
-        m_lifter->SetCargoLevels();
-    }
-    
-    if (m_lifter->NearBottom())             // if lifter is near bottom, lower the cargo intake
-        SetCargoIntake(kCargoDown);
-    else
-    if (m_lifter->IsStaging())              // if lifter is staging and above bottom, raise the cargo intake
-        SetCargoIntake(kCargoUp);
 
     Cargo();
     Hatch();
@@ -219,6 +202,8 @@ void Intake::Hatch()
 
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
+            SetHatchVac(kVacOn);
+            SetHatchVac(kPoofOff);
             m_hatchstage = kHatchCapture;
         }
         else
@@ -237,8 +222,6 @@ void Intake::Hatch()
     case kHatchCapture:
     	if (Debug) DriverStation::ReportError("kHatchCapture");
 
-        SetHatchVac(kPoofOff);
-
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             SetHatchVac(kVacOff);
@@ -249,22 +232,24 @@ void Intake::Hatch()
         else
         {
             SetHatchVac(kVacOn);
+            SetHatchVac(kPoofOff);
         }
         break;
 
     case kHatchRelease:
     	if (Debug) DriverStation::ReportError("kHatchRelease");
 
-        SetHatchVac(kVacOff);
-        SetHatchVac(kPoofOn);
-
         if (m_timer.Get() > m_waittime)
         {
             SetHatchVac(kVacOff);
             SetHatchVac(kPoofOff);
-
             m_hatchstage = kHatchIdle;
                                                 // back up while poofing?
+        }
+        else
+        {
+            SetHatchVac(kVacOff);
+            SetHatchVac(kPoofOn);
         }
         break;
     }
@@ -316,6 +301,7 @@ void Intake::Cargo()
 
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
+            SetCargoIntake(kCargoIn);
             m_cargostage = kCargoIngest;
         }
         else
@@ -334,12 +320,15 @@ void Intake::Cargo()
     case kCargoIngest:
     	if (Debug) DriverStation::ReportError("kCargoIngest");
 
-		SetCargoIntake(kCargoIn);
-
         if ((m_cargosensor && m_cargosensor->Get()) || m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
+            SetCargoIntake(kCargoIn);
 			m_timer.Reset();            
             m_cargostage = kCargoIngestWait;
+        }
+        else
+        {
+		    SetCargoIntake(kCargoIn);
         }
         break;
 
@@ -349,20 +338,12 @@ void Intake::Cargo()
         if (m_timer.Get() > INT_CARGO_INGEST_WAIT)
         {
             SetCargoIntake(kCargoOff);
-            m_lifter->MoveSmidgeUp();
-            m_cargostage = kCargoBallSmidge;
+            m_hascargo = true;
+            m_cargostage = kCargoBall;
         }
         else
         {
             SetCargoIntake(kCargoIn);
-        }
-        break;
-    
-    case kCargoBallSmidge:
-        if (m_lifter->MoveSmidgeUp())
-        {
-            SetCargoIntake(kCargoUp);
-            m_cargostage = kCargoBall;
         }
         break;
 
@@ -377,7 +358,6 @@ void Intake::Cargo()
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             SetCargoIntake(kCargoOut);
-            m_lifter->CargoEjected();
             m_timer.Reset();
             m_cargostage = kCargoEject;
         }
@@ -391,6 +371,7 @@ void Intake::Cargo()
         if (m_timer.Get() > INT_CARGO_EJECT_WAIT)
         {
             SetCargoIntake(kCargoOff);
+            m_hascargo = false;
             m_cargostage = kCargoIdle;
         }
         else
@@ -400,7 +381,7 @@ void Intake::Cargo()
         break;
     }
 
-    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && !m_lifter->NearBottom())
+    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
         SetCargoIntake(kCargoUp);
     }
@@ -435,7 +416,7 @@ void Intake::Flush()
         break;
     
     case kFlushStart:
-        m_sparkcargo->Set(0);
+        SetCargoIntake(kCargoOff);
         SetCargoIntake(kCargoDown);
         SetHatchIntake(kHatchUp);
         SetHatchVac(kVacOff);
@@ -450,7 +431,7 @@ void Intake::Flush()
         if (m_timer.Get() > m_waittime)
         {
             SetHatchVac(kPoofOff);
-            m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+            SetCargoIntake(kCargoOut);
 
             m_timer.Reset();
             m_flushstage = kFlushEject;
@@ -460,7 +441,8 @@ void Intake::Flush()
     case kFlushEject:
         if (m_timer.Get() > INT_CARGO_EJECT_WAIT)
         {
-            m_sparkcargo->Set(0);
+            SetCargoIntake(kCargoOff);
+            m_hascargo = false;
             m_flushstage = kFlushNone;
         }
         break;
@@ -468,9 +450,25 @@ void Intake::Flush()
 }
 
 
+void Intake::SetIntakeMode(IntakeMode intakemode)
+{
+    if (intakemode == kModeHatch)
+    {
+        m_mode = kModeHatch;
+        m_hatchstage = kHatchIdle;
+    }
+    else
+    if (intakemode == kModeCargo)
+    {
+        m_mode = kModeCargo;
+        m_cargostage = kCargoIdle;
+    }
+}
+
+
 void Intake::SetCargoIntake(CargoDir cargodir)
 {
-    if (cargodir == kCargoUp)
+    if (cargodir == kCargoUp && !m_atbottom)
         m_solenoidcargo->Set(false);
     else
     if (cargodir == kCargoDown)

@@ -10,14 +10,8 @@
 
 
 #include <frc\WPILib.h>
-#include <networktables\NetworkTable.h>
-#include <networktables\NetworkTableInstance.h>
 #include <ctre\Phoenix.h>
 #include "OperatorInputs.h"
-#include "Lifter.h"
-#include "DrivePID.h"
-#include <networktables\NetworkTable.h>
-#include <networktables\NetworkTableInstance.h>
 
 
 using namespace frc;
@@ -31,22 +25,25 @@ public:
 	enum HatchStage {kHatchIdle, kHatchCapture, kHatchRelease};
 	enum HatchDir {kHatchUp, kHatchDown};
 	enum HatchVac {kVacOn, kVacOff, kPoofOn, kPoofOff};
-	enum CargoStage {kCargoIdle, kCargoIngest, kCargoIngestWait, kCargoBallSmidge, kCargoBall, kCargoEject};
+	enum CargoStage {kCargoIdle, kCargoIngest, kCargoIngestWait, kCargoBall, kCargoEject};
 	enum CargoDir {kCargoUp, kCargoDown, kCargoOff, kCargoIn, kCargoOut};
 	enum FlushStage {kFlushNone, kFlushStart, kFlushPoof, kFlushEject};
-	enum Vision {kIdle, kVision};
 
-	Intake(DriverStation *ds, OperatorInputs *inputs, Lifter *lifter, DrivePID *drivepid);
+	Intake(DriverStation *ds, OperatorInputs *inputs);
 	virtual ~Intake();
 	void Init();
 	void Loop();
 	void Stop();
 
+	void SetIntakeMode(IntakeMode intakemode);
 	void SetCargoIntake(CargoDir cargodir);
 	CargoDir GetCargoIntake();
 	void SetHatchIntake(HatchDir hatchdir);
 	HatchDir GetHatchIntake();
 	void SetHatchVac(HatchVac hatchvac);
+
+	bool HasCargo() { return m_hascargo; }
+	void SetAtBottom(bool atbottom) { m_atbottom = atbottom; }
 
 protected:	
 	void Hatch();
@@ -56,7 +53,6 @@ protected:
 protected:
 	DriverStation *m_ds;
 	OperatorInputs *m_inputs;
-	Lifter *m_lifter;
 
 	Solenoid *m_solenoidvac1;		// Used for vaccuum 
 	Solenoid *m_solenoidvac2;
@@ -79,6 +75,8 @@ protected:
 	double m_waittime;
 	double m_vacuumpow;
 	bool m_inited;
+	bool m_hascargo;
+	bool m_atbottom;
 };
 
 

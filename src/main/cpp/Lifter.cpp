@@ -7,13 +7,15 @@
 
 
 #include "Lifter.h"
+#include "Intake.h"
 #include "Const.h"
 
 
-Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
+Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs, Intake *intake)
 {
 	m_ds = ds;
 	m_inputs = inputs;
+	m_intake = intake;
 
 	m_motor = nullptr;
 	m_motorslave = nullptr;
@@ -34,8 +36,9 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs)
 	m_highposition = 0;
 	m_selectedposition = 0;
 
-	m_smidge = false;
-	m_cargoejected = false;
+	m_prevhascargo = false;
+	m_movebottom = false;
+	m_movesmidge = false;
 	m_staging = false;
 
 	if (CAN_LIFTER_MOTOR1 != -1)
@@ -93,8 +96,9 @@ void Lifter::Init()
 	m_highposition = 0;
 	m_selectedposition = 0;
 
-	m_smidge = false;
-	m_cargoejected = false;
+	m_prevhascargo = false;
+	m_movebottom = false;
+	m_movesmidge = false;
 	m_staging = false;
 
 	m_motor->StopMotor();
@@ -109,67 +113,41 @@ void Lifter::Loop()
 		return;
 
 	m_position = m_motor->GetSelectedSensorPosition(0);
-	
+
+    if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    {
+        m_intake->SetIntakeMode(Intake::kModeHatch);
+        SetHatchLevels();
+    }
+    else
+    if (m_inputs->xBoxRightTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    {
+        m_intake->SetIntakeMode(Intake::kModeCargo);
+        SetCargoLevels();
+    }
+
+    // if lifter is near bottom, force the cargo intake down
+    if (NearBottom())
+        m_intake->SetCargoIntake(Intake::kCargoDown);
+	else
+    // if lifter is staging and above bottom, force the cargo intake up
+    if (m_staging)
+        m_intake->SetCargoIntake(Intake::kCargoUp);
+
+	// if cargo just ejected, enable move all the way down
+	CheckCargoEjected();
+
+	// if cargo just ingested, move lifter up a smidge and raise cargo intake
+	CheckMoveSmidge();
+
 	switch (m_loopmode)
 	{
 	case kManual:
 		m_raisespeed = LIF_RAISESPEED;
 		m_lowerspeed = LIF_LOWERSPEED;
-		m_smidge = false;
 		m_staging = false;
 
-		/// if left bumper and Y override position sensor and raise lift
-		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -LIF_DEADZONE_Y) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-		{
-			m_motor->Set(m_raisespeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
-			m_movingdir = kUp;
-		}
-		else
-		/// if Y raise lift only if not at max position
-		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -LIF_DEADZONE_Y) && (m_position < m_liftermax))
-		{
-			if (m_position > m_liftermaxspd)
-				m_motor->Set(m_raisespeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
-			else
-				m_motor->Set(m_raisespeed * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
-			m_movingdir = kUp;
-		}
-		else
-		/// if left bumper and X override position sensor and lower lift
-		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > LIF_DEADZONE_Y) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-		{
-			m_motor->Set(m_lowerspeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
-			m_motor->SetSelectedSensorPosition(0, 0, 0);
-			m_movingdir = kDown;
-		}
-		else
-		/// if X lower lift only if not at min position
-		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > LIF_DEADZONE_Y) && (m_position > m_liftermin))
-		{
-			if (m_position < m_lifterminspd)
-				m_motor->Set(m_lowerspeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
-			else
-				m_motor->Set(m_lowerspeed * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
-			m_movingdir = kDown;
-		}
-		else
-		/// if x and less than or at min position stop lift
-		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > 0.5) && (m_position <= m_liftermin))
-		{
-			m_motor->StopMotor();
-			m_motor->SetSelectedSensorPosition(0, 0, 0);
-			m_movingdir = kNone;
-		}
-		else
-		{
-			if (m_position > m_liftermin)
-				m_motor->Set(LIF_LIFTERHOLD);
-			else
-				m_motor->StopMotor();
-			m_movingdir = kNone;
-		}
-
-		/// no buttons pressed so check for staging of lifter (pre game)
+		/// check for staging of lifter (pre game)
 		if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
 			m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
 			m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
@@ -193,11 +171,55 @@ void Lifter::Loop()
 			m_selectedposition = FindPosition(kDown);
 			m_loopmode = kAutoDown;
 		}
+		else
+		/// if left bumper and up override position sensor and raise lift
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -LIF_DEADZONE_Y) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+		{
+			m_motor->Set(m_raisespeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
+			m_movingdir = kUp;
+		}
+		else
+		/// if up raise lift only if not at max position
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) < -LIF_DEADZONE_Y) && (m_position < m_liftermax))
+		{
+			if (m_position > m_liftermaxspd)
+				m_motor->Set(m_raisespeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
+			else
+				m_motor->Set(m_raisespeed * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
+			m_movingdir = kUp;
+		}
+		else
+		/// if left bumper and down override position sensor and lower lift
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > LIF_DEADZONE_Y) && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+		{
+			m_motor->Set(m_lowerspeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
+			ResetPosition();
+			m_movingdir = kDown;
+		}
+		else
+		/// if down lower lift only if not at min position
+		if ((m_inputs->xBoxRightY(1 * INP_DUAL) > LIF_DEADZONE_Y) && (m_position > m_liftermin))
+		{
+			if (m_position < m_lifterminspd)
+				m_motor->Set(m_lowerspeed * 0.5 * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
+			else
+				m_motor->Set(m_lowerspeed * fabs(m_inputs->xBoxRightY(1 * INP_DUAL)));
+			m_movingdir = kDown;
+		}
+		else
+		/// no lifter movement hold lifter hight if not at bottom
+		{
+			if (m_position > m_liftermin)
+				m_motor->Set(LIF_HOLDSPEED);
+			else
+				m_motor->StopMotor();
+			m_movingdir = kNone;
+		}
 		break;
 
 	case kAutoUp:
 		/// if position is not at goal, keep raising
-		if (m_position < m_selectedposition - LIF_SLACK)
+		if (m_position < m_selectedposition)
 		{
 			if (m_position > m_liftermaxspd)
 				m_motor->Set(m_raisespeed * 0.5);
@@ -205,9 +227,9 @@ void Lifter::Loop()
 				m_motor->Set(m_raisespeed);
 			m_movingdir = kUp;
 		}
-		else 
+		else
 		/// if position is greater than goal, stop and return to manual control
-		if (m_position > m_selectedposition - LIF_SLACK)
+		if (m_position > (m_selectedposition - (m_selectedposition == m_highposition ? 0 : LIF_SLACK)))
 		{
 			m_motor->StopMotor();
 			m_loopmode = kManual;
@@ -215,7 +237,7 @@ void Lifter::Loop()
 		}
 
 		/// if manual control is sensed, return to manual control
-		if (fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.50)
+		if (fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > LIF_DEADZONE_Y)
 		{
 			m_loopmode = kManual;
 		}
@@ -235,7 +257,7 @@ void Lifter::Loop()
 
 	case kAutoDown:
 		/// if position is not at goal, keep lowering
-		if (m_position > m_selectedposition + LIF_SLACK)
+		if (m_position > m_selectedposition)
 		{
 			if (m_position < m_lifterminspd)
 				m_motor->Set(m_lowerspeed * 0.5);
@@ -245,7 +267,7 @@ void Lifter::Loop()
 		}
 		else 
 		/// if position is less than goal, stop and return to manual control
-		if (m_position < m_selectedposition + LIF_SLACK)
+		if (m_position < (m_selectedposition + (m_selectedposition == m_liftermin ? 0 : LIF_SLACK)))
 		{
 			m_motor->StopMotor();
 			m_loopmode = kManual;
@@ -272,10 +294,12 @@ void Lifter::Loop()
 		break;
 	}
 
-	if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))			// angle lifter back - retract - false (default)
+	// straighten lifter forward - deploy - true
+	if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		m_solenoid->Set(true);
 	else
-	if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))			// straighten lifter forward - deploy - true
+	// angle lifter back - retract - false (default)
+	if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		m_solenoid->Set(false);
 
 	SmartDashboard::PutNumber("LI1_liftermin", m_liftermin);
@@ -283,33 +307,6 @@ void Lifter::Loop()
 	SmartDashboard::PutNumber("LI3_position", m_position);
 	SmartDashboard::PutNumber("LI4_mode", m_loopmode);
 	SmartDashboard::PutNumber("LI5_selectedposition", m_selectedposition);
-}
-
-
-void Lifter::TestLoop()
-{
-	if ((m_motor == nullptr) || (m_solenoid == nullptr))
-		return;
-
-	m_position = m_motor->GetSelectedSensorPosition(0);
-
-	if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))		/// raise lifter - positive
-	{
-		m_motor->Set(m_raisespeed * 0.5);
-	}
-	else
-	if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))		/// lower lifter - negative
-	{
-		m_motor->Set(m_lowerspeed * 0.5);
-	}
-	else
-	{
-		m_motor->StopMotor();
-	}
-
-	SmartDashboard::PutNumber("LI1_liftermin", m_liftermin);
-	SmartDashboard::PutNumber("LI2_liftermax", m_liftermax);
-	SmartDashboard::PutNumber("LI3_position", m_position);
 }
 
 
@@ -379,6 +376,13 @@ int Lifter::FindPosition(LifterDir direction)
 	else
 	if (direction == kDown) 
 	{
+		if (m_movebottom)
+		{
+			if (Debug) DriverStation::ReportError("Down Bottom");
+			m_movebottom = false;
+			return m_liftermin;
+		}
+		else
 		if (m_position > (m_highposition + LIF_SLACK))
 		{
 			if (Debug) DriverStation::ReportError("Down High");
@@ -421,12 +425,6 @@ void Lifter::UpdatePosition(LifterDir direction)
 	else
 	if (direction == kDown)
 	{
-		if (m_cargoejected)
-		{
-			m_selectedposition = m_liftermin;
-			m_cargoejected = false;
-		}
-		else
 		if (m_selectedposition == m_highposition)
 			m_selectedposition = m_mediumposition;
 		else
@@ -437,6 +435,12 @@ void Lifter::UpdatePosition(LifterDir direction)
 			m_selectedposition = m_liftermin;
 	}
 
+	if (m_selectedposition == m_highposition)
+		m_loopmode = kAutoUp;
+	else
+	if (m_selectedposition == m_liftermin)
+		m_loopmode = kAutoDown;
+	else
 	if (m_position > (m_selectedposition + LIF_SLACK))
 		m_loopmode = kAutoDown;
 	else
@@ -447,21 +451,38 @@ void Lifter::UpdatePosition(LifterDir direction)
 }
 
 
-bool Lifter::MoveSmidgeUp()
+// controls the ability to move all the way down based on whether ball has just been intaked/ejected
+void Lifter::CheckCargoEjected()
 {
-	if (!m_smidge)
+	bool newhascargo = m_intake->HasCargo();
+
+	if (m_prevhascargo && !newhascargo)		// if just ejected, allow move all the way down
+	{
+		m_movebottom = true;
+	}
+	else
+	if (!m_prevhascargo && newhascargo)		// if just intaked, prevent move all the way down
+	{
+		m_movebottom = false;
+		m_movesmidge = true;
+	}
+	m_prevhascargo = newhascargo;
+}
+
+
+void Lifter::CheckMoveSmidge()
+{
+	if (m_movesmidge)
 	{
 		m_selectedposition = LIF_LIFTERSMIDGELOW + LIF_SLACK;
-		m_smidge = true;
 		m_loopmode = kAutoUp;
 	}
 	else
 	if (m_loopmode == kManual)
 	{
-		m_smidge = false;
-		return true;
+		m_intake->SetCargoIntake(Intake::kCargoUp);
+		m_movesmidge = false;
 	}
-	return false;
 }
 
 
