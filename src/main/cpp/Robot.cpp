@@ -54,8 +54,9 @@ void Robot::AutonomousInit()
 {
 	DriverStation::ReportError("AutonomousInit");
 
-	if (m_driverstation->IsFMSAttached())
-		StartedInAuto = true;
+	StartedInAuto = true;
+	m_timer.Start();
+	m_timer.Reset();
 
 	m_pneumatics->Init();
 	m_gyrodrive->Init();
@@ -123,6 +124,11 @@ void Robot::DisabledInit()
 
 void Robot::DisabledPeriodic()
 {
+	if (StartedInAuto && m_timer.Get() > 2.0)
+	{
+		StartedInAuto = false;
+		DisabledInit();
+	}
 	m_gyrodrive->Disabled();
 }
 

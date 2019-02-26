@@ -30,6 +30,7 @@ public:
 	virtual void DisabledPeriodic();
 
 protected:
+	Timer m_timer;
 	DriverStation *m_driverstation;
 	OperatorInputs *m_operatorinputs;
 	GyroDrive *m_gyrodrive;

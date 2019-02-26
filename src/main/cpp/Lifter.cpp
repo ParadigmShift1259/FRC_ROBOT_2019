@@ -152,6 +152,10 @@ void Lifter::Loop()
 			m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
 			m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
 		{
+			m_intake->SetHatchVac(Intake::kVacOff);
+			m_intake->SetHatchVac(Intake::kPoofOff);
+			m_intake->SetHatchIntake(Intake::kHatchUp);
+			m_intake->SetCargoIntake(Intake::kCargoOff);
 			m_selectedposition = LIF_LIFTERSTART;
 			m_raisespeed = LIF_RAISESPEED * 0.5;
 			m_loopmode = kAutoUp;
