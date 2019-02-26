@@ -12,11 +12,14 @@
 using namespace std;
 
 
-Autonomous::Autonomous(OperatorInputs *inputs, GyroDrive *gyrodrive)
+Autonomous::Autonomous(OperatorInputs *inputs, GyroDrive *gyrodrive, Lifter *lifter, Intake *intake)
 {
     m_inputs = inputs;
     m_gyrodrive = gyrodrive;
+    m_lifter = lifter;
+    m_intake = intake;
     m_stage = 0;
+    m_startstage = 0;
     m_heading = 0.0;
 }
 
@@ -31,12 +34,32 @@ void Autonomous::Init()
 	m_gyrodrive->SetStraightPID(0.04, 0.0012, 0.07);
     m_gyrodrive->SetAnglePID(0.013, 0.0002, 0.045);
     m_stage = 0;
+    m_startstage = 0;
     m_heading = 0.0;
 }
 
 
 void Autonomous::Loop()
 {
+    switch (automode)
+    {
+    case kAutoDefault:
+        break;
+    
+    case kAutoLeft:
+        AutoLeft();
+        break;
+    
+    case kAutoCenter:
+        AutoCenter();
+        break;
+    
+    case kAutoRight:
+        AutoRight();
+        break;
+    }
+
+    /*
     switch (m_stage)
     {
     case 0:
@@ -71,7 +94,7 @@ void Autonomous::Loop()
         break;
 
     }
-
+    */
     /*
     switch (m_stage)
     {
@@ -110,4 +133,83 @@ void Autonomous::Loop()
 
 void Autonomous::Stop()
 {
+    m_gyrodrive->Stop();
+}
+
+
+bool Autonomous::StartSequence()
+{
+    bool result = false;
+
+    switch (m_startstage)
+    {
+    case 0:
+        m_intake->SetHatchVac(Intake::kVacOn);
+        m_intake->SetCargoIntake(Intake::kCargoDown);
+        m_lifter->SetLifter(Lifter::kForward);
+        m_lifter->MoveBottom();
+        m_startstage++;
+        break;
+    
+    case 1:
+        if (m_gyrodrive->DriveStraight(36.0, 0.5, false))
+            m_startstage++;
+        break;
+
+    case 2:
+        if (m_lifter->MoveBottom())
+            m_startstage++;
+        break;
+
+    case 3:
+        result = true;
+        break;
+    }
+
+    return result;
+}
+
+
+void Autonomous::AutoLeft()
+{
+    switch (m_stage)
+    {
+    case 0:
+        if (StartSequence())
+            m_stage++;
+        break;
+
+    case 1:
+        break;
+    }
+}
+
+
+void Autonomous::AutoCenter()
+{
+    switch (m_stage)
+    {
+    case 0:
+        if (StartSequence())
+            m_stage++;
+        break;
+
+    case 1:
+        break;
+    }
+}
+
+
+void Autonomous::AutoRight()
+{
+    switch (m_stage)
+    {
+    case 0:
+        if (StartSequence())
+            m_stage++;
+        break;
+
+    case 1:
+        break;
+    }
 }

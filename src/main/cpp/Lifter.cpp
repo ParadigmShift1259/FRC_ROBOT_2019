@@ -324,6 +324,30 @@ void Lifter::Stop()
 }
 
 
+void Lifter::SetLifter(LifterDir direction)
+{
+	if (direction == kBack)
+		m_solenoid->Set(false);
+	else
+	if (direction == kForward)
+		m_solenoid->Set(true);
+}
+
+
+bool Lifter::MoveBottom()
+{
+	if (m_position <= LIF_LIFTERMIN)
+		return true;
+
+	if (m_movingdir != kDown)
+	{
+		m_selectedposition = LIF_LIFTERMIN;
+		m_loopmode = kAutoDown;
+	}
+	return false;
+}
+
+
 void Lifter::ResetPosition()
 {
 	if (m_motor == nullptr)

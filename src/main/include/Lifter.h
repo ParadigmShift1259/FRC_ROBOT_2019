@@ -22,13 +22,15 @@ class Lifter
 {
 public:
 	enum LoopMode {kManual, kAutoUp, kAutoDown};
-	enum LifterDir {kNone, kUp, kDown};
+	enum LifterDir {kNone, kUp, kDown, kBack, kForward};
 
 	Lifter(DriverStation *ds, OperatorInputs *inputs, Intake *intake);
 	virtual ~Lifter();
 	void Init();
 	void Loop();
 	void Stop();
+	void SetLifter(LifterDir direction);
+	bool MoveBottom();
 
 protected:
 	void ResetPosition();

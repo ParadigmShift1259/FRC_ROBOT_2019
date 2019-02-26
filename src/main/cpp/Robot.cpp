@@ -33,9 +33,9 @@ void Robot::RobotInit()
 	m_operatorinputs = new OperatorInputs();
 	m_gyrodrive = new GyroDrive(m_operatorinputs);
 	m_pneumatics = new Pneumatics();
-	m_autonomous = new Autonomous(m_operatorinputs, m_gyrodrive);
 	m_intake = new Intake(m_driverstation, m_operatorinputs);
 	m_lifter = new Lifter(m_driverstation, m_operatorinputs, m_intake);
+	m_autonomous = new Autonomous(m_operatorinputs, m_gyrodrive, m_lifter, m_intake);
 }
 
 
