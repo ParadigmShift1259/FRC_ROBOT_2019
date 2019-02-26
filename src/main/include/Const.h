@@ -165,4 +165,12 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define INT_VACUUM_POW 0.55
 
 
+// Autonomous
+enum AutoMode {
+    kAutoDefault, kAutoLeft, kAutoCenter, kAutoRight
+};
+
+extern AutoMode automode;
+
+
 #endif /* SRC_CONST_H_ */

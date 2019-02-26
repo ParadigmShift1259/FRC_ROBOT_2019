@@ -39,6 +39,16 @@ protected:
 	Lifter *m_lifter;
 	Intake *m_intake;
 	DrivePID *m_drivepid;
+
+private:
+	SendableChooser<string> m_chooser;
+	const string kszAutoDefault = "NO AUTO";
+	const string kszAutoLeft = "Left";
+	const string kszAutoCenter = "Center";
+	const string kszAutoRight = "Right";
+	string m_autoSelected;
+
+	void ReadChooser();
 };
 
 

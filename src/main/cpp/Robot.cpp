@@ -17,9 +17,17 @@
 bool Debug = true;
 bool StartedInAuto = false;
 
+AutoMode automode = kAutoDefault;
+
 
 void Robot::RobotInit()
 {
+	m_chooser.SetDefaultOption(kszAutoDefault, kszAutoDefault);
+	m_chooser.AddOption(kszAutoLeft, kszAutoLeft);
+	m_chooser.AddOption(kszAutoCenter, kszAutoCenter);
+	m_chooser.AddOption(kszAutoRight, kszAutoRight);
+	SmartDashboard::PutData("Auto Modes", &m_chooser);
+
 	m_driverstation = &DriverStation::GetInstance();
 
 	m_operatorinputs = new OperatorInputs();
@@ -58,8 +66,11 @@ void Robot::AutonomousInit()
 	m_timer.Start();
 	m_timer.Reset();
 
-	m_pneumatics->Init();
+	ReadChooser();
+
 	m_gyrodrive->Init();
+	m_pneumatics->Init();
+	m_autonomous->Init();
 	m_intake->Init();
 	m_lifter->Init();
 }
@@ -129,7 +140,28 @@ void Robot::DisabledPeriodic()
 		StartedInAuto = false;
 		DisabledInit();
 	}
+	
+	ReadChooser();
+
 	m_gyrodrive->Disabled();
+}
+
+
+void Robot::ReadChooser()
+{
+	m_autoSelected = m_chooser.GetSelected();
+
+	automode = kAutoDefault;
+	if (m_autoSelected == kszAutoLeft)
+		automode = kAutoLeft;
+	else
+	if (m_autoSelected == kszAutoCenter)
+		automode = kAutoCenter;
+	else
+	if (m_autoSelected == kszAutoRight)
+		automode = kAutoRight;
+
+	SmartDashboard::PutNumber("AU1_automode", automode);
 }
 
 
