@@ -106,14 +106,14 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 
 
 // Gyro
-#define CAN_GYRO1 -1                    // 0
+#define CAN_GYRO1 0                    // 0
 #define CAN_GYRO2 -1
 
 
 // Lifter
 //   Motors
-#define CAN_LIFTER_MOTOR1 6             // 4, Yoshi 6
-#define CAN_LIFTER_MOTOR2 -1            // 5, Yoshi -1
+#define CAN_LIFTER_MOTOR1 4             // 4, Yoshi 6
+#define CAN_LIFTER_MOTOR2 5            // 5, Yoshi -1
 //   Solenoids
 #define PCM_LIFTER_MODULE 0			    // 0
 #define PCM_LIFTER_SOLENOID 2		    // 2
