@@ -45,6 +45,11 @@ GyroDrive::~GyroDrive()
 void GyroDrive::Init()
 {
     m_drivetrain->Init(DriveTrain::DriveMode::kFollower);
+	// disable change direction in drivetrain
+	m_drivetrain->SetChangeDirButton(-1);		
+	// if single controller use L3 for shifter else left trigger
+	if (!INP_DUAL)
+		m_drivetrain->SetShifterButton(L3_BUTTON);
     m_gyro->Init();
     m_drivestate = kInit;
     m_timer.Reset();

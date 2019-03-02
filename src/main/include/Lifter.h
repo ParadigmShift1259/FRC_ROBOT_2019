@@ -12,6 +12,7 @@
 #include <frc\WPILib.h>
 #include <ctre\Phoenix.h>
 #include "OperatorInputs.h"
+#include "GyroDrive.h"
 #include "Intake.h"
 
 
@@ -24,7 +25,7 @@ public:
 	enum LoopMode {kManual, kAutoUp, kAutoDown};
 	enum LifterDir {kNone, kUp, kDown, kBack, kForward};
 
-	Lifter(DriverStation *ds, OperatorInputs *inputs, Intake *intake);
+	Lifter(DriverStation *ds, OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake);
 	virtual ~Lifter();
 	void Init();
 	void Loop();
@@ -37,6 +38,7 @@ protected:
 	void SetHatchLevels();
 	void SetCargoLevels();
 	void CheckMoveSmidge();
+	void CheckLowSpeed();
 	bool NearBottom();
 
 	int FindPosition(LifterDir direction);
@@ -46,6 +48,7 @@ protected:
 protected:
 	DriverStation *m_ds;
 	OperatorInputs *m_inputs;
+	GyroDrive *m_gyrodrive;
 	Intake *m_intake;
 	WPI_TalonSRX *m_motor;
 	WPI_TalonSRX *m_motorslave;
