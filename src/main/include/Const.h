@@ -84,15 +84,15 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define Y_SCALING 1.0
 #define LEFT_MOTOR_SCALING 1
 #define RIGHT_MOTOR_SCALING 1
-#define LOWSPEED_MODIFIER_X 0.75
-#define LOWSPEED_MODIFIER_Y 0.25
+#define LOWSPEED_MODIFIER_X 0.50
+#define LOWSPEED_MODIFIER_Y 0.50
 //   Encoders
 #define ENC_PRESENT_1 true
 #define ENC_TYPE_1 FeedbackDevice::QuadEncoder
 #define ENC_PRESENT_2 false
 #define ENC_TYPE_2 FeedbackDevice::QuadEncoder
-#define CODES_PER_REV 5400.0
-#define CODES_PER_INCH 286.479
+#define CODES_PER_REV 1382.0
+#define CODES_PER_INCH 73.317
 #define WHEEL_DIAMETER 6.0
 #define WHEEL_TRACK 23.50
 
@@ -124,9 +124,9 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 //   Positions
 #define LIF_LIFTERMIN 300								// minimum cutoff
 #define LIF_LIFTERMINSPD (LIF_LIFTERMAX * 0.1)          // down slow position
-#define LIF_LIFTERSMIDGELOW 900
+#define LIF_LIFTERSMIDGELOW 1200
 #define LIF_LIFTERSMIDGEHIGH 4000
-#define LIF_LIFTERSTART 5600
+#define LIF_LIFTERSTART 7700
 #define LIF_LIFTERMAXSPD (LIF_LIFTERMAX	* 0.95)			// up slow position
 #define LIF_LIFTERMAX 22220
 //   Hatch positions
@@ -154,10 +154,10 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define PCM_INTAKE_SOLENOIDVAC3 -1      // 6
 #define PCM_INTAKE_SOLENOIDVAC4 -1      // 7
 //   Digital Inputs
-#define DIO_INTAKE_CARGOSENSOR -1       // 0
+#define DIO_INTAKE_CARGOSENSOR 0       // 0
 //   Cargo Constants
 #define INT_CARGO_INGEST_WAIT 0.5
-#define INT_CARGO_INGEST_SPEED -0.8   // 0.7
+#define INT_CARGO_INGEST_SPEED -0.8    // -0.8
 #define INT_CARGO_EJECT_WAIT 1.5
 #define INT_CARGO_EJECT_SPEED 1.0      // -1.0
 //   Hatch Constants

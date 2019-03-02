@@ -475,31 +475,31 @@ void Intake::SetCargoIntake(CargoDir cargodir)
 {
     if (cargodir == kCargoUp && !m_atbottom)
     {
-        if (Debug) DriverStation::ReportError("kCargoUp");
+        // if (Debug) DriverStation::ReportError("kCargoUp");
         m_solenoidcargo->Set(false);
     }
     else
     if (cargodir == kCargoDown)
     {
-        if (Debug) DriverStation::ReportError("kCargoDown");
+        // if (Debug) DriverStation::ReportError("kCargoDown");
         m_solenoidcargo->Set(true);
     }
     else
     if (cargodir == kCargoOff)
     {
-        if (Debug) DriverStation::ReportError("kCargoOff");
+        // if (Debug) DriverStation::ReportError("kCargoOff");
         m_sparkcargo->Set(0);
     }
     else
     if (cargodir == kCargoIn)
     {
-        if (Debug) DriverStation::ReportError("kCargoIn");
+        // if (Debug) DriverStation::ReportError("kCargoIn");
         m_sparkcargo->Set(INT_CARGO_INGEST_SPEED);
     }
     else
     if (cargodir == kCargoOut)
     {
-        if (Debug) DriverStation::ReportError("kCargoOut");
+        // if (Debug) DriverStation::ReportError("kCargoOut");
         m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
     }
 }

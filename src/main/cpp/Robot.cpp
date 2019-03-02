@@ -79,6 +79,7 @@ void Robot::AutonomousInit()
 void Robot::AutonomousPeriodic()
 {
 	m_gyrodrive->Loop();
+	m_autonomous->Loop();
 	m_intake->Loop();
 	m_lifter->Loop();
 }

@@ -144,6 +144,8 @@ bool Autonomous::StartSequence()
     switch (m_startstage)
     {
     case 0:
+       	if (Debug) DriverStation::ReportError("AutoStart 0");
+
         m_intake->SetHatchVac(Intake::kVacOn);
         m_intake->SetCargoIntake(Intake::kCargoDown);
         m_lifter->SetLifter(Lifter::kForward);
@@ -152,11 +154,15 @@ bool Autonomous::StartSequence()
         break;
     
     case 1:
-        if (m_gyrodrive->DriveStraight(36.0, 0.5, false))
+       	if (Debug) DriverStation::ReportError("AutoStart 1");
+
+        //if (m_gyrodrive->DriveStraight(36.0, 0.5, false))
             m_startstage++;
         break;
 
     case 2:
+       	if (Debug) DriverStation::ReportError("AutoStart 2");
+
         if (m_lifter->MoveBottom())
             m_startstage++;
         break;
@@ -172,6 +178,8 @@ bool Autonomous::StartSequence()
 
 void Autonomous::AutoLeft()
 {
+   	if (Debug) DriverStation::ReportError("AutoLeft");
+
     switch (m_stage)
     {
     case 0:
@@ -187,6 +195,8 @@ void Autonomous::AutoLeft()
 
 void Autonomous::AutoCenter()
 {
+   	if (Debug) DriverStation::ReportError("AutoCenter");
+
     switch (m_stage)
     {
     case 0:
@@ -202,6 +212,8 @@ void Autonomous::AutoCenter()
 
 void Autonomous::AutoRight()
 {
+   	if (Debug) DriverStation::ReportError("AutoRight");
+
     switch (m_stage)
     {
     case 0:
