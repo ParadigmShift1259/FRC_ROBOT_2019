@@ -34,6 +34,7 @@ protected:
 	void AutoLeft();
 	void AutoCenter();
 	void AutoRight();
+	void AutoPID();
 
 protected:
     OperatorInputs *m_inputs;

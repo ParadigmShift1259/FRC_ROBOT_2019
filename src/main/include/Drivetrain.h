@@ -32,13 +32,15 @@ public:
 	void Shift();
 		// change DriveTrain direction and return true if going forward
 	bool ChangeDirection();
+	bool ChangeLowSpeedMode();
 	double Ramp(double previousPow, double desiredPow, double rampSpeedMin, double rampSpeedMax);
 	double LeftMotor(double &invMaxValueXPlusY);
 	double RightMotor(double &invMaxValueXPlusY);
 
 	void SetShifterButton(int button) {m_shifterbutton = button;}
 	void SetChangeDirButton(int button) {m_changedirbutton = button;}
-	void EnableLowSpeed(bool mode) {m_lowspeedmode = mode;}
+	void SetLowSpeedButton(int button) {m_lowspeedbutton = button;}
+	void SetLowSpeedMode(bool mode) {m_lowspeedmode = mode;}
 
 	void setCoasting(double newCoasting) {m_coasting = newCoasting;}
 	void setRamp(double newValue) {m_rampmax = newValue;}
@@ -86,6 +88,7 @@ protected:
 
 	int m_shifterbutton;
 	int m_changedirbutton;
+	int m_lowspeedbutton;
 
 	double m_leftpow;
 	double m_rightpow;

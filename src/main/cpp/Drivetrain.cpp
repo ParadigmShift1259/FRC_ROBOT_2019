@@ -57,6 +57,7 @@ DriveTrain::DriveTrain(OperatorInputs *inputs, WPI_TalonSRX *left1, WPI_TalonSRX
 
 	m_shifterbutton = XBOX_LEFT_TRIGGER_AXIS;
 	m_changedirbutton = R3_BUTTON;
+	m_lowspeedbutton = XBOX_RIGHT_TRIGGER_AXIS;
 
 	m_leftpow = 0;
 	m_rightpow = 0;
@@ -311,7 +312,8 @@ void DriveTrain::Loop()
 	if (m_inputs->xBox(m_shifterbutton, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		m_shift = true;
 
-	//LowSpeedDriving();
+	if (m_inputs->xBox(m_lowspeedbutton, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		ChangeLowSpeedMode();
 
 	x = m_inputs->xBoxLeftX(0 * INP_DUAL);
 	y = m_inputs->xBoxLeftY(0 * INP_DUAL);
@@ -504,6 +506,13 @@ bool DriveTrain::ChangeDirection()
 }
 
 
+bool DriveTrain::ChangeLowSpeedMode()
+{
+	m_lowspeedmode = !m_lowspeedmode;
+	return m_lowspeedmode;
+}
+
+
 // ramp the power
 double DriveTrain::Ramp(double previous, double desired, double rampmin, double rampmax)
 {
@@ -662,7 +671,7 @@ double DriveTrain::GetMaxDistance(int encoder)
 {
 	double maxleft = GetLeftDistance(encoder);
 	double maxright = GetRightDistance(encoder);
-	return abs(maxleft) > abs(maxright) ? maxleft : -maxright;
+	return abs(maxleft) > abs(maxright) ? -maxleft : maxright;
 }
 
 
@@ -678,7 +687,7 @@ double DriveTrain::GetMaxVelocity(int encoder)
 {
 	double maxleft = GetLeftVelocity(encoder);
 	double maxright = GetRightVelocity(encoder);
-	return abs(abs(maxleft) > abs(maxright) ? maxleft : -maxright);
+	return abs(abs(maxleft) > abs(maxright) ? -maxleft : maxright);
 }
 
 
@@ -693,6 +702,6 @@ double DriveTrain::GetMaxDeltaDistance(int encoder)
 {
 	double maxleft = GetLeftDistance(encoder)- m_prevleftdistance;
 	double maxright = GetRightDistance(encoder) - m_prevrightdistance;
-	return abs(maxleft) > abs(maxright) ? maxleft : -maxright;
+	return abs(maxleft) > abs(maxright) ? -maxleft : maxright;
 }
 

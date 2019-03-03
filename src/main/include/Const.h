@@ -79,7 +79,7 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 //   Ramping
 #define RAMPING_RATE_PERIOD 0.10
 #define RAMPING_RATE_MIN 0.6
-#define RAMPING_RATE_MAX 2.0            // 4.0
+#define RAMPING_RATE_MAX 4.0            // 4.0
 #define X_SCALING 0.75
 #define Y_SCALING 1.0
 #define LEFT_MOTOR_SCALING 1

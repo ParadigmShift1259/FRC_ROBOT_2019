@@ -38,6 +38,7 @@ Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs, GyroDrive *gyrodrive, 
 	m_selectedposition = 0;
 
 	m_prevhascargohatch = false;
+	m_lowspeed = false;
 	m_movebottom = false;
 	m_movesmidge = false;
 	m_staging = false;
@@ -98,6 +99,7 @@ void Lifter::Init()
 	m_selectedposition = 0;
 
 	m_prevhascargohatch = false;
+	m_lowspeed = false;
 	m_movebottom = false;
 	m_movesmidge = false;
 	m_staging = false;
@@ -340,6 +342,8 @@ void Lifter::SetLifter(LifterDir direction)
 
 bool Lifter::MoveBottom()
 {
+	m_position = m_motor->GetSelectedSensorPosition(0);
+
 	if (m_position <= LIF_LIFTERMIN)
 		return true;
 
@@ -523,9 +527,16 @@ void Lifter::CheckMoveSmidge()
 void Lifter::CheckLowSpeed()
 {
 	if (m_position > LIF_HATCH_MID)
-		m_gyrodrive->EnableLowSpeed(true);
+	{
+		m_lowspeed = true;
+		m_gyrodrive->SetLowSpeedMode(m_lowspeed);
+	}
 	else
-		m_gyrodrive->EnableLowSpeed(false);
+	if (m_lowspeed)
+	{
+		m_lowspeed = false;
+		m_gyrodrive->SetLowSpeedMode(m_lowspeed);
+	}
 }
 
 

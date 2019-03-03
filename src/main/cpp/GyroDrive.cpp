@@ -20,6 +20,8 @@ GyroDrive::GyroDrive(OperatorInputs *inputs)
     m_gyro = new DualGyro(CAN_GYRO1, CAN_GYRO2);
     m_drivepid = new DrivePID(m_drivetrain, m_gyro, m_inputs);
 
+	m_drivemode = kManual;
+	m_stage = 0;
     m_drivestate = kInit;
     m_pidstraight[0] = 0.0;
     m_pidstraight[1] = 0.0;
@@ -54,14 +56,21 @@ void GyroDrive::Init()
     m_drivestate = kInit;
     m_timer.Reset();
     m_timer.Start();
+	m_drivemode = kManual;
+	m_stage = 0;
     m_drivestate = kInit;
 
+/*
     m_pidstraight[0] = 0.0;
     m_pidstraight[1] = 0.0;
     m_pidstraight[2] = 0.0;
     m_pidangle[0] = 0.0;
     m_pidangle[1] = 0.0;
     m_pidangle[2] = 0.0;
+*/
+
+	SetStraightPID(0.1, 0.0003, 0.11);    // 2018 Values (0.04, 0.0012, 0.07)
+    SetAnglePID(0.1, 0.0003, 0.11);        // Tuned 3/2/19 (0.1, 0.0003, 0.11)
     m_distance = 0;
 }
 
@@ -71,8 +80,31 @@ void GyroDrive::Loop()
     m_gyro->Loop();
     if (m_drivepid->GetEnabled())
         m_drivepid->Loop();
-    else
-        m_drivetrain->Loop();
+
+	switch (m_drivemode)
+	{
+	case kManual:
+		if (!m_drivepid->GetEnabled())
+		{
+			m_drivetrain->Loop();
+
+			if (INP_DUAL && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+				m_drivemode = kQuickLeft;
+			else
+			if (INP_DUAL && m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+				m_drivemode = kQuickRight;
+		}
+		break;
+	
+	case kQuickLeft:
+		QuickLeft();
+		break;
+	
+	case kQuickRight:
+		QuickRight();
+		break;
+	}
+	
 }
 
 
@@ -131,8 +163,6 @@ bool GyroDrive::DriveStraight(double targetdistance, double autopower, bool rese
 		SmartDashboard::PutNumber("DriveStraight", m_distance);
 		m_drivepid->Init(m_pidstraight[0], m_pidstraight[1], m_pidstraight[2], DrivePID::Feedback::kGyro, reset);
 		m_drivepid->EnablePID();
-		//if (reset)		redundant remove after testing
-		//	m_drivepid->SetAbsoluteAngle(0);
 		m_timer.Reset();
 		m_drivestate = kDrive;
 		break;
@@ -142,11 +172,10 @@ bool GyroDrive::DriveStraight(double targetdistance, double autopower, bool rese
 		if (m_timer.Get() > 0.1)
 			m_distance = m_drivetrain->GetMaxDeltaDistance();
 		SmartDashboard::PutNumber("DriveStraight", m_distance);
-		modifier = (targetdistance > 0) ? 1 : -1;
+		modifier = (autopower > 0) ? 1 : -1;
 		m_distance *= modifier;
-		targetdistance *= modifier;
 
-		if (m_distance > targetdistance)
+		if (m_distance > fabs(targetdistance))
 		{
 			m_drivepid->Drive(0);
 			m_drivepid->DisablePID();
@@ -219,4 +248,73 @@ bool GyroDrive::DriveHeading(double heading)
 		break;
 	}
 	return false;
+}
+
+
+void GyroDrive::QuickLeft()
+{
+	switch (m_stage)
+	{
+    case 0:
+		DriverStation::ReportError("QuickLeft 0");
+        if (DriveStraight(12, -0.5, true))
+            m_stage++;
+        break;
+    case 1:
+		DriverStation::ReportError("QuickLeft 1");
+        if (DriveAngle(-30, false))
+            m_stage++;
+        break;
+    case 2:
+		DriverStation::ReportError("QuickLeft 2");
+        if (DriveStraight(8, 0.5, false))
+            m_stage++;
+        break;
+    case 3:
+        if (DriveAngle(30, false))
+            m_stage++;
+        break;
+    case 4:
+        if (DriveStraight(4, 0.5, false))
+            m_stage++;
+        break;
+    case 5:
+		m_stage = 0;
+		m_drivemode = kManual;
+        break;
+	}
+}
+
+
+void GyroDrive::QuickRight()
+{
+	if (Debug) DriverStation::ReportError("QuickRight");
+
+	switch (m_stage)
+	{
+    case 0:
+        if (DriveStraight(12, -0.5, true))
+            m_stage++;
+        break;
+    case 1:
+        if (DriveAngle(30, false))
+            m_stage++;
+        break;
+    case 2:
+        if (DriveStraight(8, 0.5, false))
+            m_stage++;
+        break;
+    case 3:
+        if (DriveAngle(-30, false))
+            m_stage++;
+        break;
+    case 4:
+        if (DriveStraight(4, 0.5, false))
+            m_stage++;
+        break;
+    case 5:
+		m_stage = 0;
+		m_drivemode = kManual;
+        break;
+	}
 }
