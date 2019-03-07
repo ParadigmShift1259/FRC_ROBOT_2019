@@ -21,6 +21,11 @@ Autonomous::Autonomous(OperatorInputs *inputs, GyroDrive *gyrodrive, Lifter *lif
     m_stage = 0;
     m_startstage = 0;
     m_heading = 0.0;
+    m_visioning = kIdle;
+
+    m_nettable = NetworkTableInstance::GetDefault().GetTable("OpenCV");
+    m_counter = 0;
+    m_visionvalid = false;
 }
 
 
@@ -41,11 +46,19 @@ void Autonomous::Init()
     m_stage = 0;
     m_startstage = 0;
     m_heading = 0.0;
+
+    m_counter = 0;
+    m_visionvalid = false;
+    m_visioning = kIdle;
+    m_visiontimer.Reset();
+    m_visiontimer.Start();
 }
 
 
 void Autonomous::Loop()
 {
+    AutoVision();
+
     switch (automode)
     {
     case kAutoDefault:
@@ -289,4 +302,29 @@ void Autonomous::AutoPID()
         break;
     }
 */
+}
+
+
+void Autonomous::AutoVision()
+{
+    int counter = m_nettable->GetNumber("visioncounter", 0);
+    double angle = m_nettable->GetNumber("XOffAngle", 0) * -1;
+    double distance = m_nettable->GetNumber("Forward_Distance_Inch", 0);
+
+    double scale = distance / (96 * 2) + 0.25;
+    if (counter > m_counter)
+    {
+        m_counter = counter;
+        if (distance > 0.0)
+        {
+            m_visiontimer.Reset();
+            m_visionvalid = true;
+        }
+        else
+        if (m_visiontimer.Get() > 0.5)
+        {
+            m_visionvalid = false;
+        }
+    }
+
 }
