@@ -34,8 +34,8 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define L3_BUTTON 9
 #define R3_BUTTON 10
 //   XBox Triggers -- Changed for 2016, previously XBOX triggers were both on a single axis
-#define XBOX_LEFT_TRIGGER_AXIS  2
-#define XBOX_RIGHT_TRIGGER_AXIS  3
+#define XBOX_LEFT_TRIGGER_AXIS  12
+#define XBOX_RIGHT_TRIGGER_AXIS  13
 #define LEFT_TRIGGER_MIN  0.5
 #define LEFT_TRIGGER_MAX  1.0
 #define RIGHT_TRIGGER_MIN  0.5

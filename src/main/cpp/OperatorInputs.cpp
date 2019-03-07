@@ -158,7 +158,7 @@ bool OperatorInputs::xBoxLeftTrigger(ToggleChoice choice, unsigned int i)
 {
 	if (i < m_xbox.size())
 	{
-		double axis = m_xbox[i]->GetRawAxis(XBOX_LEFT_TRIGGER_AXIS);
+		double axis = m_xbox[i]->GetRawAxis(XBOX_LEFT_TRIGGER_AXIS - 10);
 
 		if (choice == kToggle)
 			return toggle("xBoxLeftTrigger_" + i, (LEFT_TRIGGER_MIN <= axis) && (axis <= LEFT_TRIGGER_MAX));
@@ -173,7 +173,7 @@ bool OperatorInputs::xBoxRightTrigger(ToggleChoice choice, unsigned int i)
 {
 	if (i < m_xbox.size())
 	{
-		double axis = m_xbox[i]->GetRawAxis(XBOX_RIGHT_TRIGGER_AXIS);
+		double axis = m_xbox[i]->GetRawAxis(XBOX_RIGHT_TRIGGER_AXIS - 10);
 
 		if (choice == kToggle)
 			return toggle("xBoxRightTrigger_" + i, (RIGHT_TRIGGER_MIN <= axis && axis <= RIGHT_TRIGGER_MAX));
@@ -361,6 +361,39 @@ bool OperatorInputs::xBoxR3(ToggleChoice choice, unsigned int i)
 			return button;
 	}
 	return false;
+}
+
+
+bool OperatorInputs::xBox(int Button, ToggleChoice choice, unsigned int i)
+{
+	switch (Button)
+	{
+	case A_BUTTON:
+		return xBoxAButton(choice, i);
+	case B_BUTTON:
+		return xBoxBButton(choice, i);
+	case X_BUTTON:
+		return xBoxXButton(choice, i);
+	case Y_BUTTON:
+		return xBoxYButton(choice, i);
+	case LEFT_BUMPER:
+		return xBoxLeftBumper(choice, i);
+	case RIGHT_BUMPER:
+		return xBoxRightBumper(choice, i);
+	case XBOX_LEFT_TRIGGER_AXIS:
+		return xBoxLeftTrigger(choice, i);
+	case XBOX_RIGHT_TRIGGER_AXIS:
+		return xBoxRightTrigger(choice, i);
+	case START_BUTTON:
+		return xBoxStartButton(choice, i);
+	case BACK_BUTTON:
+		return xBoxBackButton(choice, i);
+	case L3_BUTTON:
+		return xBoxL3(choice, i);
+	case R3_BUTTON:
+		return xBoxR3(choice, i);
+	}
+	return false;	
 }
 
 

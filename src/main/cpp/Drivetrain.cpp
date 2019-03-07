@@ -55,6 +55,9 @@ DriveTrain::DriveTrain(OperatorInputs *inputs, WPI_TalonSRX *left1, WPI_TalonSRX
 	m_lowspeedmode = false;
 	m_shift = false;
 
+	m_shifterbutton = XBOX_LEFT_TRIGGER_AXIS;
+	m_changedirbutton = R3_BUTTON;
+
 	m_leftpow = 0;
 	m_rightpow = 0;
 	m_previousx = 0;
@@ -302,16 +305,11 @@ void DriveTrain::Loop()
 	double x;
 	double y;
 
-	if (m_inputs->xBoxR3(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-	{
+	if (m_inputs->xBox(m_changedirbutton, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		ChangeDirection();
-	}
-	if ((INP_DUAL && m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL)) ||
-		(!INP_DUAL && m_inputs->xBoxL3(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL)))
-	{
+
+	if (m_inputs->xBox(m_shifterbutton, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		m_shift = true;
-		m_lowspeedmode = false;
-	}
 
 	//LowSpeedDriving();
 
@@ -503,20 +501,6 @@ bool DriveTrain::ChangeDirection()
 {
 	m_direction *= -1.0;
 	return (m_direction == DT_DEFAULT_DIRECTION);
-}
-
-
-void DriveTrain::LowSpeedDriving()
-{
-	SmartDashboard::PutNumber("DT16_lowspeed", m_lowspeedmode);
-	if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-	{
-		m_lowspeedmode = !m_lowspeedmode;
-		if (m_ishighgear && m_lowspeedmode)
-		{
-			m_shift = true;
-		}
-	}
 }
 
 

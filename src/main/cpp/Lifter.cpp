@@ -11,10 +11,11 @@
 #include "Const.h"
 
 
-Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs, Intake *intake)
+Lifter::Lifter(DriverStation *ds, OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake)
 {
 	m_ds = ds;
 	m_inputs = inputs;
+	m_gyrodrive = gyrodrive;
 	m_intake = intake;
 
 	m_motor = nullptr;
@@ -139,6 +140,9 @@ void Lifter::Loop()
 
 	// if cargo just ingested, move lifter up a smidge and raise cargo intake
 	CheckMoveSmidge();
+
+	// control low speed driving based on lifter position
+	CheckLowSpeed();
 
 	switch (m_loopmode)
 	{
@@ -513,6 +517,15 @@ void Lifter::CheckMoveSmidge()
 		m_intake->SetCargoIntake(Intake::kCargoUp);
 		m_movesmidge = false;
 	}
+}
+
+
+void Lifter::CheckLowSpeed()
+{
+	if (m_position > LIF_HATCH_MID)
+		m_gyrodrive->EnableLowSpeed(true);
+	else
+		m_gyrodrive->EnableLowSpeed(false);
 }
 
 

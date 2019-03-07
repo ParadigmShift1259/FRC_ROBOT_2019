@@ -37,6 +37,7 @@ public:
     bool DriveStraight(double targetdistance, double autopower, bool reset = true);
     bool DriveAngle(double angle, bool reset = true);
     bool DriveHeading(double heading);
+    void EnableLowSpeed(bool mode) {m_drivetrain->EnableLowSpeed(mode);}
 
 protected:
     OperatorInputs *m_inputs;
