@@ -356,6 +356,17 @@ bool Lifter::MoveBottom()
 }
 
 
+bool Lifter::IsBottom()
+{
+	m_position = m_motor->GetSelectedSensorPosition(0);
+
+	if (m_position <= m_liftermin)
+		return true;
+	else
+		return false;
+}
+
+
 void Lifter::ResetPosition()
 {
 	if (m_motor == nullptr)

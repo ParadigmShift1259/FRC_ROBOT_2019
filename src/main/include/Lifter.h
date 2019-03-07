@@ -32,6 +32,7 @@ public:
 	void Stop();
 	void SetLifter(LifterDir direction);
 	bool MoveBottom();
+	bool IsBottom();
 
 protected:
 	void ResetPosition();

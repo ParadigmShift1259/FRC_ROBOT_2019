@@ -39,6 +39,11 @@ public:
     bool DriveAngle(double angle, bool reset = true);
     bool DriveHeading(double heading);
     void SetLowSpeedMode(bool mode) {m_drivetrain->SetLowSpeedMode(mode);}
+    void EnablePID() {m_drivepid->EnablePID();}
+    void DisablePID() {m_drivepid->DisablePID();}
+    void PIDDrive(double y, bool ramp = false) {m_drivepid->Drive(y, ramp);}
+    void ResetGyro() {m_drivepid->ResetGyro();}
+    void SetAbsoluteAngle(double angle) {m_drivepid->SetAbsoluteAngle(angle);}
     void QuickLeft();
     void QuickRight();
 

@@ -37,6 +37,8 @@ public:
 
 	void SetIntakeMode(IntakeMode intakemode);
 	IntakeMode GetIntakeMode() { return m_mode; }
+	void SetCargoStage(CargoStage cargostage) { m_cargostage = cargostage; }
+	void SetHatchStage(HatchStage hatchstage) { m_hatchstage = hatchstage; }
 	void SetCargoIntake(CargoDir cargodir);
 	CargoDir GetCargoIntake();
 	void SetHatchIntake(HatchDir hatchdir);

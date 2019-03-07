@@ -26,6 +26,7 @@ class Autonomous
 {
 public:
 	enum Vision {kIdle, kVision};
+	enum VisionType {kVisionCargo, kVisionHatch, kVisionStation};
 
 	Autonomous(OperatorInputs *inputs, GyroDrive *gyrodrive, Lifter *lifter, Intake *intake);
 	~Autonomous();
@@ -47,6 +48,7 @@ protected:
 	Lifter *m_lifter;
 	Intake *m_intake;
 	Vision m_visioning;
+	VisionType m_visiontype;
 	Timer m_visiontimer;
 
 	shared_ptr<NetworkTable> m_nettable;

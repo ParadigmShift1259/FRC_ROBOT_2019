@@ -22,6 +22,7 @@ Autonomous::Autonomous(OperatorInputs *inputs, GyroDrive *gyrodrive, Lifter *lif
     m_startstage = 0;
     m_heading = 0.0;
     m_visioning = kIdle;
+    m_visiontype = kVisionStation;
 
     m_nettable = NetworkTableInstance::GetDefault().GetTable("OpenCV");
     m_counter = 0;
@@ -50,6 +51,7 @@ void Autonomous::Init()
     m_counter = 0;
     m_visionvalid = false;
     m_visioning = kIdle;
+    m_visiontype = kVisionStation;
     m_visiontimer.Reset();
     m_visiontimer.Start();
 }
@@ -308,11 +310,44 @@ void Autonomous::AutoPID()
 void Autonomous::AutoVision()
 {
     int counter = m_nettable->GetNumber("visioncounter", 0);
-    double angle = m_nettable->GetNumber("XOffAngle", 0) * -1;
-    double distance = m_nettable->GetNumber("Forward_Distance_Inch", 0);
 
-    double scale = distance / (96 * 2) + 0.25;
-    if (counter > m_counter)
+    /*
+    if (m_intake->GetIntakeMode() == Intake::kModeCargo && !m_intake->HasCargoHatch())
+        m_visiontype = kVisionCargo;
+    else if (m_intake->GetIntakeMode() == Intake::kModeHatch && !m_intake->HasCargoHatch())
+        m_visiontype = kVisionHatch;
+    else
+    */
+    m_visiontype = kVisionStation;
+    
+    double angle = 0;       // wanted angle from the network table
+    double distance = 0;    // wanted disatnce from the network table
+    double quality = 0;     // quality of the network table - 0 is bad, 1 is sketchy, 2 is good
+
+    switch (m_visiontype)   // setting angle, distance, and quality based on bot conditions
+    {
+    case kVisionCargo:
+        angle = m_nettable->GetNumber("CargoAngle", 0) * -1;
+        distance = m_nettable->GetNumber("CargoDistance", 0);
+        quality = m_nettable->GetNumber("CargoQuality", 0);
+        break;
+    
+    case kVisionHatch:
+        angle = m_nettable->GetNumber("HatchAngle", 0) * -1;
+        distance = m_nettable->GetNumber("HatchDistance", 0);
+        quality = m_nettable->GetNumber("HatchQuality", 0);
+        break;
+    
+    case kVisionStation:
+        angle = m_nettable->GetNumber("RetroAngle", 0) * -1;
+        distance = m_nettable->GetNumber("RetroDistance", 0);
+        quality = m_nettable->GetNumber("RetroQuality", 0);
+        break;
+    }
+
+    double scale = distance / (96 * 2) + 0.25;  // scale used for converting distance to motor speed
+
+    if (counter > m_counter)                    // if rio is receiving counter, then vision is valid
     {
         m_counter = counter;
         if (distance > 0.0)
@@ -320,11 +355,61 @@ void Autonomous::AutoVision()
             m_visiontimer.Reset();
             m_visionvalid = true;
         }
-        else
-        if (m_visiontimer.Get() > 0.5)
+    }
+    else
+    if (m_visiontimer.Get() > 0.5)              // if pi does not count, vision is not valid
+    {
+        m_visionvalid = false;
+    }
+    
+    switch (m_visioning)
+    {
+    case kIdle:
+        if (m_visionvalid && (quality > 1) && false /*insert vision start code here*/)      // starts the vision sequence
         {
-            m_visionvalid = false;
+            m_gyrodrive->Init();                                                            // enables PID
+            m_gyrodrive->EnablePID();
+
+            if (m_intake->GetIntakeMode() == Intake::kModeHatch)                            // starts intake sequencing
+                m_intake->SetHatchStage(Intake::kHatchCapture);
+            else
+            if (m_intake->GetIntakeMode() == Intake::kModeCargo && m_intake->HasCargoHatch())
+                m_intake->SetCargoStage(Intake::kCargoBall);
+            else
+            if (m_intake->GetIntakeMode() == Intake::kModeCargo)
+                m_intake->SetCargoStage(Intake::kCargoIngest);
+
+            m_visioning = kVision;
         }
+        else
+            m_gyrodrive->DisablePID();
+        
+        m_counter = 0;
+        break;
+    
+    case kVision:
+        if (!m_visionvalid || false /*insert vision stop code here */)                      // stops the vision sequence
+        {
+            m_gyrodrive->DisablePID();
+
+            // stuff to aid driver in ending sequencing?
+    
+            m_visioning = kIdle;
+        }
+        else
+        if (m_lifter->IsBottom())                                                           // if lifter is at bottom, start visioning
+        {
+            double y = -1 * (scale > 1 ? 1 : scale);
+
+            m_gyrodrive->Drive(y, true);
+            m_gyrodrive->ResetGyro();
+            m_gyrodrive->SetAbsoluteAngle(angle);
+        }
+        else                                                                                // else, wait for lifter to move to the bottom
+        {
+            m_lifter->MoveBottom();
+        }
+        break;
     }
 
 }
