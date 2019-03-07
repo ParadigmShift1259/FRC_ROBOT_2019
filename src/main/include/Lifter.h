@@ -71,6 +71,7 @@ protected:
 	int m_selectedposition;
 
 	bool m_prevhascargohatch;
+	bool m_lowspeed;
 	bool m_movebottom;
 	bool m_movesmidge;
 	bool m_staging;

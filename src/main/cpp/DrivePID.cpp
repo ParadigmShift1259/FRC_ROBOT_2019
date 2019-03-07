@@ -39,7 +39,7 @@ void DrivePID::Init(double p, double i, double d, Feedback feedback, bool reset)
 	m_feedback = feedback;
 	GetPIDController()->SetPID(m_p, m_i, m_d);
 	SetAbsoluteTolerance(2);
-	SetOutputRange(-0.7,0.7);
+	SetOutputRange(-1.0,1.0); // orignially -0.7/0.7
 	if (reset)
 	{
 		SetSetpoint(0);

@@ -24,6 +24,7 @@ class GyroDrive
 {
 public:
     enum DriveState { kInit, kDrive };
+    enum DriveMode { kManual, kQuickLeft, kQuickRight };
 
 	GyroDrive(OperatorInputs *inputs);
 	~GyroDrive();
@@ -37,7 +38,9 @@ public:
     bool DriveStraight(double targetdistance, double autopower, bool reset = true);
     bool DriveAngle(double angle, bool reset = true);
     bool DriveHeading(double heading);
-    void EnableLowSpeed(bool mode) {m_drivetrain->EnableLowSpeed(mode);}
+    void SetLowSpeedMode(bool mode) {m_drivetrain->SetLowSpeedMode(mode);}
+    void QuickLeft();
+    void QuickRight();
 
 protected:
     OperatorInputs *m_inputs;
@@ -46,6 +49,8 @@ protected:
     DualGyro *m_gyro;
 
     Timer m_timer;
+    DriveMode m_drivemode;
+    int m_stage;
     DriveState m_drivestate;
     double m_pidstraight[3];
     double m_pidangle[3];
