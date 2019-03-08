@@ -27,6 +27,7 @@ Autonomous::Autonomous(OperatorInputs *inputs, GyroDrive *gyrodrive, Lifter *lif
     m_nettable = NetworkTableInstance::GetDefault().GetTable("OpenCV");
     m_counter = 0;
     m_visionvalid = false;
+    m_hashatch = false;
 }
 
 
@@ -50,6 +51,7 @@ void Autonomous::Init()
 
     m_counter = 0;
     m_visionvalid = false;
+    m_hashatch = false;
     m_visioning = kIdle;
     m_visiontype = kVisionStation;
     m_visiontimer.Reset();
@@ -361,23 +363,26 @@ void Autonomous::AutoVision()
     {
         m_visionvalid = false;
     }
-    
+
     switch (m_visioning)
     {
     case kIdle:
-        if (m_visionvalid && (quality > 1) && false /*insert vision start code here*/)      // starts the vision sequence
+        if (m_visionvalid && (quality > 1) && m_inputs->xBoxR3(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))      // starts the vision sequence
         {
-            m_gyrodrive->Init();                                                            // enables PID
+            m_gyrodrive->PIDInit();                                                            // enables PID
             m_gyrodrive->EnablePID();
 
-            if (m_intake->GetIntakeMode() == Intake::kModeHatch)                            // starts intake sequencing
+            if (m_intake->GetIntakeMode() == Intake::kModeHatch)                            // starts or maintains sucking of hatch
                 m_intake->SetHatchStage(Intake::kHatchCapture);
             else
-            if (m_intake->GetIntakeMode() == Intake::kModeCargo && m_intake->HasCargoHatch())
+            if (m_intake->GetIntakeMode() == Intake::kModeCargo && m_intake->HasCargoHatch())   // maintains hold of ball if there is ball
                 m_intake->SetCargoStage(Intake::kCargoBall);
             else
-            if (m_intake->GetIntakeMode() == Intake::kModeCargo)
+            if (m_intake->GetIntakeMode() == Intake::kModeCargo)                            // starts ingest if there is no ball
                 m_intake->SetCargoStage(Intake::kCargoIngest);
+            else
+            if (m_intake->GetIntakeMode() == Intake::kModeNone)                             // prevents vision if no mode is selected
+                m_visionvalid = false;
 
             m_visioning = kVision;
         }
@@ -388,11 +393,18 @@ void Autonomous::AutoVision()
         break;
     
     case kVision:
-        if (!m_visionvalid || false /*insert vision stop code here */)                      // stops the vision sequence
+        if (!m_visionvalid || m_inputs->xBoxR3(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))                      // stops the vision sequence
         {
             m_gyrodrive->DisablePID();
 
-            // stuff to aid driver in ending sequencing?
+        if (m_intake->GetIntakeMode() == Intake::kModeHatch && m_hashatch)                  // if there is a hatch, then eject
+        {
+            m_intake->SetHatchStage(Intake::kHatchRelease);
+            m_hashatch = false;
+        }
+
+        if (m_intake->GetHatchIntake() == Intake::kHatchCapture && !m_hashatch)             // if there isn't a hatch, say that we have a hatch
+            m_hashatch = true;
     
             m_visioning = kIdle;
         }

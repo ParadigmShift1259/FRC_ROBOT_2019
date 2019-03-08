@@ -108,13 +108,16 @@ void Robot::TeleopInit()
 		m_lifter->Init();
 	}
 	StartedInAuto = false;
+	automode = kAutoDefault;
 }
 
 
 void Robot::TeleopPeriodic()
 {
+	automode = kAutoDefault;
 	m_pneumatics->Loop();
 	m_gyrodrive->Loop();
+	m_autonomous->Loop();
 	m_intake->Loop();
 	m_lifter->Loop();
 }

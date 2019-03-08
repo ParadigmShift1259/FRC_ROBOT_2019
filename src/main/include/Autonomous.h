@@ -55,6 +55,8 @@ protected:
 	int m_counter;
     int m_stage;
 	bool m_visionvalid;
+	bool m_hashatch;
+
 	int m_startstage;
 	double m_heading;
 };

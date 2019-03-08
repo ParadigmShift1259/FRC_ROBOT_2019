@@ -39,6 +39,7 @@ public:
     bool DriveAngle(double angle, bool reset = true);
     bool DriveHeading(double heading);
     void SetLowSpeedMode(bool mode) {m_drivetrain->SetLowSpeedMode(mode);}
+    void PIDInit() {m_drivepid->Init(m_pidstraight[0], m_pidstraight[1], m_pidstraight[2], DrivePID::Feedback::kGyro);}
     void EnablePID() {m_drivepid->EnablePID();}
     void DisablePID() {m_drivepid->DisablePID();}
     void PIDDrive(double y, bool ramp = false) {m_drivepid->Drive(y, ramp);}
