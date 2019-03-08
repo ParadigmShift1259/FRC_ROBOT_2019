@@ -371,7 +371,7 @@ void Autonomous::AutoVision()
         {
             m_gyrodrive->PIDInit();                                                            // enables PID
             m_gyrodrive->EnablePID();
-
+/*
             if (m_intake->GetIntakeMode() == Intake::kModeHatch)                            // starts or maintains sucking of hatch
                 m_intake->SetHatchStage(Intake::kHatchCapture);
             else
@@ -383,7 +383,7 @@ void Autonomous::AutoVision()
             else
             if (m_intake->GetIntakeMode() == Intake::kModeNone)                             // prevents vision if no mode is selected
                 m_visionvalid = false;
-
+*/
             m_visioning = kVision;
         }
         else
@@ -396,7 +396,7 @@ void Autonomous::AutoVision()
         if (!m_visionvalid || m_inputs->xBoxR3(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))                      // stops the vision sequence
         {
             m_gyrodrive->DisablePID();
-
+/*
         if (m_intake->GetIntakeMode() == Intake::kModeHatch && m_hashatch)                  // if there is a hatch, then eject
         {
             m_intake->SetHatchStage(Intake::kHatchRelease);
@@ -405,7 +405,7 @@ void Autonomous::AutoVision()
 
         if (m_intake->GetHatchIntake() == Intake::kHatchCapture && !m_hashatch)             // if there isn't a hatch, say that we have a hatch
             m_hashatch = true;
-    
+*/
             m_visioning = kIdle;
         }
         else
