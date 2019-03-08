@@ -19,6 +19,7 @@ GyroDrive::GyroDrive(OperatorInputs *inputs)
     m_drivetrain = new DriveTrain(inputs);
     m_gyro = new DualGyro(CAN_GYRO1, CAN_GYRO2);
     m_drivepid = new DrivePID(m_drivetrain, m_gyro, m_inputs);
+	m_vision = new Vision();
 
 	m_drivemode = kManual;
 	m_stage = 0;
@@ -78,6 +79,7 @@ void GyroDrive::Init()
 void GyroDrive::Loop()
 {
     m_gyro->Loop();
+	m_vision->Loop();
     if (m_drivepid->GetEnabled())
         m_drivepid->Loop();
 
@@ -93,6 +95,9 @@ void GyroDrive::Loop()
 			else
 			if (INP_DUAL && m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 				m_drivemode = kQuickRight;
+			else
+			if (m_inputs->xBoxR3(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+				m_drivemode = kRetroVision;
 		}
 		break;
 	
@@ -102,6 +107,16 @@ void GyroDrive::Loop()
 	
 	case kQuickRight:
 		QuickRight();
+		break;
+	
+	case kRetroVision:
+		RetroVision();
+		if (m_inputs->xBoxR3(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		{
+			m_drivepid->DisablePID();
+			m_stage = 0;
+			m_drivemode = kManual;
+		}
 		break;
 	}
 	
@@ -251,6 +266,30 @@ bool GyroDrive::DriveHeading(double heading)
 }
 
 
+bool GyroDrive::DriveManualAngle(double angle)
+{
+	switch (m_drivestate)
+	{
+	case kInit:
+		m_drivepid->Init(m_pidangle[0], m_pidangle[1], m_pidangle[2], DrivePID::Feedback::kGyro, false);
+		m_drivepid->EnablePID();
+		m_drivepid->SetRelativeAngle(angle);
+		m_drivestate = kDrive;
+		break;
+
+	case kDrive:
+		double y = m_inputs->xBoxLeftY(0 * INP_DUAL);
+		if (m_drivetrain->GetLowSpeedMode())
+			y = y * LOWSPEED_MODIFIER_Y;
+
+		m_drivepid->Drive(y, true);
+		m_drivepid->SetRelativeAngle(angle);
+		break;
+	}
+	return false;
+}
+
+
 void GyroDrive::QuickLeft()
 {
 	switch (m_stage)
@@ -316,5 +355,19 @@ void GyroDrive::QuickRight()
 		m_stage = 0;
 		m_drivemode = kManual;
         break;
+	}
+}
+
+
+void GyroDrive::RetroVision()
+{
+	double angle, distance;
+
+	if (m_vision->GetRetro(angle, distance))			// if retro is valid, init vision
+		DriveManualAngle(angle);
+	else
+	{
+		m_drivepid->DisablePID();
+		m_drivemode = kManual;
 	}
 }

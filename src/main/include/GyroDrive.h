@@ -15,6 +15,7 @@
 #include "Drivetrain.h"
 #include "DrivePID.h"
 #include "Gyro.h"
+#include "Vision.h"
 
 
 using namespace frc;
@@ -24,7 +25,7 @@ class GyroDrive
 {
 public:
     enum DriveState { kInit, kDrive };
-    enum DriveMode { kManual, kQuickLeft, kQuickRight };
+    enum DriveMode { kManual, kQuickLeft, kQuickRight, kRetroVision };
 
 	GyroDrive(OperatorInputs *inputs);
 	~GyroDrive();
@@ -38,6 +39,7 @@ public:
     bool DriveStraight(double targetdistance, double autopower, bool reset = true);
     bool DriveAngle(double angle, bool reset = true);
     bool DriveHeading(double heading);
+    bool DriveManualAngle(double angle);
     void SetLowSpeedMode(bool mode) {m_drivetrain->SetLowSpeedMode(mode);}
     void PIDInit() {m_drivepid->Init(m_pidstraight[0], m_pidstraight[1], m_pidstraight[2], DrivePID::Feedback::kGyro);}
     void EnablePID() {m_drivepid->EnablePID();}
@@ -47,12 +49,14 @@ public:
     void SetAbsoluteAngle(double angle) {m_drivepid->SetAbsoluteAngle(angle);}
     void QuickLeft();
     void QuickRight();
+    void RetroVision();
 
 protected:
     OperatorInputs *m_inputs;
     DriveTrain *m_drivetrain;
-    DrivePID *m_drivepid;
     DualGyro *m_gyro;
+    DrivePID *m_drivepid;
+    Vision *m_vision;
 
     Timer m_timer;
     DriveMode m_drivemode;

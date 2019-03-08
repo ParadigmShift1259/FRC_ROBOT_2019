@@ -41,6 +41,7 @@ public:
 	void SetChangeDirButton(int button) {m_changedirbutton = button;}
 	void SetLowSpeedButton(int button) {m_lowspeedbutton = button;}
 	void SetLowSpeedMode(bool mode) {m_lowspeedmode = mode;}
+	bool GetLowSpeedMode() {return m_lowspeedmode;}
 
 	void setCoasting(double newCoasting) {m_coasting = newCoasting;}
 	void setRamp(double newValue) {m_rampmax = newValue;}
