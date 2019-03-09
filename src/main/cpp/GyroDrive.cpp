@@ -61,17 +61,8 @@ void GyroDrive::Init()
 	m_stage = 0;
     m_drivestate = kInit;
 
-/*
-    m_pidstraight[0] = 0.0;
-    m_pidstraight[1] = 0.0;
-    m_pidstraight[2] = 0.0;
-    m_pidangle[0] = 0.0;
-    m_pidangle[1] = 0.0;
-    m_pidangle[2] = 0.0;
-*/
-
-	SetStraightPID(0.1, 0.0003, 0.11);    // 2018 Values (0.04, 0.0012, 0.07)
-    SetAnglePID(0.1, 0.0003, 0.11);        // Tuned 3/2/19 (0.1, 0.0003, 0.11)
+	SetStraightPID(AUT_P, AUT_I, AUT_D);    // 2018 Values (0.04, 0.0012, 0.07)
+    SetAnglePID(AUT_P, AUT_I, AUT_D);        // Tuned 3/2/19 (0.1, 0.0003, 0.11)
     m_distance = 0;
 }
 
@@ -162,6 +153,14 @@ void GyroDrive::SetAnglePID(double P, double I, double D)
         m_pidangle[1] = I;
     if (D != -1)
         m_pidangle[2] = D;
+}
+
+
+void GyroDrive::GetAnglePID(double &P, double &I, double &D)
+{
+	P = m_pidangle[0];
+	I = m_pidangle[1];
+	D = m_pidangle[2];
 }
 
 
@@ -292,158 +291,70 @@ bool GyroDrive::DriveManualAngle(double angle)
 
 void GyroDrive::QuickLeft()
 {
-/*
 	switch (m_stage)
 	{
     case 0:
 		DriverStation::ReportError("QuickLeft 0");
-        if (DriveStraight(12, -0.5, true))
+        if (DriveAngle(-30, true))
             m_stage++;
         break;
+
     case 1:
 		DriverStation::ReportError("QuickLeft 1");
-        if (DriveAngle(-30, false))
+        if (DriveStraight(12, -0.5, false))
             m_stage++;
         break;
+
     case 2:
 		DriverStation::ReportError("QuickLeft 2");
-        if (DriveStraight(8, 0.5, false))
-            m_stage++;
-        break;
-    case 3:
         if (DriveAngle(30, false))
             m_stage++;
         break;
-    case 4:
-        if (DriveStraight(4, 0.5, false))
+
+    case 3:
+        if (DriveStraight(7, 0.5, false))
             m_stage++;
         break;
-    case 5:
+
+    case 4:
 		m_stage = 0;
 		m_drivemode = kManual;
         break;
-	}
-*/
-	switch (m_stage)										// testable quickshift
-	{
-	case 0:
-//	    x1 = SmartDashboard::GetNumber("DB/Slider 0", 0.0);
-//	    t1 = SmartDashboard::GetNumber("DB/Slider 1", 0.0);
-//	    x2 = SmartDashboard::GetNumber("DB/Slider 2", 0.0);
-//		t2 = SmartDashboard::GetNumber("DB/Slider 3", 0.0);
-
-		m_timer.Reset();
-		m_stage++;
-		break;
-	
-	case 1:
-		if (m_timer.Get() > 0.7)
-		{
-			m_timer.Reset();
-			m_stage++;
-		}
-		else
-			m_drivetrain->Drive(-0.7, 0.45, false);			// shorter curve: less x distance
-		break;
-
-	case 2:
-		if (m_timer.Get() > 0.5)
-		{
-			m_timer.Reset();
-			m_stage++;
-		}
-		else
-			m_drivetrain->Drive(0.7, 0.45, false);		// longer curve: more x distance
-		break;
-	
-	case 3:
-		if (m_timer.Get() > 0.4)
-		{
-			m_stage++;
-		}
-		else
-			m_drivetrain->Drive(0, -0.45, false);\
-		break;
-
-	case 4:
-		m_stage = 0;
-		m_drivemode = kManual;
-		break;	
 	}
 }
 
 
 void GyroDrive::QuickRight()
 {
-/*
 	switch (m_stage)
 	{
     case 0:
-        if (DriveStraight(12, -0.5, true))
+		DriverStation::ReportError("QuickRight 0");
+        if (DriveAngle(30, true))
             m_stage++;
         break;
+	
     case 1:
-        if (DriveAngle(30, false))
+		DriverStation::ReportError("QuickRight 1");
+        if (DriveStraight(12, -0.5, false))
             m_stage++;
         break;
+
     case 2:
-        if (DriveStraight(8, 0.5, false))
-            m_stage++;
-        break;
-    case 3:
+		DriverStation::ReportError("QuickRight 2");
         if (DriveAngle(-30, false))
             m_stage++;
         break;
-    case 4:
-        if (DriveStraight(4, 0.5, false))
+
+    case 3:
+        if (DriveStraight(7, 0.5, false))
             m_stage++;
         break;
-    case 5:
+
+    case 4:
 		m_stage = 0;
 		m_drivemode = kManual;
         break;
-	}
-*/
-	switch (m_stage)										// testable quickshift
-	{
-	case 0:
-		m_timer.Reset();
-		m_stage++;
-		break;
-	
-	case 1:
-		if (m_timer.Get() > 0.7)
-		{
-			m_timer.Reset();
-			m_stage++;
-		}
-		else
-			m_drivetrain->Drive(0.7, 0.45, false);			// shorter curve: less x distance
-		break;
-
-	case 2:
-		if (m_timer.Get() > 0.5)
-		{
-			m_timer.Reset();
-			m_stage++;
-		}
-		else
-			m_drivetrain->Drive(-0.7, 0.45, false);		// longer curve: more x distance
-		break;
-	
-	case 3:
-		if (m_timer.Get() > 0.4)
-		{
-			m_stage++;
-		}
-		else
-			m_drivetrain->Drive(0, -0.45, false);\
-		break;
-
-	case 4:
-		m_stage = 0;
-		m_drivemode = kManual;
-		break;	
 	}
 }
 

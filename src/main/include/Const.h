@@ -128,14 +128,15 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define LIF_LIFTERSMIDGEHIGH 4000
 #define LIF_LIFTERSTART 7700
 #define LIF_LIFTERMAXSPD (LIF_LIFTERMAX	* 0.95)			// up slow position
-#define LIF_LIFTERMAX 22220
+#define LIF_LIFTERMAX (22220 + LIF_NOTCOMPBOT)
 //   Hatch positions
 #define LIF_HATCH_MID 8600
 #define LIF_HATCH_HIGH 17770
 //   Cargo positions
-#define LIF_CARGO_LOW 5300
-#define LIF_CARGO_MID 13900
-#define LIF_CARGO_HIGH 22220
+#define LIF_NOTCOMPBOT 750                              // ADDED BEFORE COMP FOR THE TESTING BOT, REMOVE
+#define LIF_CARGO_LOW (5300 + LIF_NOTCOMPBOT)
+#define LIF_CARGO_MID (13900 + LIF_NOTCOMPBOT)
+#define LIF_CARGO_HIGH (22220 + LIF_NOTCOMPBOT)
 //   Other
 #define LIF_SLACK 200
 #define LIF_DEADZONE_Y 0.18
@@ -161,13 +162,19 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define INT_CARGO_EJECT_WAIT 1.0
 #define INT_CARGO_EJECT_SPEED 1.0      // -1.0
 //   Hatch Constants
-#define INT_VACUUM_WAIT 0.4             // 0.250
+#define INT_VACUUM_WAIT 0.6             // 0.250
 #define INT_VACUUM_POW 0.55
 
 
 // Autonomous
-enum AutoMode {
-    kAutoDefault, kAutoLeft, kAutoCenter, kAutoRight
+//   PID Constants
+#define AUT_P 0.1
+#define AUT_I 0.0003
+#define AUT_D 0.11
+//   AutoMode Constants
+enum AutoMode
+{
+    kAutoDefault, kAutoLeft, kAutoCenter, kAutoRight, kAutoPID
 };
 
 extern AutoMode automode;

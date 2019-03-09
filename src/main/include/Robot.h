@@ -46,6 +46,7 @@ private:
 	const string kszAutoLeft = "Left";
 	const string kszAutoCenter = "Center";
 	const string kszAutoRight = "Right";
+	const string kszAutoPID = "PID";
 	string m_autoSelected;
 
 	void ReadChooser();

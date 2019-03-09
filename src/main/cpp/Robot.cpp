@@ -26,6 +26,7 @@ void Robot::RobotInit()
 	m_chooser.AddOption(kszAutoLeft, kszAutoLeft);
 	m_chooser.AddOption(kszAutoCenter, kszAutoCenter);
 	m_chooser.AddOption(kszAutoRight, kszAutoRight);
+	m_chooser.AddOption(kszAutoPID, kszAutoPID);
 	SmartDashboard::PutData("Auto Modes", &m_chooser);
 
 	m_driverstation = &DriverStation::GetInstance();
@@ -164,6 +165,9 @@ void Robot::ReadChooser()
 	else
 	if (m_autoSelected == kszAutoRight)
 		automode = kAutoRight;
+	else
+	if (m_autoSelected == kszAutoPID)
+		automode = kAutoPID;
 
 	SmartDashboard::PutNumber("AU1_automode", automode);
 }

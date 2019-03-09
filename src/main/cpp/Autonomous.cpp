@@ -31,13 +31,15 @@ Autonomous::~Autonomous()
 
 void Autonomous::Init()
 {
-/*
-	m_gyrodrive->SetStraightPID(0.1, 0.0003, 0.11);    // 2018 Values (0.04, 0.0012, 0.07)
-    m_gyrodrive->SetAnglePID(0.1, 0.0003, 0.11);        // Tuned 3/2/19 (0.1, 0.0003, 0.11)
-    SmartDashboard::PutNumber("DB/Slider 0", 0.1);
-    SmartDashboard::PutNumber("DB/Slider 1", 0.0003);
-    SmartDashboard::PutNumber("DB/Slider 2", 0.11);
-*/
+    if (automode == kAutoPID)
+    {
+        double P, I, D;
+        m_gyrodrive->GetAnglePID(P, I, D);
+        SmartDashboard::PutNumber("DB/Slider 0", P);
+        SmartDashboard::PutNumber("DB/Slider 1", I);
+        SmartDashboard::PutNumber("DB/Slider 2", D);
+    }
+
     m_stage = 0;
     m_startstage = 0;
     m_heading = 0.0;
@@ -49,7 +51,6 @@ void Autonomous::Loop()
     switch (automode)
     {
     case kAutoDefault:
-        // AutoPID();
         break;
     
     case kAutoLeft:
@@ -62,6 +63,10 @@ void Autonomous::Loop()
     
     case kAutoRight:
         AutoRight();
+        break;
+    
+    case kAutoPID:
+        AutoPID();
         break;
     }
 }
@@ -82,8 +87,9 @@ bool Autonomous::StartSequence()
     case 0:
        	if (Debug) DriverStation::ReportError("AutoStart 0");
 
-        m_intake->SetHatchVac(Intake::kVacOn);
-//        m_intake->SetCargoIntake(Intake::kCargoDown);
+        m_intake->SetIntakeMode(Intake::kModeHatch);
+        m_intake->SetHatchStage(Intake::kHatchCapture);
+
         m_lifter->MoveBottom();
         m_startstage++;
         break;
@@ -91,7 +97,7 @@ bool Autonomous::StartSequence()
     case 1:
        	if (Debug) DriverStation::ReportError("AutoStart 1");
 
-        if (m_gyrodrive->DriveStraight(-72.0, 0.5, false))
+        if (m_gyrodrive->DriveStraight(-72.0, 0.5, true))
             m_startstage++;
         break;
 
@@ -167,7 +173,6 @@ void Autonomous::AutoRight()
 
 void Autonomous::AutoPID()
 {
-/*
     double P = SmartDashboard::GetNumber("DB/Slider 0", 0.0);
     double I = SmartDashboard::GetNumber("DB/Slider 1", 0.0);
     double D = SmartDashboard::GetNumber("DB/Slider 2", 0.0);
@@ -207,86 +212,4 @@ void Autonomous::AutoPID()
         break;
 
     }
-*/
-/*
-    double P = SmartDashboard::GetNumber("DB/Slider 0", 0.0);
-    double I = SmartDashboard::GetNumber("DB/Slider 1", 0.0);
-    double D = SmartDashboard::GetNumber("DB/Slider 2", 0.0);
-    m_gyrodrive->SetStraightPID(P, I, D);
-
-    switch (m_stage)
-    {
-    case 0:
-        if (m_gyrodrive->DriveStraight(12, 0.5))
-            m_stage++;
-        break;
-    case 1:
-        if (m_gyrodrive->DriveAngle(45))
-            m_stage++;
-        break;
-    case 2:
-        if (m_gyrodrive->DriveStraight(12, 0.5))
-            m_stage++;
-        break;
-    case 3:
-        if (m_gyrodrive->DriveAngle(45))
-            m_stage++;
-        break;
-    case 4:
-        if (m_gyrodrive->DriveStraight(12, 0.5))
-            m_stage++;
-        break;
-    case 5:
-        if (m_gyrodrive->DriveAngle(45))
-            m_stage++;
-        break;
-    case 6:
-        if (m_gyrodrive->DriveStraight(12, 0.5))
-            m_stage++;
-        break;
-    case 7:
-        if (m_gyrodrive->DriveAngle(45))
-            m_stage++;
-        break;
-    case 8:
-        if (m_gyrodrive->DriveStraight(12, 0.5))
-            m_stage++;
-        break;
-    case 9:
-        if (m_gyrodrive->DriveAngle(45))
-            m_stage++;
-        break;
-    case 10:
-        if (m_gyrodrive->DriveStraight(12, 0.5))
-            m_stage++;
-        break;
-    case 11:
-        if (m_gyrodrive->DriveAngle(45))
-            m_stage++;
-        break;
-    case 12:
-        if (m_gyrodrive->DriveStraight(12, 0.5))
-            m_stage++;
-        break;
-    case 13:
-        if (m_gyrodrive->DriveAngle(45))
-            m_stage++;
-        break;
-    case 14:
-        if (m_gyrodrive->DriveStraight(12, 0.5))
-            m_stage++;
-        break;
-    case 15:
-        if (m_gyrodrive->DriveAngle(45))
-            m_stage++;
-        break;
-    case 16:
-        if (m_gyrodrive->DriveStraight(12, 0.5))
-            m_stage++;
-        break;
-    case 17:
-        m_gyrodrive->Drive(0, 0);
-        break;
-    }
-*/
 }
