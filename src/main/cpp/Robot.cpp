@@ -24,7 +24,7 @@ void Robot::RobotInit()
 {
 	m_chooser.SetDefaultOption(kszAutoDefault, kszAutoDefault);
 	m_chooser.AddOption(kszAutoLeft, kszAutoLeft);
-	m_chooser.AddOption(kszAutoCenter, kszAutoCenter);
+	m_chooser.AddOption(kszAutoLower, kszAutoLower);
 	m_chooser.AddOption(kszAutoRight, kszAutoRight);
 	m_chooser.AddOption(kszAutoPID, kszAutoPID);
 	SmartDashboard::PutData("Auto Modes", &m_chooser);
@@ -160,8 +160,8 @@ void Robot::ReadChooser()
 	if (m_autoSelected == kszAutoLeft)
 		automode = kAutoLeft;
 	else
-	if (m_autoSelected == kszAutoCenter)
-		automode = kAutoCenter;
+	if (m_autoSelected == kszAutoLower)
+		automode = kAutoLower;
 	else
 	if (m_autoSelected == kszAutoRight)
 		automode = kAutoRight;
