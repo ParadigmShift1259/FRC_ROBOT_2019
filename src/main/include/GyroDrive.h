@@ -60,6 +60,8 @@ protected:
     double m_pidstraight[3];
     double m_pidangle[3];
     double m_distance;
+
+    double x1, t1, x2, t2;
 };
 
 

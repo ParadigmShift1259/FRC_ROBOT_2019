@@ -292,6 +292,7 @@ bool GyroDrive::DriveManualAngle(double angle)
 
 void GyroDrive::QuickLeft()
 {
+/*
 	switch (m_stage)
 	{
     case 0:
@@ -322,13 +323,59 @@ void GyroDrive::QuickLeft()
 		m_drivemode = kManual;
         break;
 	}
+*/
+	switch (m_stage)										// testable quickshift
+	{
+	case 0:
+//	    x1 = SmartDashboard::GetNumber("DB/Slider 0", 0.0);
+//	    t1 = SmartDashboard::GetNumber("DB/Slider 1", 0.0);
+//	    x2 = SmartDashboard::GetNumber("DB/Slider 2", 0.0);
+//		t2 = SmartDashboard::GetNumber("DB/Slider 3", 0.0);
+
+		m_timer.Reset();
+		m_stage++;
+		break;
+	
+	case 1:
+		if (m_timer.Get() > 0.7)
+		{
+			m_timer.Reset();
+			m_stage++;
+		}
+		else
+			m_drivetrain->Drive(-0.7, 0.45, false);			// shorter curve: less x distance
+		break;
+
+	case 2:
+		if (m_timer.Get() > 0.5)
+		{
+			m_timer.Reset();
+			m_stage++;
+		}
+		else
+			m_drivetrain->Drive(0.7, 0.45, false);		// longer curve: more x distance
+		break;
+	
+	case 3:
+		if (m_timer.Get() > 0.4)
+		{
+			m_stage++;
+		}
+		else
+			m_drivetrain->Drive(0, -0.45, false);\
+		break;
+
+	case 4:
+		m_stage = 0;
+		m_drivemode = kManual;
+		break;	
+	}
 }
 
 
 void GyroDrive::QuickRight()
 {
-	if (Debug) DriverStation::ReportError("QuickRight");
-
+/*
 	switch (m_stage)
 	{
     case 0:
@@ -355,6 +402,48 @@ void GyroDrive::QuickRight()
 		m_stage = 0;
 		m_drivemode = kManual;
         break;
+	}
+*/
+	switch (m_stage)										// testable quickshift
+	{
+	case 0:
+		m_timer.Reset();
+		m_stage++;
+		break;
+	
+	case 1:
+		if (m_timer.Get() > 0.7)
+		{
+			m_timer.Reset();
+			m_stage++;
+		}
+		else
+			m_drivetrain->Drive(0.7, 0.45, false);			// shorter curve: less x distance
+		break;
+
+	case 2:
+		if (m_timer.Get() > 0.5)
+		{
+			m_timer.Reset();
+			m_stage++;
+		}
+		else
+			m_drivetrain->Drive(-0.7, 0.45, false);		// longer curve: more x distance
+		break;
+	
+	case 3:
+		if (m_timer.Get() > 0.4)
+		{
+			m_stage++;
+		}
+		else
+			m_drivetrain->Drive(0, -0.45, false);\
+		break;
+
+	case 4:
+		m_stage = 0;
+		m_drivemode = kManual;
+		break;	
 	}
 }
 

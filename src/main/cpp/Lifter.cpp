@@ -162,6 +162,7 @@ void Lifter::Loop()
 			m_intake->SetHatchVac(Intake::kPoofOff);
 			m_intake->SetHatchIntake(Intake::kHatchUp);
 			m_intake->SetCargoIntake(Intake::kCargoOff);
+			m_intake->SetIntakeMode(Intake::kModeCargo);
 			m_selectedposition = LIF_LIFTERSTART;
 			m_raisespeed = LIF_RAISESPEED * 0.5;
 			m_loopmode = kAutoUp;
