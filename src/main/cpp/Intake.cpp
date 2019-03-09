@@ -230,6 +230,7 @@ void Intake::Hatch()
             SetHatchVac(kVacOff);
             SetHatchVac(kPoofOn);
             m_timer.Reset();
+            m_hascargohatch = false;
             m_hatchstage = kHatchRelease;
         }
         else
@@ -246,7 +247,6 @@ void Intake::Hatch()
         {
             SetHatchVac(kVacOff);
             SetHatchVac(kPoofOff);
-            m_hascargohatch = false;
             m_hatchstage = kHatchIdle;
                                                 // back up while poofing?
         }
@@ -363,6 +363,7 @@ void Intake::Cargo()
         {
             SetCargoIntake(kCargoOut);
             m_timer.Reset();
+            m_hascargohatch = false;
             m_cargostage = kCargoEject;
         }
         else
@@ -375,7 +376,6 @@ void Intake::Cargo()
         if (m_timer.Get() > INT_CARGO_EJECT_WAIT)
         {
             SetCargoIntake(kCargoOff);
-            m_hascargohatch = false;
             m_cargostage = kCargoIdle;
         }
         else

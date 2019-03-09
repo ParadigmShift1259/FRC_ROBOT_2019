@@ -48,10 +48,6 @@ public:
 	bool HasCargoHatch() { return m_hascargohatch; }
 	void SetAtBottom(bool atbottom) { m_atbottom = atbottom; }
 
-	void SetAutoIngest(bool ingest) { m_autoingest = ingest; }
-	void SetFinishIngest(bool ingest) { m_finishingest = ingest; }
-	void SetAutoEject(bool eject) { m_autoeject = eject; }
-
 protected:	
 	void Hatch();
 	void Cargo();
@@ -84,10 +80,6 @@ protected:
 	bool m_inited;
 	bool m_hascargohatch;
 	bool m_atbottom;
-
-	bool m_autoingest;
-	bool m_finishingest;
-	bool m_autoeject;
 };
 
 
