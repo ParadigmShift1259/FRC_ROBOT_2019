@@ -57,8 +57,8 @@ void Autonomous::Loop()
         AutoLeft();
         break;
     
-    case kAutoCenter:
-        AutoCenter();
+    case kAutoLower:
+        AutoLower();
         break;
     
     case kAutoRight:
@@ -97,7 +97,7 @@ bool Autonomous::StartSequence()
     case 1:
        	if (Debug) DriverStation::ReportError("AutoStart 1");
 
-        if (m_gyrodrive->DriveStraight(-72.0, 0.5, true))
+        if (m_gyrodrive->DriveStraight(automode == kAutoLower ? -36.0 : -72.0, 0.5, true))
             m_startstage++;
         break;
 
@@ -137,9 +137,9 @@ void Autonomous::AutoLeft()
 }
 
 
-void Autonomous::AutoCenter()
+void Autonomous::AutoLower()
 {
-   	if (Debug) DriverStation::ReportError("AutoCenter");
+   	if (Debug) DriverStation::ReportError("AutoLower");
 
     switch (m_stage)
     {

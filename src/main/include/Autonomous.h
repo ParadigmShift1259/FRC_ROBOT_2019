@@ -32,7 +32,7 @@ public:
 protected:
 	bool StartSequence();
 	void AutoLeft();
-	void AutoCenter();
+	void AutoLower();
 	void AutoRight();
 	void AutoPID();
 

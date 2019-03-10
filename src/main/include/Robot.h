@@ -44,7 +44,7 @@ private:
 	SendableChooser<string> m_chooser;
 	const string kszAutoDefault = "NO AUTO";
 	const string kszAutoLeft = "Left";
-	const string kszAutoCenter = "Center";
+	const string kszAutoLower = "Lower";
 	const string kszAutoRight = "Right";
 	const string kszAutoPID = "PID";
 	string m_autoSelected;

@@ -170,6 +170,15 @@ void Lifter::Loop()
 		}
 		else
 		/// if Y is pressed, initiate up auto sequence
+		if ((m_intake->GetIntakeMode() == Intake::kModeCargo) &&
+			m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+			m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_highposition)
+		{
+			m_selectedposition = LIF_CARGO_SHIP;
+			m_loopmode = kAutoUp;
+		}
+		else
+		/// if Y is pressed, initiate up auto sequence
 		if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_highposition)
 		{
 			m_selectedposition = FindPosition(kUp);

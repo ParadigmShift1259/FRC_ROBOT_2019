@@ -133,10 +133,13 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define LIF_HATCH_MID 8600
 #define LIF_HATCH_HIGH 17770
 //   Cargo positions
+//   Rocket Positions
 #define LIF_NOTCOMPBOT 750                              // ADDED BEFORE COMP FOR THE TESTING BOT, REMOVE
 #define LIF_CARGO_LOW (5300 + LIF_NOTCOMPBOT)
 #define LIF_CARGO_MID (13900 + LIF_NOTCOMPBOT)
 #define LIF_CARGO_HIGH (22220 + LIF_NOTCOMPBOT)
+//   CargoShip Positions
+#define LIF_CARGO_SHIP (10250 + LIF_NOTCOMPBOT)
 //   Other
 #define LIF_SLACK 200
 #define LIF_DEADZONE_Y 0.18
@@ -174,7 +177,7 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 //   AutoMode Constants
 enum AutoMode
 {
-    kAutoDefault, kAutoLeft, kAutoCenter, kAutoRight, kAutoPID
+    kAutoDefault, kAutoLeft, kAutoLower, kAutoRight, kAutoPID
 };
 
 extern AutoMode automode;
