@@ -64,9 +64,13 @@ void Vision::Loop()
     if (m_visionvalid)
     {
         m_retroangle = m_nettable->GetNumber("RetroAngle", 0.0) * -1.0;
-        m_retrodistance = m_nettable->GetNumber("RetroDisatnce", 0.0);
+        m_retrodistance = m_nettable->GetNumber("RetroDistance", 0.0);
         m_retroquality = m_nettable->GetNumber("RetroQuality", 0.0);
     }
+
+    SmartDashboard::PutNumber("VI_01angle", m_retroangle);
+    SmartDashboard::PutNumber("VI_02distance", m_retrodistance);
+    SmartDashboard::PutNumber("VI_03quality", m_retroquality);
 }
 
 
