@@ -40,7 +40,7 @@ public:
     bool DriveStraight(double targetdistance, double autopower, bool reset = true);
     bool DriveAngle(double angle, bool reset = true);
     bool DriveHeading(double heading);
-    bool DriveManualAngle(double angle);
+    bool DriveManualAngle(double angle = 0, bool update = false);
     void SetLowSpeedMode(bool mode) {m_drivetrain->SetLowSpeedMode(mode);}
     void SetAbsoluteAngle(double angle) {m_drivepid->SetAbsoluteAngle(angle);}
     void QuickLeft();
@@ -61,6 +61,7 @@ protected:
     double m_pidstraight[3];
     double m_pidangle[3];
     double m_distance;
+    
 };
 
 

@@ -34,6 +34,7 @@ protected:
 
     int m_counter;
     bool m_visionvalid;
+    int m_getretrocounter;
 
     double m_retroangle;
     double m_retrodistance;

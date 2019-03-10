@@ -25,6 +25,8 @@ Vision::Vision()
     m_retroangle = 0.0;
     m_retrodistance = 0.0;
     m_retroquality = 0;
+
+    m_getretrocounter = 0;
 }
 
 
@@ -44,6 +46,8 @@ void Vision::Init()
     m_retroangle = 0.0;
     m_retrodistance = 0.0;
     m_retroquality = 0;
+
+    m_getretrocounter = 0;
 }
 
 
@@ -81,10 +85,12 @@ void Vision::Stop()
 
 bool Vision::GetRetro(double &angle, double &distance)
 {
-    if (m_visionvalid && m_retroquality > 1)      // if vision is valid and retro quality is green, give values
+    if ((m_counter > m_getretrocounter) &&
+       (m_visionvalid && m_retroquality > 1))      // if vision is valid and retro quality is green, give values
     {
-        angle = m_retroangle;
+        angle = m_retroangle - 4;
         distance = m_retrodistance;
+        m_getretrocounter = m_counter;
         return true;
     }
     return false;
