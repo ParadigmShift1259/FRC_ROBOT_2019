@@ -376,7 +376,7 @@ void GyroDrive::RetroVision()
 	else
 	if (m_drivemode == kRetroVision)
 	{
-		if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		{
 			m_drivepid->DisablePID();
 			m_stage = 0;
@@ -386,7 +386,7 @@ void GyroDrive::RetroVision()
 		else
 		{
 			if (m_vision->GetRetro(angle, distance) && distance > 12.0)
-				DriveManualAngle(angle * 0.35, true);
+				DriveManualAngle(angle * 0.5, true);		//0.35
 			else
 				DriveManualAngle();
 		}
