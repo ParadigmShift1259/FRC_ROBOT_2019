@@ -25,6 +25,8 @@ Vision::Vision()
     m_retroangle = 0.0;
     m_retrodistance = 0.0;
     m_retroquality = 0;
+
+    m_getretrocounter = 0;
 }
 
 
@@ -44,6 +46,8 @@ void Vision::Init()
     m_retroangle = 0.0;
     m_retrodistance = 0.0;
     m_retroquality = 0;
+
+    m_getretrocounter = 0;
 }
 
 
@@ -64,7 +68,7 @@ void Vision::Loop()
     if (m_visionvalid)
     {
         m_retroangle = m_nettable->GetNumber("RetroAngle", 0.0) * -1.0;
-        m_retrodistance = m_nettable->GetNumber("RetroDisatnce", 0.0);
+        m_retrodistance = m_nettable->GetNumber("RetroDistance", 0.0);
         m_retroquality = m_nettable->GetNumber("RetroQuality", 0.0);
     }
 }
@@ -77,10 +81,12 @@ void Vision::Stop()
 
 bool Vision::GetRetro(double &angle, double &distance)
 {
-    if (m_visionvalid && m_retroquality > 1)      // if vision is valid and retro quality is green, give values
+    if ((m_counter > m_getretrocounter) &&
+       (m_visionvalid && m_retroquality > 1))      // if vision is valid and retro quality is green, give values
     {
-        angle = m_retroangle;
+        angle = m_retroangle - 4;
         distance = m_retrodistance;
+        m_getretrocounter = m_counter;
         return true;
     }
     return false;

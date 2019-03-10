@@ -87,8 +87,7 @@ void GyroDrive::Loop()
 			if (INP_DUAL && m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 				m_drivemode = kQuickRight;
 			else
-			if (m_inputs->xBoxR3(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-				m_drivemode = kRetroVision;
+				RetroVision();
 		}
 		break;
 	
@@ -102,12 +101,6 @@ void GyroDrive::Loop()
 	
 	case kRetroVision:
 		RetroVision();
-		if (m_inputs->xBoxR3(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-		{
-			m_drivepid->DisablePID();
-			m_stage = 0;
-			m_drivemode = kManual;
-		}
 		break;
 	}
 	
@@ -265,14 +258,13 @@ bool GyroDrive::DriveHeading(double heading)
 }
 
 
-bool GyroDrive::DriveManualAngle(double angle)
+bool GyroDrive::DriveManualAngle(double angle, bool update)
 {
 	switch (m_drivestate)
 	{
 	case kInit:
 		m_drivepid->Init(m_pidangle[0], m_pidangle[1], m_pidangle[2], DrivePID::Feedback::kGyro, false);
 		m_drivepid->EnablePID();
-		m_drivepid->SetRelativeAngle(angle);
 		m_drivestate = kDrive;
 		break;
 
@@ -282,7 +274,13 @@ bool GyroDrive::DriveManualAngle(double angle)
 			y = y * LOWSPEED_MODIFIER_Y;
 
 		m_drivepid->Drive(y, true);
-		m_drivepid->SetRelativeAngle(angle);
+		if (update)
+		{
+			m_drivepid->SetAbsoluteAngle(m_drivepid->GetPosition());
+			m_drivepid->SetRelativeAngle(angle);
+		}
+		if (m_drivepid->IsOnTarget(3))
+			return true;
 		break;
 	}
 	return false;
@@ -362,12 +360,35 @@ void GyroDrive::QuickRight()
 void GyroDrive::RetroVision()
 {
 	double angle, distance;
+	bool result;
 
-	if (m_vision->GetRetro(angle, distance))			// if retro is valid, init vision
-		DriveManualAngle(angle);
-	else
+	if (m_drivemode == kManual)
 	{
-		m_drivepid->DisablePID();
-		m_drivemode = kManual;
+		if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		{
+			if (m_vision->GetRetro(angle, distance) && (distance > 12.0))
+			{
+				DriveManualAngle(angle * 0.35, true);
+				m_drivemode = kRetroVision;
+			}
+		}
+	}
+	else
+	if (m_drivemode == kRetroVision)
+	{
+		if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		{
+			m_drivepid->DisablePID();
+			m_stage = 0;
+			m_drivestate = kInit;
+			m_drivemode = kManual;
+		}
+		else
+		{
+			if (m_vision->GetRetro(angle, distance) && distance > 12.0)
+				DriveManualAngle(angle * 0.35, true);
+			else
+				DriveManualAngle();
+		}
 	}
 }

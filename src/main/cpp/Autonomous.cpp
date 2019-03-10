@@ -177,39 +177,32 @@ void Autonomous::AutoPID()
     double I = SmartDashboard::GetNumber("DB/Slider 1", 0.0);
     double D = SmartDashboard::GetNumber("DB/Slider 2", 0.0);
     m_gyrodrive->SetAnglePID(P, I, D);
+    bool change = false;
  
-    switch (m_stage)
+    if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
     {
-    case 0:
-        if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-        {
-            m_heading = 0.0;
-            m_stage++;
-        }
-        else
-        if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-        {
-            m_heading = 30.0;
-            m_stage++;
-        }
-        else
-        if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-        {
-            m_heading = 60.0;
-            m_stage++;
-        }
-        else
-        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-        {
-            m_heading = 90.0;
-            m_stage++;
-        }
-        break;
-
-    case 1:
-        if (m_gyrodrive->DriveHeading(m_heading))
-            m_stage = 0;
-        break;
-
+        m_heading = 0.0;
+        change = true;        
     }
+    else
+    if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    {
+        m_heading = 30.0;
+        change = true;
+    }
+    else
+    if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    {
+        m_heading = 60.0;
+        change = true;
+    }
+    else
+    if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    {
+        m_heading = 90.0;
+        change = true;
+    }
+
+    m_gyrodrive->DriveManualAngle(m_heading, change);
+
 }
