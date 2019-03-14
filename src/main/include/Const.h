@@ -134,7 +134,7 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define LIF_HATCH_HIGH 17770
 //   Cargo positions
 //   Rocket Positions
-#define LIF_NOTCOMPBOT 750                              // ADDED BEFORE COMP FOR THE TESTING BOT, REMOVE
+#define LIF_NOTCOMPBOT 0 //750                              // ADDED BEFORE COMP FOR THE TESTING BOT, REMOVE
 #define LIF_CARGO_LOW (5300 + LIF_NOTCOMPBOT)
 #define LIF_CARGO_MID (13900 + LIF_NOTCOMPBOT)
 #define LIF_CARGO_HIGH (22220 + LIF_NOTCOMPBOT)
@@ -165,15 +165,15 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define INT_CARGO_EJECT_WAIT 1.0
 #define INT_CARGO_EJECT_SPEED 1.0      // -1.0
 //   Hatch Constants
-#define INT_VACUUM_WAIT 0.6             // 0.250
+#define INT_VACUUM_WAIT 0.3             // 0.6
 #define INT_VACUUM_POW 0.55
 
 
 // Autonomous
 //   PID Constants
-#define AUT_P 0.1
-#define AUT_I 0.0003
-#define AUT_D 0.11
+#define AUT_P 0.05              // 0.1
+#define AUT_I 0.0001            // 0.0003
+#define AUT_D 0.11              // 0.11
 //   AutoMode Constants
 enum AutoMode
 {
