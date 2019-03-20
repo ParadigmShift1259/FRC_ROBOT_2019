@@ -10,6 +10,7 @@
 #include "Autonomous.h"
 #include "Lifter.h"
 #include "Intake.h"
+#include "Climber.h"
 
 
 using namespace frc;
@@ -38,6 +39,7 @@ protected:
 	Autonomous *m_autonomous;
 	Lifter *m_lifter;
 	Intake *m_intake;
+	Climber *m_climber;
 	DrivePID *m_drivepid;
 
 private:

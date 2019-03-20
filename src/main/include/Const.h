@@ -169,6 +169,9 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define INT_VACUUM_POW 0.55
 
 
+// Climber
+#define PCM_CLIMBER_SOLENOID 6
+
 // Autonomous
 //   PID Constants
 #define AUT_P 0.05              // 0.1

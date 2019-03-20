@@ -37,6 +37,7 @@ void Robot::RobotInit()
 	m_intake = new Intake(m_driverstation, m_operatorinputs);
 	m_lifter = new Lifter(m_driverstation, m_operatorinputs, m_gyrodrive, m_intake);
 	m_autonomous = new Autonomous(m_operatorinputs, m_gyrodrive, m_lifter, m_intake);
+	m_climber = new Climber(m_operatorinputs);
 }
 
 
@@ -74,6 +75,7 @@ void Robot::AutonomousInit()
 	m_autonomous->Init();
 	m_intake->Init();
 	m_lifter->Init();
+	m_climber->Init();
 }
 
 
@@ -107,6 +109,7 @@ void Robot::TeleopInit()
 		m_gyrodrive->Init();
 		m_intake->Init();
 		m_lifter->Init();
+		m_climber->Init();
 	}
 	StartedInAuto = false;
 	automode = kAutoDefault;
@@ -121,6 +124,7 @@ void Robot::TeleopPeriodic()
 //	m_autonomous->Loop();
 	m_intake->Loop();
 	m_lifter->Loop();
+	m_climber->Loop();
 }
 
 
@@ -134,6 +138,7 @@ void Robot::DisabledInit()
 		m_gyrodrive->Stop();
 		m_intake->Stop();
 		m_lifter->Stop();
+		m_climber->Stop();
 	}
 }
 
