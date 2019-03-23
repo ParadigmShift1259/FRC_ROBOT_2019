@@ -25,7 +25,7 @@ class GyroDrive
 {
 public:
     enum DriveState { kInit, kDrive };
-    enum DriveMode { kManual, kQuickLeft, kQuickRight, kRetroVision };
+    enum DriveMode { kManual, kRetroVision };
 
 	GyroDrive(OperatorInputs *inputs);
 	~GyroDrive();
@@ -41,10 +41,9 @@ public:
     bool DriveAngle(double angle, bool reset = true);
     bool DriveHeading(double heading);
     bool DriveManualAngle(double angle = 0, bool update = false);
+//    bool DriveAutoAngle(double angle = 0, double distance = 0; bool update = false);
     void SetLowSpeedMode(bool mode) {m_drivetrain->SetLowSpeedMode(mode);}
     void SetAbsoluteAngle(double angle) {m_drivepid->SetAbsoluteAngle(angle);}
-    void QuickLeft();
-    void QuickRight();
     void RetroVision();
 
 protected:

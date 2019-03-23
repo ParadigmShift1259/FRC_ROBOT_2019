@@ -80,23 +80,8 @@ void GyroDrive::Loop()
 		if (!m_drivepid->GetEnabled())
 		{
 			m_drivetrain->Loop();
-
-			if (INP_DUAL && m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-				m_drivemode = kQuickLeft;
-			else
-			if (INP_DUAL && m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-				m_drivemode = kQuickRight;
-			else
-				RetroVision();
+			RetroVision();
 		}
-		break;
-	
-	case kQuickLeft:
-		QuickLeft();
-		break;
-	
-	case kQuickRight:
-		QuickRight();
 		break;
 	
 	case kRetroVision:
@@ -286,76 +271,38 @@ bool GyroDrive::DriveManualAngle(double angle, bool update)
 	return false;
 }
 
-
-void GyroDrive::QuickLeft()
+/*
+bool GyroDrive::DriveAutoAngle(double angle, double distance, bool update)
 {
-	switch (m_stage)
+	switch (m_drivestate)
 	{
-    case 0:
-		DriverStation::ReportError("QuickLeft 0");
-        if (DriveAngle(-30, true))
-            m_stage++;
-        break;
+	case kInit:
+		m_drivepid->Init(m_pidangle[0], m_pidangle[1], m_pidangle[2], DrivePID::Feedback::kGyro, false);
+		m_drivepid->EnablePID();
+		m_drivestate = kDrive;
+		break;
 
-    case 1:
-		DriverStation::ReportError("QuickLeft 1");
-        if (DriveStraight(12, -0.5, false))
-            m_stage++;
-        break;
+	case kDrive:
+		double distMultiplier = SmartDashboard::GetNumber("DB/Slider 0", 0.0);
+		double powerConst = SmartDashboard::GetNumber("DB/Slider 1", 0.0);
+		// distMultiplier = 100, powerConst = 0.18?
+		double y = distance / (distMultiplier) + powerConst;		// distance / (96 * 2) + 0.25
+		if (m_drivetrain->GetLowSpeedMode())
+			y = y * LOWSPEED_MODIFIER_Y;
 
-    case 2:
-		DriverStation::ReportError("QuickLeft 2");
-        if (DriveAngle(30, false))
-            m_stage++;
-        break;
-
-    case 3:
-        if (DriveStraight(7, 0.5, false))
-            m_stage++;
-        break;
-
-    case 4:
-		m_stage = 0;
-		m_drivemode = kManual;
-        break;
+		m_drivepid->Drive(y, true);
+		if (update)
+		{
+			m_drivepid->SetAbsoluteAngle(m_drivepid->GetPosition());
+			m_drivepid->SetRelativeAngle(angle);
+		}
+		if (m_drivepid->IsOnTarget(3))
+			return true;
+		break;
 	}
+	return false;
 }
-
-
-void GyroDrive::QuickRight()
-{
-	switch (m_stage)
-	{
-    case 0:
-		DriverStation::ReportError("QuickRight 0");
-        if (DriveAngle(30, true))
-            m_stage++;
-        break;
-	
-    case 1:
-		DriverStation::ReportError("QuickRight 1");
-        if (DriveStraight(12, -0.5, false))
-            m_stage++;
-        break;
-
-    case 2:
-		DriverStation::ReportError("QuickRight 2");
-        if (DriveAngle(-30, false))
-            m_stage++;
-        break;
-
-    case 3:
-        if (DriveStraight(7, 0.5, false))
-            m_stage++;
-        break;
-
-    case 4:
-		m_stage = 0;
-		m_drivemode = kManual;
-        break;
-	}
-}
-
+*/
 
 void GyroDrive::RetroVision()
 {
