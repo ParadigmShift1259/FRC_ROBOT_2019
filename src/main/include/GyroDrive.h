@@ -41,7 +41,6 @@ public:
     bool DriveAngle(double angle, bool reset = true);
     bool DriveHeading(double heading);
     bool DriveManualAngle(double angle = 0, bool update = false);
-//    bool DriveAutoAngle(double angle = 0, double distance = 0; bool update = false);
     void SetLowSpeedMode(bool mode) {m_drivetrain->SetLowSpeedMode(mode);}
     void SetAbsoluteAngle(double angle) {m_drivepid->SetAbsoluteAngle(angle);}
     void RetroVision();

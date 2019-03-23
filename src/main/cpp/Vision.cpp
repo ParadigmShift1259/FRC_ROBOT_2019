@@ -90,8 +90,13 @@ bool Vision::GetRetro(double &angle, double &distance)
     {
         angle = m_retroangle;
         distance = m_retrodistance;
+
+        double newangle = 22.19332 - 0.450045 * distance + 0.002948177 * distance * distance;
+        angle -= newangle;
+        
+
         // modify angle due to camera being off center
-        angle += distance * 0.3939052 - 19.79458;
+        //angle += distance * 0.3939052 - 19.79458;
 /*
         if (distance > 40) angle -=4;
         if ((distance > 30) && (distance <= 40)) angle -=8;

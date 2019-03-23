@@ -37,9 +37,9 @@ public:
 	double LeftMotor(double &invMaxValueXPlusY);
 	double RightMotor(double &invMaxValueXPlusY);
 
-	void SetShifterButton(int button) {m_shifterbutton = button;}
+	void SetShifterButton(int low, int high) {m_shifterbuttonlow = low; m_shifterbuttonhigh = high;}
 	void SetChangeDirButton(int button) {m_changedirbutton = button;}
-	void SetLowSpeedButton(int button) {m_lowspeedbutton = button;}
+	void SetLowSpeedButton(int on, int off) {m_lowspeedbuttonon = on; m_lowspeedbuttonoff = off;}
 	void SetLowSpeedMode(bool mode) {m_lowspeedmode = mode;}
 	bool GetLowSpeedMode() {return m_lowspeedmode;}
 
@@ -87,9 +87,11 @@ protected:
 	Solenoid *m_shifter;
 	Timer *m_timerramp;
 
-	int m_shifterbutton;
+	int m_shifterbuttonlow;
+	int m_shifterbuttonhigh;
 	int m_changedirbutton;
-	int m_lowspeedbutton;
+	int m_lowspeedbuttonon;
+	int m_lowspeedbuttonoff;
 
 	double m_leftpow;
 	double m_rightpow;

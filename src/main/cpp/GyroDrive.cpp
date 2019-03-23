@@ -50,9 +50,17 @@ void GyroDrive::Init()
     m_drivetrain->Init(DriveTrain::DriveMode::kFollower);
 	// disable change direction in drivetrain
 	m_drivetrain->SetChangeDirButton(-1);		
-	// if single controller use L3 for shifter else left trigger
+	// if single controller use L3 for shifter else left trigger and left bumper
 	if (!INP_DUAL)
-		m_drivetrain->SetShifterButton(L3_BUTTON);
+	{
+		m_drivetrain->SetShifterButton(L3_BUTTON, L3_BUTTON);
+		m_drivetrain->SetLowSpeedButton(R3_BUTTON, R3_BUTTON);
+	}
+	else
+	{
+		m_drivetrain->SetShifterButton(XBOX_LEFT_TRIGGER_AXIS, LEFT_BUMPER);
+		m_drivetrain->SetLowSpeedButton(XBOX_RIGHT_TRIGGER_AXIS, RIGHT_BUMPER);
+	}
     m_gyro->Init();
     m_drivestate = kInit;
     m_timer.Reset();
@@ -271,38 +279,6 @@ bool GyroDrive::DriveManualAngle(double angle, bool update)
 	return false;
 }
 
-/*
-bool GyroDrive::DriveAutoAngle(double angle, double distance, bool update)
-{
-	switch (m_drivestate)
-	{
-	case kInit:
-		m_drivepid->Init(m_pidangle[0], m_pidangle[1], m_pidangle[2], DrivePID::Feedback::kGyro, false);
-		m_drivepid->EnablePID();
-		m_drivestate = kDrive;
-		break;
-
-	case kDrive:
-		double distMultiplier = SmartDashboard::GetNumber("DB/Slider 0", 0.0);
-		double powerConst = SmartDashboard::GetNumber("DB/Slider 1", 0.0);
-		// distMultiplier = 100, powerConst = 0.18?
-		double y = distance / (distMultiplier) + powerConst;		// distance / (96 * 2) + 0.25
-		if (m_drivetrain->GetLowSpeedMode())
-			y = y * LOWSPEED_MODIFIER_Y;
-
-		m_drivepid->Drive(y, true);
-		if (update)
-		{
-			m_drivepid->SetAbsoluteAngle(m_drivepid->GetPosition());
-			m_drivepid->SetRelativeAngle(angle);
-		}
-		if (m_drivepid->IsOnTarget(3))
-			return true;
-		break;
-	}
-	return false;
-}
-*/
 
 void GyroDrive::RetroVision()
 {
@@ -313,9 +289,11 @@ void GyroDrive::RetroVision()
 	{
 		if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		{
-			if (m_vision->GetRetro(angle, distance) && (distance > 12.0))
+			if (m_vision->GetRetro(angle, distance) && (distance > 6.0))
 			{
-				DriveManualAngle(angle * 0.35, true);
+				if (!m_drivetrain->getIsHighGear())
+					m_drivetrain->Shift();
+				DriveManualAngle(angle * 0.5, true);		// 0.35
 				m_drivemode = kRetroVision;
 			}
 		}
@@ -332,10 +310,14 @@ void GyroDrive::RetroVision()
 		}
 		else
 		{
-			if (m_vision->GetRetro(angle, distance) && distance > 12.0)
-				DriveManualAngle(angle * 0.35, true);		//0.35
+			if (m_vision->GetRetro(angle, distance) && distance > 6.0)
+				DriveManualAngle(angle * 0.5, true);		//0.35
 			else
+			{
+				double x = m_inputs->xBoxLeftX(0 * INP_DUAL);
+				m_drivepid->SetRelativeAngle(x * 0.375);
 				DriveManualAngle();
+			}
 		}
 	}
 }

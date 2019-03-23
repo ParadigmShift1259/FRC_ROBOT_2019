@@ -134,7 +134,7 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define LIF_HATCH_HIGH 17770
 //   Cargo positions
 //   Rocket Positions
-#define LIF_NOTCOMPBOT 750 //750                              // ADDED BEFORE COMP FOR THE TESTING BOT, REMOVE
+#define LIF_NOTCOMPBOT 0 //750                              // ADDED BEFORE COMP FOR THE TESTING BOT, REMOVE
 #define LIF_CARGO_LOW (5300 + LIF_NOTCOMPBOT)
 #define LIF_CARGO_MID (13900 + LIF_NOTCOMPBOT)
 #define LIF_CARGO_HIGH (22220 + LIF_NOTCOMPBOT)

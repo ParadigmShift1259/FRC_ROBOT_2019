@@ -42,10 +42,10 @@ void Climber::Loop()
     if (m_solenoid == nullptr)
         return;
 
-    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
         m_solenoid->Set(true);
     else
-    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
         m_solenoid->Set(false);
 }
 

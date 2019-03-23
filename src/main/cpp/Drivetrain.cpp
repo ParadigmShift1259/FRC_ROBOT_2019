@@ -55,9 +55,11 @@ DriveTrain::DriveTrain(OperatorInputs *inputs, WPI_TalonSRX *left1, WPI_TalonSRX
 	m_lowspeedmode = false;
 	m_shift = false;
 
-	m_shifterbutton = XBOX_LEFT_TRIGGER_AXIS;
+	m_shifterbuttonlow = XBOX_LEFT_TRIGGER_AXIS;
+	m_shifterbuttonhigh = XBOX_LEFT_TRIGGER_AXIS;
 	m_changedirbutton = R3_BUTTON;
-	m_lowspeedbutton = XBOX_RIGHT_TRIGGER_AXIS;
+	m_lowspeedbuttonon = XBOX_RIGHT_TRIGGER_AXIS;
+	m_lowspeedbuttonoff = XBOX_RIGHT_TRIGGER_AXIS;
 
 	m_leftpow = 0;
 	m_rightpow = 0;
@@ -309,10 +311,28 @@ void DriveTrain::Loop()
 	if (m_inputs->xBox(m_changedirbutton, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		ChangeDirection();
 
-	if (m_inputs->xBox(m_shifterbutton, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+	if (m_shifterbuttonlow != m_shifterbuttonhigh)
+	{
+		if (m_inputs->xBox(m_shifterbuttonlow, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && m_ishighgear)
+			m_shift = true;
+		else
+		if (m_inputs->xBox(m_shifterbuttonhigh, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && !m_ishighgear)
+			m_shift = true;
+	}
+	else
+	if (m_inputs->xBox(m_shifterbuttonlow, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		m_shift = true;
 
-	if (m_inputs->xBox(m_lowspeedbutton, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+	if (m_lowspeedbuttonoff != m_lowspeedbuttonon)
+	{
+		if (m_inputs->xBox(m_lowspeedbuttonon, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && !m_lowspeedmode)
+			ChangeLowSpeedMode();
+		else
+		if (m_inputs->xBox(m_lowspeedbuttonoff, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && m_lowspeedmode)
+			ChangeLowSpeedMode();
+	}
+	else
+	if (m_inputs->xBox(m_lowspeedbuttonoff, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		ChangeLowSpeedMode();
 
 	x = m_inputs->xBoxLeftX(0 * INP_DUAL);
