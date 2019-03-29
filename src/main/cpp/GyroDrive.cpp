@@ -311,7 +311,7 @@ void GyroDrive::RetroVision()
 		else
 		{
 			if (m_vision->GetRetro(angle, distance) && distance > 6.0)
-				DriveManualAngle(angle * 0.5, true);		//0.35
+				DriveManualAngle(angle * 0.35, true);		//0.35
 			else
 			{
 				double x = m_inputs->xBoxLeftX(0 * INP_DUAL);

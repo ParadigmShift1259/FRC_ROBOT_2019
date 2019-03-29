@@ -12,6 +12,7 @@
 #include <frc/SmartDashboard/SendableChooser.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include "Robot.h"
+//#include "WPILib.h"
 
 
 bool Debug = true;
@@ -38,6 +39,8 @@ void Robot::RobotInit()
 	m_lifter = new Lifter(m_driverstation, m_operatorinputs, m_gyrodrive, m_intake);
 	m_autonomous = new Autonomous(m_operatorinputs, m_gyrodrive, m_lifter, m_intake);
 	m_climber = new Climber(m_operatorinputs);
+
+	//CameraServer::GetInstance()->StartAutomaticCapture();
 }
 
 

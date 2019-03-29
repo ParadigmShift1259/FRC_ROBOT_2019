@@ -354,6 +354,11 @@ void Intake::Cargo()
     case kCargoBall:
     	if (Debug) DriverStation::ReportError("kCargoBall");
 
+        if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+        {
+            SetCargoIntake(kCargoSlowOut);
+        }
+        else
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
         {
             SetCargoIntake(kCargoIn);
@@ -501,6 +506,11 @@ void Intake::SetCargoIntake(CargoDir cargodir)
     {
         // if (Debug) DriverStation::ReportError("kCargoOut");
         m_sparkcargo->Set(INT_CARGO_EJECT_SPEED);
+    }
+    else
+    if (cargodir == kCargoSlowOut)
+    {
+        m_sparkcargo->Set(INT_CARGO_SLOW_EJECT_SPEED);
     }
 }
 

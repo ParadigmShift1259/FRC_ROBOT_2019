@@ -26,7 +26,7 @@ public:
 	enum HatchDir {kHatchUp, kHatchDown};
 	enum HatchVac {kVacOn, kVacOff, kPoofOn, kPoofOff};
 	enum CargoStage {kCargoIdle, kCargoIngest, kCargoIngestWait, kCargoBall, kCargoEject};
-	enum CargoDir {kCargoUp, kCargoDown, kCargoOff, kCargoIn, kCargoOut};
+	enum CargoDir {kCargoUp, kCargoDown, kCargoOff, kCargoIn, kCargoOut, kCargoSlowOut};
 	enum FlushStage {kFlushNone, kFlushStart, kFlushPoof, kFlushEject};
 
 	Intake(DriverStation *ds, OperatorInputs *inputs);
