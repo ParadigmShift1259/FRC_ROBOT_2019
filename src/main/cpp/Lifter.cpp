@@ -149,6 +149,7 @@ void Lifter::Loop()
 	switch (m_loopmode)
 	{
 	case kManual:
+	
 		m_raisespeed = LIF_RAISESPEED;
 		m_lowerspeed = LIF_LOWERSPEED;
 		m_staging = false;
