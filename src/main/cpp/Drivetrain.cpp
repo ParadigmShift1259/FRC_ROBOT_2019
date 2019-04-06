@@ -307,7 +307,7 @@ void DriveTrain::Loop()
 	static unsigned int shiftcnt = 0;
 	double x;
 	double y;
-	bool arcade = false;
+	bool tank = false;
 
 	if (m_inputs->xBox(m_changedirbutton, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		ChangeDirection();
@@ -343,7 +343,7 @@ void DriveTrain::Loop()
 	{
 		x = m_inputs->xBoxRightX(0 * INP_DUAL);
 		y = m_inputs->xBoxRightY(0 * INP_DUAL);
-		arcade = true;
+		tank = true;
 	}
 
 	if (m_isdownshifting)
@@ -355,7 +355,7 @@ void DriveTrain::Loop()
 		y = y * LOWSPEED_MODIFIER_Y;
 	}
 
-	Drive(x, y, !arcade, arcade);		// if running arcade mode, then disable ramping
+	Drive(x, y, !tank, tank);		// ramp if arcade mode, no ramp if tank mode
 
 	if (m_shift)
 	{
@@ -402,14 +402,14 @@ void DriveTrain::Stop()
 }
 
 
-void DriveTrain::Drive(double x, double y, bool ramp, bool arcade)
+void DriveTrain::Drive(double x, double y, bool ramp, bool tank)
 {
 	double yd = y * m_direction;
 	double maxpower;
 	double templeft, tempright, tempforward, temprotate;
 	bool tempspin;
 
-	if ((x == 0 || yd == 0) || arcade)
+	if ((x == 0 || yd == 0) || tank)
 	{
 		maxpower = 1;
 	}
@@ -425,12 +425,12 @@ void DriveTrain::Drive(double x, double y, bool ramp, bool arcade)
 	{
 		m_previousx = x;	//rampInput(previousX, joyStickX, BatteryRampingMin, BatteryRampingMax);
 		m_previousy = yd;
-		if (!arcade)		// if not arcade mode, use regular tank system
+		if (!tank)			// convert arcade values to tank power values
 		{
 			m_leftpow = m_previousy - m_previousx;
 			m_rightpow = m_previousy + m_previousx;
 		}
-		else				// if arcade mode, set the opposite side running to 0
+		else				// tank values, set the opposite side running to 0
 		{
 			m_leftpow = m_previousy;
 			m_rightpow = m_previousy;
@@ -449,7 +449,7 @@ void DriveTrain::Drive(double x, double y, bool ramp, bool arcade)
 		SmartDashboard::PutNumber("DT10_battery", battery);
 		m_previousx = x;	//rampInput(previousX, joyStickX, rampmin, rampmax);
 		m_previousy = Ramp(m_previousy, yd, rampmin, rampmax);
-		if (!arcade)
+		if (!tank)
 		{
 			m_leftpow = m_previousy * Y_SCALING - (m_previousx * X_SCALING);
 			m_rightpow = m_previousy * Y_SCALING + (m_previousx * X_SCALING);

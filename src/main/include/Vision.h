@@ -32,10 +32,11 @@ protected:
     shared_ptr<NetworkTable> m_nettable;
     Timer m_timer;
 
-    int m_counter;
     bool m_visionvalid;
-    int m_getretrocounter;
+    int m_prevcounter;
+    int m_counter;
 
+    double m_prevretroangle;
     double m_retroangle;
     double m_retrodistance;
     int m_retroquality;
