@@ -307,6 +307,7 @@ void DriveTrain::Loop()
 	static unsigned int shiftcnt = 0;
 	double x;
 	double y;
+	bool arcade = false;
 
 	if (m_inputs->xBox(m_changedirbutton, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		ChangeDirection();
@@ -338,6 +339,13 @@ void DriveTrain::Loop()
 	x = m_inputs->xBoxLeftX(0 * INP_DUAL);
 	y = m_inputs->xBoxLeftY(0 * INP_DUAL);
 
+	if ((x == 0.0) && (y == 0.0))
+	{
+		x = m_inputs->xBoxRightX(0 * INP_DUAL);
+		y = m_inputs->xBoxRightY(0 * INP_DUAL);
+		arcade = true;
+	}
+
 	if (m_isdownshifting)
 		y = 0;
 
@@ -347,7 +355,7 @@ void DriveTrain::Loop()
 		y = y * LOWSPEED_MODIFIER_Y;
 	}
 
-	Drive(x, y, true);
+	Drive(x, y, !arcade, arcade);		// if running arcade mode, then disable ramping
 
 	if (m_shift)
 	{
@@ -394,14 +402,14 @@ void DriveTrain::Stop()
 }
 
 
-void DriveTrain::Drive(double x, double y, bool ramp)
+void DriveTrain::Drive(double x, double y, bool ramp, bool arcade)
 {
 	double yd = y * m_direction;
 	double maxpower;
 	double templeft, tempright, tempforward, temprotate;
 	bool tempspin;
 
-	if (x == 0 || yd == 0)
+	if ((x == 0 || yd == 0) || arcade)
 	{
 		maxpower = 1;
 	}
@@ -412,13 +420,26 @@ void DriveTrain::Drive(double x, double y, bool ramp)
 		else
 			maxpower = (abs(x) / abs(yd)) + 1;
 	}
-
+	
 	if (!ramp)
 	{
 		m_previousx = x;	//rampInput(previousX, joyStickX, BatteryRampingMin, BatteryRampingMax);
 		m_previousy = yd;
-		m_leftpow = m_previousy - m_previousx;
-		m_rightpow = m_previousy + m_previousx;
+		if (!arcade)		// if not arcade mode, use regular tank system
+		{
+			m_leftpow = m_previousy - m_previousx;
+			m_rightpow = m_previousy + m_previousx;
+		}
+		else				// if arcade mode, set the opposite side running to 0
+		{
+			m_leftpow = m_previousy;
+			m_rightpow = m_previousy;
+			if (m_previousx < 0)
+				m_rightpow = 0;
+			else
+			if (m_previousx > 0)
+				m_leftpow = 0;
+		}	
 	}
 	else
 	{
@@ -428,8 +449,21 @@ void DriveTrain::Drive(double x, double y, bool ramp)
 		SmartDashboard::PutNumber("DT10_battery", battery);
 		m_previousx = x;	//rampInput(previousX, joyStickX, rampmin, rampmax);
 		m_previousy = Ramp(m_previousy, yd, rampmin, rampmax);
-		m_leftpow = m_previousy * Y_SCALING - (m_previousx * X_SCALING);
-		m_rightpow = m_previousy * Y_SCALING + (m_previousx * X_SCALING);
+		if (!arcade)
+		{
+			m_leftpow = m_previousy * Y_SCALING - (m_previousx * X_SCALING);
+			m_rightpow = m_previousy * Y_SCALING + (m_previousx * X_SCALING);
+		}
+		else
+		{
+			m_leftpow = m_previousy * Y_SCALING;
+			m_rightpow = m_previousy * Y_SCALING;
+			if (m_previousx < 0)
+				m_rightpow = 0;
+			else
+			if (m_previousx > 0)
+				m_leftpow = 0;
+		}
 	}
 
 	if (m_lefttalon1 != nullptr)
