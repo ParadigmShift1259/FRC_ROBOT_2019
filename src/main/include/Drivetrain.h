@@ -28,7 +28,7 @@ public:
 	void Init(DriveMode mode = kFollower);
 	void Loop();
 	void Stop();
-	void Drive(double x, double y, bool ramp = false, bool arcade = false);
+	void Drive(double x, double y, bool ramp = false, bool tank = false);
 	void Shift();
 		// change DriveTrain direction and return true if going forward
 	bool ChangeDirection();
