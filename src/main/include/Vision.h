@@ -27,6 +27,7 @@ public:
 	void Stop();
 
     bool GetRetro(double &angle, double &distance);
+    void Pause(bool pause) { m_pause = pause; }
 
 protected:
     shared_ptr<NetworkTable> m_nettable;
@@ -39,6 +40,8 @@ protected:
     double m_retroangle;
     double m_retrodistance;
     int m_retroquality;
+
+    bool m_pause;
 };
 
 

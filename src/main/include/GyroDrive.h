@@ -44,6 +44,7 @@ public:
     void SetLowSpeedMode(bool mode) {m_drivetrain->SetLowSpeedMode(mode);}
     void SetAbsoluteAngle(double angle) {m_drivepid->SetAbsoluteAngle(angle);}
     void RetroVision();
+    void PauseVision(bool pause) { m_vision->Pause(pause); }
 
 protected:
     OperatorInputs *m_inputs;

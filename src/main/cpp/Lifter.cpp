@@ -146,6 +146,12 @@ void Lifter::Loop()
 	// control low speed driving based on lifter position
 	CheckLowSpeed();
 
+	// if lifter is higher than first level cargo position, disable vision
+	if (m_position > LIF_CARGO_LOW)
+		m_gyrodrive->PauseVision(true);
+	else
+		m_gyrodrive->PauseVision(false);
+
 	switch (m_loopmode)
 	{
 	case kManual:
