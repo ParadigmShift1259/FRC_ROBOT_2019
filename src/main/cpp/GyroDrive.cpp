@@ -310,7 +310,7 @@ void GyroDrive::RetroVision()
 		}
 		else
 		{
-			if (m_vision->GetRetro(angle, distance) && (distance > 3.0))
+			if (m_vision->GetRetro(angle, distance) && (distance > 6.0))
 				DriveManualAngle(angle * 0.35, true);		// 0.35
 			else
 			{

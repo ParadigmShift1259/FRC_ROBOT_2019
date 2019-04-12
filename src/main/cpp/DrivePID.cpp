@@ -167,6 +167,7 @@ void DrivePID::DisablePID()
 	if (GetPIDController()->IsEnabled())
 	{
 		Disable();
+		GetPIDController()->Reset();
 	}
 }
 
