@@ -324,7 +324,8 @@ void Intake::Cargo()
     case kCargoIngest:
     	if (Debug) DriverStation::ReportError("kCargoIngest");
 
-        if ((m_cargosensor && m_cargosensor->Get()) || m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        if (((m_cargosensor && m_cargosensor->Get()) || m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        && !m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
         {
             SetCargoIntake(kCargoIn);
 			m_timer.Reset();            

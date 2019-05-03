@@ -165,6 +165,7 @@ extern bool StartedInAuto;          // Set to true when starting in autonomous
 #define INT_CARGO_EJECT_WAIT 1.0
 #define INT_CARGO_EJECT_SPEED 1.0      // -1.0
 #define INT_CARGO_SLOW_EJECT_SPEED 0.35
+
 //   Hatch Constants
 #define INT_VACUUM_WAIT 0.5             // 0.6
 #define INT_VACUUM_POW 0.55
