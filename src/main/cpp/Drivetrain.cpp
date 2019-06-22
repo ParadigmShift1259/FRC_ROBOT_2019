@@ -18,6 +18,7 @@ DriveTrain::DriveTrain(OperatorInputs *inputs, WPI_TalonSRX *left1, WPI_TalonSRX
 	m_inputs = inputs;
 
 	m_mode = kFollower;
+	m_drivestick = kLeftStick;
 
 	m_lefttalon1owner = false;
 	m_lefttalon2owner = false;
@@ -75,6 +76,7 @@ DriveTrain::DriveTrain(OperatorInputs *inputs, WPI_TalonSRX *left1, WPI_TalonSRX
 
 	m_prevleftdistance = 0;
 	m_prevrightdistance = 0;
+
 }
 
 
@@ -102,6 +104,15 @@ void DriveTrain::Init(DriveMode mode)
 {
 	m_mode = mode;
 
+	switch (automode)
+	{
+		case kAutoLeft:
+			m_drivestick = kLeftStick;
+			break;
+		case kAutoRight:
+			m_drivestick = kRightStick;
+			break;
+	}
 	if ((m_lefttalon1 == nullptr) && (CAN_LEFT_PORT_1 != -1))
 	{
 		m_lefttalon1 = new WPI_TalonSRX(CAN_LEFT_PORT_1);
@@ -336,15 +347,26 @@ void DriveTrain::Loop()
 	if (m_inputs->xBox(m_lowspeedbuttonoff, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		ChangeLowSpeedMode();
 
-	x = m_inputs->xBoxLeftX(0 * INP_DUAL);
-	y = m_inputs->xBoxLeftY(0 * INP_DUAL);
+	if (m_drivestick == kLeftStick)
+	{
+		x = m_inputs->xBoxLeftX(0 * INP_DUAL);
+		y = m_inputs->xBoxLeftY(0 * INP_DUAL);
+	}
+	else
+	if (m_drivestick == kRightStick)
+	{
+		x = m_inputs->xBoxRightX(0 * INP_DUAL);
+		y = m_inputs->xBoxRightY(0 * INP_DUAL);
+	}
 
+/*
 	if ((x == 0.0) && (y == 0.0))
 	{
 		x = m_inputs->xBoxRightX(0 * INP_DUAL);
 		y = m_inputs->xBoxRightY(0 * INP_DUAL);
 		tank = true;
 	}
+*/
 
 	if (m_isdownshifting)
 		y = 0;
