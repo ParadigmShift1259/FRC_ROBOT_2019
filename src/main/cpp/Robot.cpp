@@ -103,8 +103,6 @@ void Robot::TestPeriodic()			// Do not use
 
 void Robot::TeleopInit()
 {
-	ReadChooser();
-	
 	if (!StartedInAuto)
 	{
 		DriverStation::ReportError("TeleopInit");
@@ -116,13 +114,13 @@ void Robot::TeleopInit()
 		m_climber->Init();
 	}
 	StartedInAuto = false;
-	//automode = kAutoDefault;
+	automode = kAutoDefault;
 }
 
 
 void Robot::TeleopPeriodic()
 {
-	//automode = kAutoDefault;
+	automode = kAutoDefault;
 	m_pneumatics->Loop();
 	m_gyrodrive->Loop();
 //	m_autonomous->Loop();

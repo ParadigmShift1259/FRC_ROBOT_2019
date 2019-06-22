@@ -22,7 +22,6 @@ class DriveTrain
 public:
 	// Drivetrain modes
 	enum DriveMode { kNone, kFollower, kDiscrete, kTank, kArcade, kCurvature };
-	enum DriveStick { kLeftStick, kRightStick };
 
 	DriveTrain(OperatorInputs *inputs, WPI_TalonSRX *left1 = nullptr, WPI_TalonSRX *left2 = nullptr, WPI_TalonSRX *left3 = nullptr, WPI_TalonSRX *right1 = nullptr, WPI_TalonSRX *right2 = nullptr, WPI_TalonSRX *right3 = nullptr);
 	~DriveTrain();
@@ -69,7 +68,6 @@ public:
 
 protected:
 	DriveMode m_mode;
-	DriveStick m_drivestick;
 	OperatorInputs *m_inputs;
 	WPI_TalonSRX *m_lefttalon1;
 	WPI_TalonSRX *m_lefttalon2;
