@@ -28,6 +28,8 @@ Drivetrain::Drivetrain(OperatorInputs *inputs,
 	m_right3 = right3;
 
 	m_run = false;
+
+	m_drive = nullptr;
 }
 
 
@@ -113,6 +115,8 @@ void Drivetrain::Init()
 	// setting ramp rate
 	m_leftmain->SetClosedLoopRampRate(MOTOR_RAMP_RATE_TIME);
 	m_rightmain->SetClosedLoopRampRate(MOTOR_RAMP_RATE_TIME);
+
+	m_drive = new DifferentialDrive(*m_leftmain, *m_rightmain);
 }
 
 
@@ -127,7 +131,7 @@ void Drivetrain::Loop()
 	double x = m_inputs->xBoxLeftX(0 * INP_DUAL);
 	double y = m_inputs->xBoxLeftY(0 * INP_DUAL);
 
-	// drive logic here
+	m_drive->ArcadeDrive(y, x);
 }
 
 

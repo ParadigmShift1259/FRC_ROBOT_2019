@@ -40,6 +40,7 @@ private:
 	CANSparkMax *m_rightmain;
 	CANSparkMax *m_right2;
 	CANSparkMax *m_right3;
+	DifferentialDrive *m_drive;
 
 	bool m_run;
 };
