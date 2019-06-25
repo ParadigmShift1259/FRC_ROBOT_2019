@@ -34,12 +34,17 @@ protected:
 
 private:
 	OperatorInputs *m_inputs;
+
 	CANSparkMax *m_leftmain;
 	CANSparkMax *m_left2;
 	CANSparkMax *m_left3;
 	CANSparkMax *m_rightmain;
 	CANSparkMax *m_right2;
 	CANSparkMax *m_right3;
+
+	CANEncoder *m_leftenc;
+	CANEncoder *m_rightenc;
+
 	DifferentialDrive *m_drive;
 
 	bool m_run;

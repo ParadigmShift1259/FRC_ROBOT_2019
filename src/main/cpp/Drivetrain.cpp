@@ -27,9 +27,12 @@ Drivetrain::Drivetrain(OperatorInputs *inputs,
 	m_right2 = right2;
 	m_right3 = right3;
 
-	m_run = false;
+	m_leftenc = nullptr;
+	m_rightenc = nullptr;
 
 	m_drive = nullptr;
+
+	m_run = false;
 }
 
 
@@ -116,6 +119,9 @@ void Drivetrain::Init()
 	m_leftmain->SetClosedLoopRampRate(MOTOR_RAMP_RATE_TIME);
 	m_rightmain->SetClosedLoopRampRate(MOTOR_RAMP_RATE_TIME);
 
+	m_leftenc = new CANEncoder(*m_leftmain);
+	m_rightenc = new CANEncoder(*m_rightmain);
+
 	m_drive = new DifferentialDrive(*m_leftmain, *m_rightmain);
 }
 
@@ -154,4 +160,11 @@ void Drivetrain::ExperimentalData()
 		SmartDashboard::PutNumber("DT_Left3 Temperature", m_left3->GetMotorTemperature());
 		SmartDashboard::PutNumber("DT_Right3 Temperature", m_right3->GetMotorTemperature());
 	}
+
+	// encoders
+	SmartDashboard::PutNumber("DT_LeftENC Position", m_leftenc->GetPosition());
+	SmartDashboard::PutNumber("DT_LeftENC Velocity", m_leftenc->GetVelocity());
+
+	SmartDashboard::PutNumber("DT_RightENC Position", m_rightenc->GetPosition());
+	SmartDashboard::PutNumber("DT_RightENC Velocity", m_rightenc->GetVelocity());
 }
