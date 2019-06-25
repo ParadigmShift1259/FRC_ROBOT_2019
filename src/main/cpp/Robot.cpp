@@ -19,8 +19,8 @@ bool Debug = true;
 
 void Robot::RobotInit()
 {
-	m_operatorinputs = new OperatorInputs();
-	m_drivetrain = new Drivetrain(m_operatorinputs);
+    m_operatorinputs = new OperatorInputs();
+    m_drivetrain = new Drivetrain(m_operatorinputs);
 }
 
 
@@ -33,19 +33,19 @@ void Robot::TestPeriodic(){}
 
 void Robot::TeleopInit()
 {
-	m_drivetrain->Init();
+    m_drivetrain->Init();
 }
 
 
 void Robot::TeleopPeriodic()
 {
-	m_drivetrain->Loop();
+    m_drivetrain->Loop();
 }
 
 
 void Robot::DisabledInit()
 {
-	m_drivetrain->Stop();
+    m_drivetrain->Stop();
 }
 
 
@@ -54,5 +54,5 @@ void Robot::DisabledPeriodic(){}
 
 int main()
 {
-	return frc::StartRobot<Robot>();
+    return frc::StartRobot<Robot>();
 }
