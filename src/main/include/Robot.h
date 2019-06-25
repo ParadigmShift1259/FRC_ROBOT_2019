@@ -5,12 +5,7 @@
 #include <frc\WPILib.h>
 #include "Const.h"
 #include "OperatorInputs.h"
-#include "GyroDrive.h"
-#include "Pneumatics.h"
-#include "Autonomous.h"
-#include "Lifter.h"
-#include "Intake.h"
-#include "Climber.h"
+#include "Drivetrain.h"
 
 
 using namespace frc;
@@ -32,26 +27,9 @@ public:
 
 protected:
 	Timer m_timer;
-	DriverStation *m_driverstation;
 	OperatorInputs *m_operatorinputs;
-	GyroDrive *m_gyrodrive;
-	Pneumatics *m_pneumatics;
-	Autonomous *m_autonomous;
-	Lifter *m_lifter;
-	Intake *m_intake;
-	Climber *m_climber;
-	DrivePID *m_drivepid;
+	Drivetrain *m_drivetrain;
 
-private:
-	SendableChooser<string> m_chooser;
-	const string kszAutoDefault = "NO AUTO";
-	const string kszAutoLeft = "Left";
-	const string kszAutoLower = "Lower";
-	const string kszAutoRight = "Right";
-	const string kszAutoPID = "PID";
-	string m_autoSelected;
-
-	void ReadChooser();
 };
 
 

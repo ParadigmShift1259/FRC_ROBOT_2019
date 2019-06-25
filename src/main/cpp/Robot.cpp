@@ -15,31 +15,13 @@
 
 
 bool Debug = true;
-bool StartedInAuto = false;
-
-AutoMode automode = kAutoDefault;
 
 
 void Robot::RobotInit()
 {
-	m_chooser.SetDefaultOption(kszAutoDefault, kszAutoDefault);
-	m_chooser.AddOption(kszAutoLeft, kszAutoLeft);
-	m_chooser.AddOption(kszAutoLower, kszAutoLower);
-	m_chooser.AddOption(kszAutoRight, kszAutoRight);
-	m_chooser.AddOption(kszAutoPID, kszAutoPID);
-	SmartDashboard::PutData("Auto Modes", &m_chooser);
-
-	m_driverstation = &DriverStation::GetInstance();
 
 	m_operatorinputs = new OperatorInputs();
-	m_gyrodrive = new GyroDrive(m_operatorinputs);
-	m_pneumatics = new Pneumatics();
-	m_intake = new Intake(m_driverstation, m_operatorinputs);
-	m_lifter = new Lifter(m_driverstation, m_operatorinputs, m_gyrodrive, m_intake);
-	m_autonomous = new Autonomous(m_operatorinputs, m_gyrodrive, m_lifter, m_intake);
-	m_climber = new Climber(m_operatorinputs);
-
-	CameraServer::GetInstance()->StartAutomaticCapture();
+	m_drivetrain = new Drivetrain(m_operatorinputs);
 }
 
 
@@ -62,124 +44,31 @@ void Robot::RobotPeriodic()
  * SendableChooser make sure to add them to the chooser code above as
  * well.
  */
-void Robot::AutonomousInit()
-{
-	DriverStation::ReportError("AutonomousInit");
-
-	StartedInAuto = true;
-	m_timer.Start();
-	m_timer.Reset();
-
-	ReadChooser();
-
-	m_gyrodrive->Init();
-	m_pneumatics->Init();
-	m_autonomous->Init();
-	m_intake->Init();
-	m_lifter->Init();
-	m_climber->Init();
-}
-
-
-void Robot::AutonomousPeriodic()
-{
-	m_gyrodrive->Loop();
-	m_autonomous->Loop();
-	m_intake->Loop();
-	m_lifter->Loop();
-}
-
-
-void Robot::TestInit()				// Do not use
-{
-	DriverStation::ReportError("TestInit");
-}
-
-
-void Robot::TestPeriodic()			// Do not use
-{
-}
+void Robot::AutonomousInit(){}
+void Robot::AutonomousPeriodic(){}
+void Robot::TestInit(){}
+void Robot::TestPeriodic(){}
 
 
 void Robot::TeleopInit()
 {
-	ReadChooser();
-	
-	if (!StartedInAuto)
-	{
-		DriverStation::ReportError("TeleopInit");
-
-		m_pneumatics->Init();
-		m_gyrodrive->Init();
-		m_intake->Init();
-		m_lifter->Init();
-		m_climber->Init();
-	}
-	StartedInAuto = false;
-	//automode = kAutoDefault;
+	m_drivetrain->Init();
 }
 
 
 void Robot::TeleopPeriodic()
 {
-	//automode = kAutoDefault;
-	m_pneumatics->Loop();
-	m_gyrodrive->Loop();
-//	m_autonomous->Loop();
-	m_intake->Loop();
-	m_lifter->Loop();
-	m_climber->Loop();
+	m_drivetrain->Loop();
 }
 
 
 void Robot::DisabledInit()
 {
-	if (!StartedInAuto)
-	{
-		DriverStation::ReportError("DisabledInit");
-
-		m_pneumatics->Stop();
-		m_gyrodrive->Stop();
-		m_intake->Stop();
-		m_lifter->Stop();
-		m_climber->Stop();
-	}
+	m_drivetrain->Stop();
 }
 
 
-void Robot::DisabledPeriodic()
-{
-	if (StartedInAuto && m_timer.Get() > 2.0)
-	{
-		StartedInAuto = false;
-		DisabledInit();
-	}
-	
-	ReadChooser();
-
-	m_gyrodrive->Disabled();
-}
-
-
-void Robot::ReadChooser()
-{
-	m_autoSelected = m_chooser.GetSelected();
-
-	automode = kAutoDefault;
-	if (m_autoSelected == kszAutoLeft)
-		automode = kAutoLeft;
-	else
-	if (m_autoSelected == kszAutoLower)
-		automode = kAutoLower;
-	else
-	if (m_autoSelected == kszAutoRight)
-		automode = kAutoRight;
-	else
-	if (m_autoSelected == kszAutoPID)
-		automode = kAutoPID;
-
-	SmartDashboard::PutNumber("AU1_automode", automode);
-}
+void Robot::DisabledPeriodic(){}
 
 
 int main()
