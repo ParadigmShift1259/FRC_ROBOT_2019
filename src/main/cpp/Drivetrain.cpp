@@ -95,31 +95,13 @@ void Drivetrain::Init()
     }
 
     // inverting sides
-    if (INVERT_LEFT)
-        m_left1->SetInverted(true);
-    
-    if (INVERT_RIGHT)
-        m_right1->SetInverted(true);
-
+    SetInvert(INVERT_LEFT, INVERT_RIGHT);
     
     // setting current limit and enabling voltage compensation on main motors
-    m_left1->SetSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
-    m_left2->SetSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
-    if (m_left3)
-        m_left3->SetSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
+    SetCurrentLimit(MOTOR_CURRENT_LIMIT);
 
-    m_right1->SetSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
-    m_right2->SetSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
-    if (m_right3)
-        m_right3->SetSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
-
-    m_left1->EnableVoltageCompensation(true);
-    m_left2->EnableVoltageCompensation(true);
-    if (m_left3)
-        m_left3->EnableVoltageCompensation(true);
-
-    m_right1->EnableVoltageCompensation(true);
-    m_right2->EnableVoltageCompensation(true);
+    // setting voltage compensation
+    //SetVoltageCompensation(MOTOR_VOLTAGE_COMPENSATION);
 
     // setting brake mode for idling
     SetBrakeMode();
@@ -137,13 +119,16 @@ void Drivetrain::Init()
 void Drivetrain::Loop()
 {
     if (!m_inited)
-    {	return;	}
+    	return;	
 
     if (Debug)
-    {	ExperimentalData();	}
+    	ExperimentalData();
 
     double x = m_inputs->xBoxLeftX(0 * INP_DUAL);
     double y = m_inputs->xBoxLeftY(0 * INP_DUAL);
+
+    x *= X_SCALING;
+    y *= Y_SCALING;
 
     m_drive->ArcadeDrive(y, x);
 }
@@ -151,6 +136,19 @@ void Drivetrain::Loop()
 
 void Drivetrain::Stop()
 {
+}
+
+
+void Drivetrain::SetInvert(bool left, bool right)
+{
+    if (!m_inited)
+        return;
+
+    if (left)
+        m_left1->SetInverted(true);
+    
+    if (right)
+        m_right1->SetInverted(true);
 }
 
 
@@ -196,6 +194,41 @@ void Drivetrain::SetCoastMode()
     if (m_right3)
         m_right3->SetIdleMode(CANSparkMax::IdleMode::kCoast);
 }
+
+
+void Drivetrain::SetVoltageCompensation(double voltage)
+{
+    if (!m_inited)
+        return;
+    
+    m_left1->EnableVoltageCompensation(voltage);
+    m_left2->EnableVoltageCompensation(voltage);
+    if (m_left3)
+        m_left3->EnableVoltageCompensation(voltage);
+
+    m_right1->EnableVoltageCompensation(voltage);
+    m_right2->EnableVoltageCompensation(voltage);
+    if (m_right3)
+        m_right3->EnableVoltageCompensation(voltage);
+}
+
+
+void Drivetrain::SetCurrentLimit(double current)
+{
+    if (!m_inited)
+        return;
+
+    m_left1->SetSmartCurrentLimit(current);
+    m_left2->SetSmartCurrentLimit(current);
+    if (m_left3)
+        m_left3->SetSmartCurrentLimit(current);
+
+    m_right1->SetSmartCurrentLimit(current);
+    m_right2->SetSmartCurrentLimit(current);
+    if (m_right3)
+        m_right3->SetSmartCurrentLimit(current);
+}
+
 
 // prints interesting data to dashboard or shuffleboard
 void Drivetrain::ExperimentalData()

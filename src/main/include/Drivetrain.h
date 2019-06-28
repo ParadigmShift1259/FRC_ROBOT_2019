@@ -28,11 +28,14 @@ public:
     void Loop();
     void Stop();
 
+    // init settings
     void SetRampRate(double rate);
-    double GetRampRate() { return m_ramprate; }
-
+    double GetRampRate() { return m_ramprate; }    
+    void SetInvert(bool left, bool right);
     void SetBrakeMode();
     void SetCoastMode();
+    void SetVoltageCompensation(double voltage);
+    void SetCurrentLimit(double current);
 
 protected:
     void ExperimentalData();
