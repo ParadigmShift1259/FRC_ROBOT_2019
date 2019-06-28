@@ -57,7 +57,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // Drivetrain
-#define REVERSE_DIRECTION false
+#define INVERT_LEFT false
+#define INVERT_RIGHT true
 //   SparkMax Ports
 #define SIX_WHEEL_DRIVE false
 #define CAN_LEFT_PORT_1 2       // Changed for test bot 2/9/19
@@ -70,10 +71,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define MOTOR_CURRENT_LIMIT 20
 #define MOTOR_VOLTAGE_COMPENSATION 10
 #define MOTOR_RAMP_RATE_TIME 2.0
-//   Ramping
-#define RAMPING_RATE_PERIOD 0.10
-#define RAMPING_RATE_MIN 0.6
-#define RAMPING_RATE_MAX 4.0            // 4.0
+// Scaling
 #define X_SCALING 0.75
 #define Y_SCALING 1.0
 
