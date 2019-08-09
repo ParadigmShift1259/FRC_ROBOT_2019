@@ -58,21 +58,21 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 // Drivetrain
 #define INVERT_LEFT false
-#define INVERT_RIGHT true
+#define INVERT_RIGHT false
 //   SparkMax Ports
 #define SIX_WHEEL_DRIVE false
 #define CAN_LEFT_PORT_1 2       // Changed for test bot 2/9/19
-#define CAN_LEFT_PORT_2 0
-#define CAN_LEFT_PORT_3 -1
+#define CAN_LEFT_PORT_2 4
+#define CAN_LEFT_PORT_3 -2
 #define CAN_RIGHT_PORT_1 1
 #define CAN_RIGHT_PORT_2 3
-#define CAN_RIGHT_PORT_3 -1
+#define CAN_RIGHT_PORT_3 -3
 //   NEO parameters
-#define MOTOR_CURRENT_LIMIT 20
+#define MOTOR_CURRENT_LIMIT 30
 #define MOTOR_VOLTAGE_COMPENSATION 10
-#define MOTOR_RAMP_RATE_TIME 2.0
+#define MOTOR_RAMP_RATE_TIME 0.75
 // Scaling
-#define X_SCALING 0.75
+#define X_SCALING 0.35
 #define Y_SCALING 1.0
 
 //   Encoders
