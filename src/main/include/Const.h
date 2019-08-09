@@ -84,6 +84,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define CODES_PER_INCH 73.317
 #define WHEEL_DIAMETER 6.0
 #define WHEEL_TRACK 23.50
+#define NEO_CONVERSION (WHEEL_DIAMETER * 3.1415926535 / 5.2)
 
 
 

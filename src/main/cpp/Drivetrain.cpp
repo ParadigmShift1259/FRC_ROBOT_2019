@@ -109,8 +109,12 @@ void Drivetrain::Init()
     // setting ramp rate
     SetRampRate(MOTOR_RAMP_RATE_TIME);
 
-    //m_leftenc = new CANEncoder(*m_left1);
-    //m_rightenc = new CANEncoder(*m_right1);
+    m_leftenc = new CANEncoder(*m_left1);
+    m_rightenc = new CANEncoder(*m_right1);
+
+    m_leftenc->SetPositionConversionFactor(NEO_CONVERSION);
+    m_rightenc->SetPositionConversionFactor(NEO_CONVERSION);
+
 
     m_drive = new DifferentialDrive(*m_left1, *m_right1);
 }
@@ -130,7 +134,14 @@ void Drivetrain::Loop()
     x *= X_SCALING;
     y *= Y_SCALING;
 
-    m_drive->ArcadeDrive(y, x); // test 8.8.19 
+    m_drive->FeedWatchdog();
+    m_drive->ArcadeDrive(y, x); // test 8.8.19
+
+    if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    {
+        m_leftenc->SetPosition(0);
+        m_rightenc->SetPosition(0);
+    }
 }
 
 
@@ -244,9 +255,9 @@ void Drivetrain::ExperimentalData()
     }
 
     // encoders
-    //SmartDashboard::PutNumber("DT_LeftENC Position", m_leftenc->GetPosition());
-    //SmartDashboard::PutNumber("DT_LeftENC Velocity", m_leftenc->GetVelocity());
+    SmartDashboard::PutNumber("DT_LeftENC Position", m_leftenc->GetPosition());
+    SmartDashboard::PutNumber("DT_LeftENC Velocity", m_leftenc->GetVelocity());
 
-    //SmartDashboard::PutNumber("DT_RightENC Position", m_rightenc->GetPosition());
-    //SmartDashboard::PutNumber("DT_RightENC Velocity", m_rightenc->GetVelocity());
+    SmartDashboard::PutNumber("DT_RightENC Position", m_rightenc->GetPosition());
+    SmartDashboard::PutNumber("DT_RightENC Velocity", m_rightenc->GetVelocity());
 }

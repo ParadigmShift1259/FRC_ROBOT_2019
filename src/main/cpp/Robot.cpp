@@ -34,6 +34,7 @@ void Robot::TestPeriodic(){}
 void Robot::TeleopInit()
 {
     m_drivetrain->Init();
+    //m_drivetrain->Loop();
 }
 
 
