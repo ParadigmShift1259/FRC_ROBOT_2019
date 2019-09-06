@@ -137,6 +137,29 @@ void Drivetrain::Loop()
     m_drive->FeedWatchdog();
     m_drive->ArcadeDrive(y, x); // test 8.8.19
 
+    if ((m_leftenc->GetVelocity() < 0 || m_rightenc->GetVelocity() > 0) && y < 0)
+    {
+        SmartDashboard::PutNumber("Slowing Down?", 0);
+        SetRampRate(MOTOR_RAMP_RATE_TIME * 0.25);
+    }
+    else
+    if ((m_leftenc->GetVelocity() > 0 || m_rightenc->GetVelocity() < 0) && y > 0)
+    {
+        SmartDashboard::PutNumber("Slowing Down?", 0);
+        SetRampRate(MOTOR_RAMP_RATE_TIME * 0.25);
+    }
+    else
+    if (y == 0 && x == 0)
+    {
+        SmartDashboard::PutNumber("Slowing Down?", 2);
+        SetRampRate(MOTOR_RAMP_RATE_TIME * 0.5);
+    }
+    else
+    {
+        SmartDashboard::PutNumber("Slowing Down?", 1);
+        SetRampRate(MOTOR_RAMP_RATE_TIME);
+    }
+    
     if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
     {
         m_leftenc->SetPosition(0);

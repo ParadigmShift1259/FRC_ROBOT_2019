@@ -70,9 +70,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 //   NEO parameters
 #define MOTOR_CURRENT_LIMIT 30
 #define MOTOR_VOLTAGE_COMPENSATION 10
-#define MOTOR_RAMP_RATE_TIME 0.75
+#define MOTOR_RAMP_RATE_TIME 1
 // Scaling
-#define X_SCALING 0.35
+#define X_SCALING 0.5
 #define Y_SCALING 1.0
 
 //   Encoders
