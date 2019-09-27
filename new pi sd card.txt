@@ -1,0 +1,3 @@
+edit (with nano) /home/pi/Vision/StartVision.sh
+between line 1 and line 2 (indexed starting at 1) add the following line:
+cd /home/pi

@@ -1,0 +1,60 @@
+Intake:
+While in hatch capture:
+
+  if (m_drivetrain->GoingBackwards() && !captureranonce)	// if we are going backwards and we haven't run this yet, run sequence for hatch
+  {
+    captureranonce = true;
+    hatchjustcaptured = true;
+  }
+
+After eject, 						// reset values for hatch capture
+  captureranonce = false;
+  hatchjustcaptured = false;
+
+bool captureranonce;
+bool hatchjustcaptured;
+
+bool HatchJustCaptured() { return m_hatchjustcaptured; }
+void SetHatchJustCaptured(bool hatchjustcaptured) { m_hatchjustcaptured = hatchjustcaptured; }
+
+Lifter:
+While in loop:
+  HatchAutoRaise();
+
+HatchAutoRaise()
+{
+  if (m_intake->GetIntakeMode() != kModeHatch)	// if not in hatch mode, don't run
+    return;
+
+  switch (m_hatch)
+  {
+  case kHatchBottom:				// move the lifter all the way down to prep for hatch mode
+    if (MoveBottom())
+      m_hatch = kHatchStart;
+
+  case kHatchStart:				// if hatch has just been captured, then start sequence
+    if (m_intake->HatchJustCaptured())
+    {
+      m_intake->SetHatchJustCaptured(false);
+      m_hatch = kHatchLift;
+    }
+  case kHatchLift:				// raise lifter to a high position so that hatch can get out easily
+    if (m_position >= LIF_HATCHMED)
+    {
+      m_timer.Reset();
+      m_hatch = kHatchDrive;
+    }
+
+    if (m_movingdir !=kUp)
+    {
+      m_selectedposition = LIF_HATCHMED;
+      m_loopmode = kAutoUp;
+    }
+
+  case kHatchDrive:				// drive backwards for half a second
+    if (m_timer.Get() > 0.5)
+      m_hatch = kHatchBottom;
+    else
+      m_drivetrain->Drive(0.3, 0, false);
+  }
+}

@@ -1,0 +1,31 @@
+Center Switch 1 Cube
+	Left 1 cube		kAutoCenterSwitchLeft1
+	Right 1 cube		kAutoCenterSwitchRight1
+
+Center Switch 3 Cube
+	Left 3 cube		kAutoCenterSwitchLeft3
+	Right 3 cube		kAutoCenterSwitchRight3
+
+Left Scale 2 Cube Cross
+	Left 2 cube		kAutoLeftScaleLeft2
+	Right 1 cube		kAutoLeftScaleRight1
+
+Left Scale 2 Cube Pause
+	Left 2 cube		kAutoLeftScaleLeft2
+	Right pause
+
+Right Scale 2 Cube Cross
+	Right 2 cube		kAutoRightScaleRight2
+	Left 1 cube		kAutoRightScaleLeft1
+
+Right Scale 2 Cube Pause
+	Right 2 cube		kAutoRightScaleRight2
+	Left pause
+
+Left Scale 1 Cube Pause
+	Left 1 cube		kAutoLeftScaleLeft1
+	Right pause
+
+Right Scale 1 Cube Pause
+	Right 1 cube		kAutoRightScaleRight1
+	Left pause
